@@ -1,0 +1,45 @@
+﻿			string lhs = "https://3dxchat.com";
+	if (id == "resetpass")
+	{
+		Application.OpenURL(lhs + "/lost-password.html");
+	}
+	else if (id == "refer")
+	{
+		Application.OpenURL(lhs + "/refer/");
+	}
+	else if (id == "forum")
+	{
+		Application.OpenURL(login.forumurl);
+	}
+	else if (id == "support")
+	{
+		Application.OpenURL(lhs + "/support/");
+	}
+	else if (id == "twitter")
+	{
+		Application.OpenURL(lhs + "/go.php?id=twitter");
+	}
+	else if (id == "instagram")
+	{
+		Application.OpenURL(lhs + "/go.php?id=instagram");
+	}
+	else if (id == "telegram")
+	{
+		Application.OpenURL(lhs + "/go.php?id=telegram");
+	}
+	else if (id == "updates")
+	{
+		Application.OpenURL(lhs + "/updates.html");
+	}
+	else if (id == "renew")
+	{
+		Application.OpenURL(lhs + "/support/#renew");
+	}
+	else if (id == "ban")
+	{
+		Application.OpenURL(lhs + "/ban/" + this.banlink);
+	}
+	else if (id == "quit")
+	{
+		Application.Quit();
+	}
