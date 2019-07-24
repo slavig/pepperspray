@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using RSG;
 using pepperspray.CIO;
 using pepperspray.CoreServer.Protocol;
+using pepperspray.Utils;
 using ThreeDXChat.Networking.NodeNet;
 
 namespace pepperspray.CoreServer.Game
@@ -31,7 +32,7 @@ namespace pepperspray.CoreServer.Game
 
     internal IPromise<Nothing> Send(NodeServerEvent e)
     {
-      Console.WriteLine("=> {0}: {1}({2})", this.Name, e.name, e.data);
+      Console.WriteLine("=> {0}: {1}({2})", this.Name, e.name, e.DebugDescription());
       return this.stream.Write(e);
     }
     

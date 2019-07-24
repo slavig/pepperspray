@@ -41,6 +41,7 @@ namespace pepperspray.CIO
               var handler = (Socket)result.AsyncState;
               var socket = handler.EndAccept(result);
               promise.SingleResolve(new CIOSocket(socket));
+
               sync.Set();
             }), listener);
 

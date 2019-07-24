@@ -29,8 +29,8 @@ namespace pepperspray.CoreServer
     internal PlayerHandle ConnectPlayer(CIOSocket socket)
     {
       var handle = new PlayerHandle(new ClientEventStream(socket));
+      Console.WriteLine("INCOMING connection {0}", handle.GetHashCode());
       handle.Send(Responses.Connected());
-      Console.WriteLine("IN connection {0}", handle.GetHashCode());
       return handle;
     }
 
@@ -50,6 +50,7 @@ namespace pepperspray.CoreServer
 
     internal void PlayerLoggedIn(PlayerHandle player)
     {
+      Console.WriteLine("IN connection {0} ({1}", player.GetHashCode(), player.Name);
       this.World.AddPlayer(player);
     }
 
@@ -57,7 +58,16 @@ namespace pepperspray.CoreServer
     {
       Console.WriteLine("OUT connection {0} ({1})", player.GetHashCode(), player.Name);
 
-      player.CurrentLobby.RemovePlayer(player);
+      if (player.CurrentLobby != null)
+      {
+        player.CurrentLobby.RemovePlayer(player);
+        new CombinedPromise<Nothing>(player.CurrentLobby.Players().Select(b => b.Send(Responses.PlayerLeave(player))))
+          .Then(a => Console.WriteLine("OUT done {0} ({1})", player.GetHashCode(), player.Name));
+      } else
+      {
+        Console.WriteLine("OUT done {0} ({1})", player.GetHashCode(), player.Name);
+      }
+
       this.World.RemovePlayer(player);
     }
   }

@@ -15,7 +15,7 @@ namespace pepperspray.ExternalServer
   {
     public void Listen()
     {
-      // Terminal.Settings.DisplayLoggingMessageType = LogMessageType.None;
+      Terminal.Settings.DisplayLoggingMessageType = LogMessageType.None;
 
       var url = "http://127.0.0.1:2518/";
       using (var server = new WebServer(url))

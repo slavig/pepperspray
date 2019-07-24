@@ -26,10 +26,10 @@ namespace pepperspray
       var listener = new CIO.Server("127.0.0.1", 2517);
       var coreTask = listener
         .Incoming()
-        .Map(connection => server.ConnectPlayer(connection))
+        .Map(connection => { lock (server) { return server.ConnectPlayer(connection); } })
         .Map(player => player.EventStream()
           .Map(ev => server.ProcessCommand(player, ev))
-          .Catch(ex => { lock (server) { server.PlayerLoggedOff(player); } })
+          .Catch(ex => { lock (server) { server.PlayerLoggedOff(player); } } )
       );
 
       var extServer = new ExternalServer.ExternalServer();

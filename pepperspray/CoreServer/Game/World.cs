@@ -104,6 +104,7 @@ namespace pepperspray.CoreServer.Game
     internal void RemovePlayer(PlayerHandle player)
     {
       this.players.Remove(player.Name);
+
       foreach (var room in this.userRooms.Where(a => a.Value.User == player).ToList())
       {
         this.RemoveUserRoom(room.Key);
