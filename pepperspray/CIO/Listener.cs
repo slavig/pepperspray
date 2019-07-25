@@ -28,7 +28,7 @@ namespace pepperspray.CIO
       IPAddress ipAddress = ipHostInfo.AddressList[0];
       IPEndPoint localEndPoint = new IPEndPoint(ipAddress, port);
 
-      Log.Information("Binding to {addr}:{port} (DNS tells us {dns_ip})", ip, port, ipAddress);
+      Log.Information("Binding core server to {addr}:{port} (DNS tells us {dns_ip})", ip, port, ipAddress);
       this.listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
       this.listener.Bind(new IPEndPoint(addr, port));
       this.listener.Listen(100);

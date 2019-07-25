@@ -17,7 +17,7 @@ namespace pepperspray.Utils
       StringBuilder sb = new StringBuilder();
       for (int i = 0; i < hash.Length; i++)
       {
-        sb.Append(hash[i].ToString("x2"));
+        sb.Append(hash[i].ToString("X2"));
       }
 
       return sb.ToString();

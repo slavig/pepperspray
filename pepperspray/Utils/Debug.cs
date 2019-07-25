@@ -23,7 +23,7 @@ namespace pepperspray.Utils
         .Enrich.With(new ThreadIdEnricher())
          .MinimumLevel.Verbose()
          .WriteTo.File("peppersprayData\\pepperspray.log",
-             outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}/{ThreadId}|{ThreadName}|#{Class}] {Message:lj}{NewLine}{Exception}",
+             outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}/{ThreadId}#{Class}] {Message:lj}{NewLine}{Exception}",
              rollingInterval: RollingInterval.Day,
              rollOnFileSizeLimit: true)
          .WriteTo.Console(

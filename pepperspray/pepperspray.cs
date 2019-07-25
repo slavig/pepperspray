@@ -25,21 +25,28 @@ namespace pepperspray
     public static int Main(String[] args)
     {
       Utils.Logging.ConfigureLogger(LogEventLevel.Debug);
+      if (args.Count() < 2)
+      {
+        Log.Fatal("Arguments required: IP PORT");
+      }
 
       var address = args[0];
       var port = System.Convert.ToInt32(args[1]);
       Log.Information("pepperspray v0.1");
+      var coreServer = new CoreServer.CoreServer();
+      var externalServer = new ExternalServer.ExternalServer();
 
-      var server = new CoreServer.CoreServer();
-      var task = new CIO.Listener()
+      var coreTask = new CIO.Listener()
         .Bind(address, port)
         .Incoming()
-        .Map(connection => server.ConnectPlayer(connection))
+        .Map(connection => coreServer.ConnectPlayer(connection))
         .Map(player => player.Stream.Stream()
-          .Map(ev => server.ProcessCommand(player, ev))
-          .Catch(ex => { server.PlayerLoggedOff(player); player.Stream.Terminate(); }));
+          .Map(ev => coreServer.ProcessCommand(player, ev))
+          .Catch(ex => { coreServer.PlayerLoggedOff(player); player.Stream.Terminate(); }));
 
-      Console.Read();
+      var externalTask = externalServer.Listen(address, port + 1);
+
+      PromiseHelpers.All(coreTask, externalTask).Join();
       return 0;
     }
   }

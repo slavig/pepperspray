@@ -33,11 +33,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ChunkDecoder, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ChunkDecoder.1.0.2\lib\netstandard2.0\ChunkDecoder.dll</HintPath>
+    </Reference>
     <Reference Include="HttpMultipartParser, Version=2.2.4.0, Culture=neutral, PublicKeyToken=6d293681fa6c7a03, processorArchitecture=MSIL">
       <HintPath>..\packages\HttpMultipartParser.2.2.4\lib\net46\HttpMultipartParser.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="IpMatcher, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\IpMatcher.1.0.1\lib\net452\IpMatcher.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="RegexMatcher, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RegexMatcher.1.0.2\lib\netstandard2.0\RegexMatcher.dll</HintPath>
     </Reference>
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.2.8.0\lib\net46\Serilog.dll</HintPath>
@@ -65,11 +74,8 @@
     <Reference Include="UnityEngine">
       <HintPath>E:\Stuff\3DXChat339_EZMod_Dirty\3DXChat_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
-    <Reference Include="Unosquare.Labs.EmbedIO, Version=2.9.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\EmbedIO.2.9.2\lib\netstandard2.0\Unosquare.Labs.EmbedIO.dll</HintPath>
-    </Reference>
-    <Reference Include="Unosquare.Swan.Lite, Version=1.3.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Unosquare.Swan.Lite.1.3.1\lib\net461\Unosquare.Swan.Lite.dll</HintPath>
+    <Reference Include="WatsonWebserver, Version=2.1.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Watson.2.1.2\lib\netstandard2.0\WatsonWebserver.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -82,11 +88,10 @@
     <Compile Include="CoreServer\Protocol\Requests\CloseRoom.cs" />
     <Compile Include="CoreServer\Protocol\Requests\GetUserRoomList.cs" />
     <Compile Include="CoreServer\Protocol\Requests\OpenRoom.cs" />
-    <Compile Include="ExternalServer\Controllers\CharactersController.cs" />
-    <Compile Include="Utils\Debug.cs" />
-    <Compile Include="ExternalServer\ExternalServer.cs" />
-    <Compile Include="ExternalServer\Controllers\MiscController.cs" />
+    <Compile Include="ExternalServer\Controllers\CharacterController.cs" />
     <Compile Include="ExternalServer\Controllers\WorldController.cs" />
+    <Compile Include="ExternalServer\ExternalServer.cs" />
+    <Compile Include="Utils\Debug.cs" />
     <Compile Include="pepperspray.cs" />
     <Compile Include="CIO\Promise\EnumerableExt.cs" />
     <Compile Include="CIO\Promise\Exceptions\PromiseException.cs" />
