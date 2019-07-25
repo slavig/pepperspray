@@ -33,6 +33,14 @@
 	public static string url = "https://3dxchat.net:3002/";
 ```
 
+## Assembly-CSharp-firstpass.dll
+#### ThreeDXChatNetwork:3 (remove)
+```
+	this.ip = "127.0.0.1";
+	this.ip2 = "127.0.0.1";
+	this.port = 8124;
+```
+
 ## Assembly-UnityScript.dll
 #### login/Awake (prepend)
 ```

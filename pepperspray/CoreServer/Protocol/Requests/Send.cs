@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using RSG;
+using Serilog;
 using pepperspray.CIO;
 using pepperspray.CoreServer.Game;
 using ThreeDXChat.Networking.NodeNet;
@@ -20,8 +21,7 @@ namespace pepperspray.CoreServer.Protocol.Requests
     internal override IPromise<Nothing> Process(PlayerHandle sender, CoreServer server)
     {
       var commands = this.Recepients(sender, server)
-        .Select(recepient => recepient.Send(Responses.Message(sender, this.contents)))
-        .ToList();
+        .Select(r => r.Stream.Write(Responses.Message(sender, this.contents)));
 
       return new CombinedPromise<Nothing>(commands);
     }
@@ -85,7 +85,7 @@ namespace pepperspray.CoreServer.Protocol.Requests
 
     internal override IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, CoreServer server)
     {
-      return sender.CurrentLobby.Players().Except(new PlayerHandle[] { sender });
+      return sender.CurrentLobby.Players.Except(new PlayerHandle[] { sender });
     }
   }
 

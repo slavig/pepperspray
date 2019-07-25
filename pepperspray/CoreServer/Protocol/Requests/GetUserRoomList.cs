@@ -26,7 +26,7 @@ namespace pepperspray.CoreServer.Protocol.Requests
         list = server.World.PublicRooms.ToList();
       }
 
-      return sender.Send(Responses.UserRoomList(list));
+      return sender.Stream.Write(Responses.UserRoomList(list));
     }
   }
 }

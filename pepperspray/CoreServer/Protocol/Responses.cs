@@ -58,7 +58,6 @@ namespace pepperspray.CoreServer.Protocol
       return new NodeServerEvent
       {
         name = "srv",
-        //data = "newplayer=" + player.Name + "=" + player.Sex + "="
         data = "newplayer=" + player.Id + "=" + player.Name + "=" + player.Sex
       };
     }

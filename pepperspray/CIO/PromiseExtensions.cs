@@ -9,7 +9,7 @@ using RSG;
 
 namespace pepperspray.CIO
 {
-  public static class PromiseExtensions
+  public static class EPromise
   {
     public static T Join<T>(this IPromise<T> promise)
     {

@@ -13,11 +13,14 @@ namespace pepperspray.ExternalServer
 {
   class ExternalServer
   {
-    public void Listen()
+    public void Listen(string url)
     {
-      Terminal.Settings.DisplayLoggingMessageType = LogMessageType.None;
+      Terminal.Settings.GlobalLoggingMessageType = LogMessageType.Debug | LogMessageType.Error | LogMessageType.Info | LogMessageType.Trace | LogMessageType.Warning;
+      Terminal.OnLogMessageReceived += delegate (object sender, LogMessageReceivedEventArgs args)
+      {
+        Console.WriteLine(args.Message);
+      };
 
-      var url = "http://127.0.0.1:2518/";
       using (var server = new WebServer(url))
       {
         server.RegisterModule(new WebApiModule());

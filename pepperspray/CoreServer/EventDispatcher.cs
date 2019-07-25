@@ -5,9 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 using RSG;
+using Serilog;
 using pepperspray.CIO;
 using pepperspray.CoreServer.Game;
 using pepperspray.CoreServer.Protocol;
+using pepperspray.Utils;
 using ThreeDXChat.Networking.NodeNet;
 
 namespace pepperspray.CoreServer
@@ -27,13 +29,25 @@ namespace pepperspray.CoreServer
 
       if (request == null)
       {
-        Console.WriteLine("Invalid request");
+        Log.Warning("Failed to parse request from {name}/{hash}/{address}: {msg_name} \"{msg_data}\"",
+          client.Name,
+          client.Stream.ConnectionHash,
+          client.Stream.ConnectionEndpoint,
+          eventMsg.name,
+          eventMsg.DebugDescription());
+
         return Nothing.Resolved();
       }
 
       if (!request.Validate(client, this.server))
       {
-        Console.WriteLine("Unvalidated request");
+        Log.Warning("Failed to validate request from {name}/{hash}/{address}: {msg_name} \"{msg_data}\"",
+          client.Name,
+          client.Stream.ConnectionHash,
+          client.Stream.ConnectionEndpoint,
+          eventMsg.name,
+          eventMsg.DebugDescription());
+
         return Nothing.Resolved();
       }
 

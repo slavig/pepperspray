@@ -44,9 +44,7 @@ namespace pepperspray.CoreServer.Protocol
           return parsedObject as NodeServerEvent;
         }
       }
-      catch (EndOfStreamException) { }
-      catch (ArgumentOutOfRangeException) { }
-      catch (IndexOutOfRangeException) { }
+      catch (Exception) { }
 
       return null;
     }

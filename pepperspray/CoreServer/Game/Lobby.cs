@@ -11,6 +11,7 @@ namespace pepperspray.CoreServer.Game
     internal string Identifier;
     internal UserRoom UserRoom;
     internal bool IsUserRoom { get { return this.UserRoom != null; } }
+    internal IEnumerable<PlayerHandle> Players { get { return this.players; } }
 
     private List<PlayerHandle> players;
 
@@ -38,11 +39,6 @@ namespace pepperspray.CoreServer.Game
       {
         this.UserRoom.NumberOfPlayers -= 1;
       }
-    }
-
-    internal IEnumerable<PlayerHandle> Players()
-    {
-      return this.players;
     }
   }
 }

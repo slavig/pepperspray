@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using RSG;
+using Serilog;
 
 namespace pepperspray.CIO
 {
@@ -28,8 +29,15 @@ namespace pepperspray.CIO
       {
         this.t = new Thread(new ThreadStart(() =>
         {
-        action();
-        this.Resolve(null);
+          try
+          {
+            action();
+          }
+          catch (Exception) { }
+          finally
+          {
+            this.Resolve(null);
+          }
         }));
 
         this.t.Name = name;
@@ -37,13 +45,15 @@ namespace pepperspray.CIO
 
       internal CIOThread Start()
       {
+        Log.Debug("Spawned thread {id}/{name}", this.t.ManagedThreadId, this.t.Name);
+
         this.t.Start();
         return this;
       }
 
       public void Join()
       {
-        Debug.Assert(Thread.CurrentThread.IsBackground);
+        Log.Debug("Joining thread {name}", this.t.Name);
         this.t.Join();
       }
     }
@@ -51,11 +61,6 @@ namespace pepperspray.CIO
     public static CIOThread Spawn(string name, Action action)
     {
       return new CIOThread(name, action).Start();
-    }
-
-    private static Thread createThread(Action action)
-    {
-      return new Thread(new ThreadStart(action));
     }
   }
 }

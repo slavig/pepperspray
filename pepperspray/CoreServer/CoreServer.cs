@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 
 using RSG;
+using Serilog;
 using pepperspray.CIO;
 using pepperspray.CoreServer.Protocol;
 using pepperspray.CoreServer.Game;
@@ -26,49 +28,61 @@ namespace pepperspray.CoreServer
       this.dispatcher = new EventDispatcher(this);
     }
 
+    internal void Sink<T>(IPromise<T> promise)
+    {
+
+    }
+
     internal PlayerHandle ConnectPlayer(CIOSocket socket)
     {
-      var handle = new PlayerHandle(new ClientEventStream(socket));
-      Console.WriteLine("INCOMING connection {0}", handle.GetHashCode());
-      handle.Send(Responses.Connected());
+      var handle = new PlayerHandle(new EventStream(socket));
+      Log.Information("Connecting player {hash}/{endpoint}", handle.Stream.ConnectionHash, handle.Stream.ConnectionEndpoint);
+      this.Sink(handle.Stream.Write(Responses.Connected()));
+
       return handle;
     }
 
     internal Nothing ProcessCommand(PlayerHandle handle, NodeServerEvent msg)
     {
-      Console.WriteLine("<= {0} {1}", msg.name, msg.DebugDescription());
+      Log.Debug("<= {player} {event_name}: \"{event}\"", handle.Name, msg.name, msg.DebugDescription());
 
       var promise = this.dispatcher.Dispatch(handle, msg);
       if (promise != null)
       {
-        return new Nothing();
-      } else
-      {
-        return new Nothing();
+        this.Sink(promise);
       }
+
+      return new Nothing();
     }
 
     internal void PlayerLoggedIn(PlayerHandle player)
     {
-      Console.WriteLine("IN connection {0} ({1}", player.GetHashCode(), player.Name);
-      this.World.AddPlayer(player);
+      Log.Information("Player {name} logged in, connection {hash}/{endpoint}", player.Name, player.Stream.ConnectionHash, player.Stream.ConnectionEndpoint);
+
+      lock (this)
+      {
+        this.World.AddPlayer(player);
+      }
     }
 
     internal void PlayerLoggedOff(PlayerHandle player)
     {
-      Console.WriteLine("OUT connection {0} ({1})", player.GetHashCode(), player.Name);
+      Log.Information("Player {name} logged off (connection {hash}/{endpoint})", player.Name, player.Stream.ConnectionHash, player.Stream.ConnectionEndpoint);
 
-      if (player.CurrentLobby != null)
+      PlayerHandle[] playersToNotify = new PlayerHandle[] { };
+      lock (this)
       {
-        player.CurrentLobby.RemovePlayer(player);
-        new CombinedPromise<Nothing>(player.CurrentLobby.Players().Select(b => b.Send(Responses.PlayerLeave(player))))
-          .Then(a => Console.WriteLine("OUT done {0} ({1})", player.GetHashCode(), player.Name));
-      } else
-      {
-        Console.WriteLine("OUT done {0} ({1})", player.GetHashCode(), player.Name);
+        if (player.CurrentLobby != null)
+        {
+          player.CurrentLobby.RemovePlayer(player);
+          playersToNotify = player.CurrentLobby.Players.ToArray();
+        }
+
+        this.World.RemovePlayer(player);
       }
 
-      this.World.RemovePlayer(player);
+      Log.Debug("Notifying {number_of_players} that {name} logged off.", playersToNotify.Count(), player.Name);
+      this.Sink(new CombinedPromise<Nothing>(playersToNotify.Select(b => b.Stream.Write(Responses.PlayerLeave(player)))));
     }
   }
 }

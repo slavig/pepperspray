@@ -9,41 +9,24 @@ using pepperspray.CIO;
 using pepperspray.CoreServer.Protocol;
 using pepperspray.Utils;
 using ThreeDXChat.Networking.NodeNet;
+using System.Net;
 
 namespace pepperspray.CoreServer.Game
 {
   internal class PlayerHandle
   {
-    internal bool IsLoggedIn;
+    internal bool IsLoggedIn = false;
     internal string Name;
     internal string Hash;
     internal string Sex;
     internal string Id;
     internal Lobby CurrentLobby;
 
-    private ClientEventStream stream;
+    internal EventStream Stream;
 
-    internal PlayerHandle(ClientEventStream writer)
+    internal PlayerHandle(EventStream writer)
     {
-      this.stream = writer;
-
-      this.IsLoggedIn = false;
-    }
-
-    internal IPromise<Nothing> Send(NodeServerEvent e)
-    {
-      Console.WriteLine("=> {0}: {1}({2})", this.Name, e.name, e.DebugDescription());
-      return this.stream.Write(e);
-    }
-    
-    internal IPromise<Nothing> Disconnect()
-    {
-      return this.stream.Terminate();
-    }
-
-    internal IMultiPromise<NodeServerEvent> EventStream()
-    {
-      return this.stream.EventStream();
+      this.Stream = writer;
     }
   }
 }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using RSG;
+using Serilog;
 using pepperspray.CIO;
 using pepperspray.CoreServer.Game;
 using ThreeDXChat.Networking.NodeNet;
@@ -38,19 +39,22 @@ namespace pepperspray.CoreServer.Protocol.Requests
 
     internal override IPromise<Nothing> Process(PlayerHandle sender, CoreServer server)
     {
-      var otherPlayers = new List<PlayerHandle>(this.lobby.Players());
-
-      lock(server) {
+      PlayerHandle[] otherPlayers = null;
+      lock (server)
+      {
+        otherPlayers = this.lobby.Players.ToArray();
         this.lobby.AddPlayer(sender);
         sender.CurrentLobby = this.lobby;
       }
 
-      var existing = otherPlayers.Select(a => a.Send(Responses.NewPlayer(sender)));
-      var existing2 = otherPlayers.Select(a => sender.Send(Responses.NewPlayer(a)));
+      var notifyExistingAboutNew = otherPlayers.Select(a => a.Stream.Write(Responses.NewPlayer(sender)));
+      var notifyNewAboutExisting = otherPlayers.Select(a => sender.Stream.Write(Responses.NewPlayer(a)));
 
-      return sender.Send(Responses.JoinedRoom(this.lobby))
-        .Then(a => new CombinedPromise<Nothing>(existing))
-        .Then(a => new CombinedPromise<Nothing>(existing2))
+      Log.Information("Player {name} joined lobby {id}, total {total} players.", sender.Name, this.lobby.Identifier, otherPlayers.Count());
+
+      return sender.Stream.Write(Responses.JoinedRoom(this.lobby))
+        .Then(a => new CombinedPromise<Nothing>(notifyExistingAboutNew))
+        .Then(a => new CombinedPromise<Nothing>(notifyNewAboutExisting))
       as IPromise<Nothing>;
     }
   }

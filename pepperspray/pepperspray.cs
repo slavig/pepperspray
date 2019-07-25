@@ -8,32 +8,36 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using RSG;
+using Serilog;
+using Serilog.Events;
 using pepperspray.CIO;
 using pepperspray.CoreServer;
 using pepperspray.ExternalServer;
 
 namespace pepperspray
 {
-  public class Program
+  public class pepperspray
   {
-    public Program()
+    public pepperspray()
     {
     }
 
     public static int Main(String[] args)
     {
-      var server = new CoreServer.CoreServer();
-      var listener = new CIO.Server("127.0.0.1", 2517);
-      var coreTask = listener
-        .Incoming()
-        .Map(connection => { lock (server) { return server.ConnectPlayer(connection); } })
-        .Map(player => player.EventStream()
-          .Map(ev => server.ProcessCommand(player, ev))
-          .Catch(ex => { lock (server) { server.PlayerLoggedOff(player); } } )
-      );
+      Utils.Logging.ConfigureLogger(LogEventLevel.Debug);
 
-      var extServer = new ExternalServer.ExternalServer();
-      extServer.Listen();
+      var address = args[0];
+      var port = System.Convert.ToInt32(args[1]);
+      Log.Information("pepperspray v0.1");
+
+      var server = new CoreServer.CoreServer();
+      var task = new CIO.Listener()
+        .Bind(address, port)
+        .Incoming()
+        .Map(connection => server.ConnectPlayer(connection))
+        .Map(player => player.Stream.Stream()
+          .Map(ev => server.ProcessCommand(player, ev))
+          .Catch(ex => { server.PlayerLoggedOff(player); player.Stream.Terminate(); }));
 
       Console.Read();
       return 0;

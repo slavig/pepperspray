@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using RSG;
+using Serilog;
 using pepperspray.CIO;
 
 namespace pepperspray.CoreServer.Game
@@ -46,19 +47,33 @@ namespace pepperspray.CoreServer.Game
       return lobby;
     }
 
-    internal PlayerHandle FindPlayer(string name)
+    internal PlayerHandle FindPlayer(string name, string id = null)
     {
       if (this.players.ContainsKey(name))
       {
         return this.players[name];
-      } else
+      }
+
+      if (id == null)
       {
         return null;
       }
+
+      foreach (PlayerHandle player in this.players.Values)
+      {
+        if (player.Id == id)
+        {
+          return player;
+        }
+      }
+
+      return null;
     }
 
     internal Lobby CreateLobby(string identifier)
     {
+      Log.Information("Creating lobby {identifier}", identifier);
+
       var lobby = new Lobby(identifier);
       this.lobbies.Add(identifier, lobby);
       return lobby;
@@ -68,12 +83,19 @@ namespace pepperspray.CoreServer.Game
     {
       if (this.lobbies.ContainsKey(lobby.Identifier))
       {
+        Log.Information("Removing lobby {identifier}", lobby.Identifier);
+
         this.lobbies.Remove(lobby.Identifier);
+      } else
+      {
+        Log.Warning("Couldn't remove lobby - {identifier} doesn't exist", lobby.Identifier);
       }
     }
 
     internal void AddUserRoom(UserRoom room)
     {
+      Log.Information("Adding user room {id}/{name} from {player_name}", room.Identifier, room.Name, room.User.Name);
+
       this.userRooms[room.Identifier] = room;
     }
 
@@ -81,7 +103,12 @@ namespace pepperspray.CoreServer.Game
     {
       if (this.userRooms.ContainsKey(identifier))
       {
+        Log.Information("Removing user room {id}", identifier);
         this.userRooms.Remove(identifier);
+      }
+      else
+      {
+        Log.Warning("Cound't remove user room - {id} doesn't exist", identifier);
       }
     }
 
@@ -105,7 +132,7 @@ namespace pepperspray.CoreServer.Game
     {
       this.players.Remove(player.Name);
 
-      foreach (var room in this.userRooms.Where(a => a.Value.User == player).ToList())
+      foreach (var room in this.userRooms.Where(a => a.Value.User == player))
       {
         this.RemoveUserRoom(room.Key);
       }

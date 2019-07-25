@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using RSG;
+using Serilog;
 using pepperspray.CIO;
 using pepperspray.CoreServer.Game;
 using ThreeDXChat.Networking.NodeNet;
@@ -49,7 +50,13 @@ namespace pepperspray.CoreServer.Protocol.Requests
         return true;
       } else
       {
-        sender.Disconnect();
+        Log.Information("Terminating connection of {name}/{id} from {hash}/{address} - invalid login due to player already online",
+          this.name,
+          this.hash,
+          sender.Stream.ConnectionHash,
+          sender.Stream.ConnectionEndpoint);
+
+        sender.Stream.Terminate();
         return false;
       }
     }
@@ -66,6 +73,7 @@ namespace pepperspray.CoreServer.Protocol.Requests
       {
         server.PlayerLoggedIn(sender);
       }
+
       return Nothing.Resolved();
     }
   }
