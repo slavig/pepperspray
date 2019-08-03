@@ -40,7 +40,7 @@ namespace pepperspray.CoreServer.Protocol.Requests
           }
         }
 
-        Log.Information("Player {name} leaving lobby {id}, notifying {total} players.", sender.Name, lobby.Identifier, lobbyPlayers.Count());
+        Log.Information("Player {name} leaving lobby {id}, notifying {total} players.", sender.Name, lobby != null ? lobby.Identifier : "INVALID", lobbyPlayers.Count());
         return sender.Stream.Write(Responses.JoinedLobby())
           .Then(a => new CombinedPromise<Nothing>(lobbyPlayers.Select(b => b.Stream.Write(Responses.PlayerLeave(sender)))))
         as IPromise<Nothing>;

@@ -91,13 +91,14 @@
     <Compile Include="CIO\MultiPromise.cs" />
     <Compile Include="CIO\PromiseExtensions.cs" />
     <Compile Include="CoreServer\Game\UserRoom.cs" />
-    <Compile Include="CoreServer\Protocol\ChatAuthValidator.cs" />
+    <Compile Include="CoreServer\Protocol\ActionsAuthenticator.cs" />
     <Compile Include="CoreServer\Protocol\Message.cs" />
     <Compile Include="CoreServer\Protocol\Requests\CloseRoom.cs" />
     <Compile Include="CoreServer\Protocol\Requests\GetUserRoomList.cs" />
     <Compile Include="CoreServer\Protocol\Requests\OpenRoom.cs" />
     <Compile Include="CoreServer\Shell\ACommand.cs" />
     <Compile Include="CoreServer\Shell\Help.cs" />
+    <Compile Include="CoreServer\Shell\PrivateMessage.cs" />
     <Compile Include="CoreServer\Shell\Players.cs" />
     <Compile Include="CoreServer\Shell\ShellDispatcher.cs" />
     <Compile Include="CoreServer\Shell\Kick.cs" />

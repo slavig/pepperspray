@@ -13,11 +13,12 @@ namespace pepperspray.CoreServer.Shell
 {
   internal class ShellDispatcher
   {
-    private ACommand[] registeredCommands = new ACommand[]
+    private AShellCommand[] registeredCommands = new AShellCommand[]
     {
       new Superuser(),
       new Kick(),
       new Players(),
+      new PrivateMessage(),
       new Help(),
     };
 

@@ -20,6 +20,7 @@ namespace pepperspray.Utils
     internal Dictionary<string, string> AdminTokens = new Dictionary<string, string>();
 
     internal uint WorldCacheCapacity;
+    internal int PlayerInactivityTimeout;
 
     internal Configuration(string path)
     {
@@ -36,6 +37,9 @@ namespace pepperspray.Utils
 
       var worldCacheNode = doc.SelectSingleNode("configuration/world-cache");
       this.WorldCacheCapacity = Convert.ToUInt32(worldCacheNode.Attributes["capacity"].InnerText);
+
+      var playerInactivityTimeoutNode = doc.SelectSingleNode("configuration/player-inactivity-timeout");
+      this.PlayerInactivityTimeout = Convert.ToInt32(playerInactivityTimeoutNode.Attributes["seconds"].InnerText);
 
       var adminTokensNodes = doc.SelectNodes("configuration/admin-tokens/token");
       foreach (XmlNode tokenNode in adminTokensNodes)

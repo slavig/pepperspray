@@ -17,13 +17,15 @@ namespace pepperspray.CoreServer.Protocol.Requests
   internal abstract class Send: ARequest
   {
     protected string contents;
-    private ShellDispatcher shellDispatcher = DI.Get<ShellDispatcher>();
     private string[] messagePrefixes = new string[]
     {
       "~worldchat/",
       "~chat/",
       "~private/",
     };
+
+    protected ShellDispatcher shellDispatcher = DI.Get<ShellDispatcher>();
+    protected ActionsAuthenticator actionsAuthenticator = DI.Get<ActionsAuthenticator>();
 
     internal abstract IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, CoreServer server);
 
@@ -106,6 +108,11 @@ namespace pepperspray.CoreServer.Protocol.Requests
         return false;
       }
 
+      if (!this.actionsAuthenticator.ShouldProcess(sender, this.recepient, this.contents))
+      {
+        return false;
+      }
+
       return true;
     }
 
@@ -131,6 +138,21 @@ namespace pepperspray.CoreServer.Protocol.Requests
       };
     }
 
+    internal override bool Validate(PlayerHandle sender, CoreServer server)
+    {
+      if (!base.Validate(sender, server))
+      {
+        return false;
+      }
+ 
+      if (!this.actionsAuthenticator.ShouldProcess(sender, null, this.contents))
+      {
+        return false;
+      }
+
+      return true;
+    }
+
     internal override IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, CoreServer server)
     {
       return sender.CurrentLobby.Players.Except(new PlayerHandle[] { sender });
@@ -145,6 +167,21 @@ namespace pepperspray.CoreServer.Protocol.Requests
       {
         contents = ev.data.ToString()
       };
+    }
+
+    internal override bool Validate(PlayerHandle sender, CoreServer server)
+    {
+      if (!base.Validate(sender, server))
+      {
+        return false;
+      }
+ 
+      if (!this.actionsAuthenticator.ShouldProcess(sender, null, this.contents))
+      {
+        return false;
+      }
+
+      return true;
     }
 
     internal override IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, CoreServer server)

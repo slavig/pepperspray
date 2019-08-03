@@ -20,9 +20,10 @@ namespace pepperspray.CoreServer
   internal class CoreServer
   {
     internal World World;
-    internal string ServerName = "Server $";
+    internal string ServerName = "pepperspray";
 
     private NameValidator nameValidator = DI.Get<NameValidator>();
+    private Configuration config = DI.Get<Configuration>();
     private EventDispatcher dispatcher;
 
     internal CoreServer()
@@ -35,7 +36,7 @@ namespace pepperspray.CoreServer
       {
         while (true)
         {
-          Thread.Sleep(TimeSpan.FromSeconds(15));
+          Thread.Sleep(TimeSpan.FromSeconds(this.config.PlayerInactivityTimeout));
 
           lock (this)
           {
@@ -107,7 +108,10 @@ namespace pepperspray.CoreServer
           }
         }
 
-        this.World.RemovePlayer(player);
+        if (player.IsLoggedIn)
+        {
+          this.World.RemovePlayer(player);
+        }
       }
 
       Log.Debug("Notifying {number_of_players} that {name} logged off.", playersToNotify.Count(), player.Name);
@@ -117,7 +121,7 @@ namespace pepperspray.CoreServer
     internal bool CheckPlayerTimeout(PlayerHandle handle)
     {
       var delta = DateTime.Now - handle.Stream.LastCommunicationDate;
-      if (delta.Seconds > 15)
+      if (delta.Seconds > this.config.PlayerInactivityTimeout)
       {
         Log.Debug("Disconnecting player {player}/{hash}/{endpoint} due to time out (last heard of {delta} ago)",
           handle.Name,
@@ -126,6 +130,7 @@ namespace pepperspray.CoreServer
           delta);
 
         this.PlayerLoggedOff(handle);
+        handle.Stream.Write(Responses.ServerMessage(this, "KICKED: Timed out."));
         handle.Stream.Terminate();
 
         return true;

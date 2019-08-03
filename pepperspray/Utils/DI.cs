@@ -26,7 +26,7 @@ namespace pepperspray.Utils
     internal static void Setup()
     {
       DI.Register(new Configuration(".\\peppersprayData\\configuration.xml"));
-      DI.Register(new ChatMessageAuthenticator());
+      DI.Register(new ActionsAuthenticator());
       DI.Register(new ShellDispatcher());
       DI.Register(new NameValidator());
     }

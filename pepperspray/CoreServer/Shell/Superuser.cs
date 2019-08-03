@@ -13,7 +13,7 @@ using pepperspray.Utils;
 
 namespace pepperspray.CoreServer.Shell
 {
-  internal class Superuser: ACommand
+  internal class Superuser: AShellCommand
   {
     private Configuration config = DI.Get<Configuration>();
 

@@ -13,7 +13,7 @@ using pepperspray.Utils;
 
 namespace pepperspray.CoreServer.Shell
 {
-  internal class Help: ACommand
+  internal class Help: AShellCommand
   {
     internal override bool WouldDispatch(string tag)
     {
@@ -24,7 +24,7 @@ namespace pepperspray.CoreServer.Shell
     {
       return dispatcher.Output(sender, server, "Following commands are available: ")
         .Then(a => dispatcher.Output(sender, server, "/players - show how many players are at locations"))
-        .Then(a => dispatcher.Output(sender, server, "/players NAME - search for player matching NAME (even partially)"));
+        .Then(a => dispatcher.Output(sender, server, "/pm PLAYER - open private message tab if player is online."));
     }
   }
 }

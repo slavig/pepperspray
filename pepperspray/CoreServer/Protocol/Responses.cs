@@ -62,6 +62,11 @@ namespace pepperspray.CoreServer.Protocol
       );
     }
 
+    internal static Message PrivateChatMessage(PlayerHandle sender, string contents)
+    {
+      return Responses.Message(sender, "~private/" + contents);
+    }
+
     internal static Message ServerMessage(CoreServer server, string contents) {
       return new Message("msg", new Dictionary<string, object>
         {

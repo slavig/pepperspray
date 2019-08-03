@@ -13,7 +13,7 @@ using pepperspray.Utils;
 
 namespace pepperspray.CoreServer.Shell
 {
-  internal class Kick: ACommand
+  internal class Kick: AShellCommand
   {
     private Configuration config = DI.Get<Configuration>();
 

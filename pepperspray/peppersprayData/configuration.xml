@@ -6,5 +6,6 @@
 	<admin-tokens>
 		<token id="example_token" hash="MD5_UPPERCASE_HASH_GOES_HERE"/>
 	</admin-tokens>
+	<player-inactivity-timeout seconds="5"/>
 	<world-cache capacity="20"/>
 </configuration>

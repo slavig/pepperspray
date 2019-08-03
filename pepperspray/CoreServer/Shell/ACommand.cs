@@ -10,7 +10,7 @@ using pepperspray.CoreServer.Game;
 
 namespace pepperspray.CoreServer.Shell
 {
-  internal abstract class ACommand
+  internal abstract class AShellCommand
   {
     internal abstract bool WouldDispatch(string tag);
     internal abstract IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, CoreServer server, string tag, IEnumerable<string> arguments);

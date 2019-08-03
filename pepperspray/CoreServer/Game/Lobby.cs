@@ -11,19 +11,17 @@ namespace pepperspray.CoreServer.Game
     internal string Identifier;
     internal UserRoom UserRoom;
     internal bool IsUserRoom { get { return this.UserRoom != null; } }
-    internal IEnumerable<PlayerHandle> Players { get { return this.players; } }
-
-    private List<PlayerHandle> players;
+    internal List<PlayerHandle> Players;
 
     internal Lobby(string id)
     {
       this.Identifier = id;
-      this.players = new List<PlayerHandle>();
+      this.Players = new List<PlayerHandle>();
     }
 
     internal void AddPlayer(PlayerHandle player)
     {
-      this.players.Add(player);
+      this.Players.Add(player);
 
       if (this.IsUserRoom)
       {
@@ -33,7 +31,7 @@ namespace pepperspray.CoreServer.Game
 
     internal void RemovePlayer(PlayerHandle player)
     {
-      this.players.Remove(player);
+      this.Players.Remove(player);
 
       if (this.IsUserRoom)
       {

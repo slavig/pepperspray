@@ -16,6 +16,8 @@ namespace pepperspray.CoreServer.Protocol.Requests
   internal class Login : ARequest
   {
     private NameValidator nameValidator = DI.Get<NameValidator>();
+    private Configuration config = DI.Get<Configuration>();
+
     private string name, hash, sex;
 
     internal static Login Parse(Message ev)
@@ -47,6 +49,18 @@ namespace pepperspray.CoreServer.Protocol.Requests
 
     internal override bool Validate(PlayerHandle sender, CoreServer server)
     {
+      if (!this.nameValidator.Validate(this.name))
+      {
+        Log.Information("Terminating connection of {name}/{id} from {hash}/{address} - name is not valid",
+          this.name,
+          this.hash,
+          sender.Stream.ConnectionHash,
+          sender.Stream.ConnectionEndpoint);
+
+        sender.Stream.Write(Responses.FriendAlert("ERROR: Invalid characters in name. Please use only letters and numbers.")).Then(a => sender.Stream.Terminate());
+        return false;
+      }
+
       var existingPlayer = server.World.FindPlayer(this.name);
       if (existingPlayer == null)
       {
@@ -56,17 +70,6 @@ namespace pepperspray.CoreServer.Protocol.Requests
       {
         return true;
       }
-      else if (!this.nameValidator.Validate(this.name))
-      {
-        Log.Information("Terminating connection of {name}/{id} from {hash}/{address} - name is not valid",
-          this.name,
-          this.hash,
-          sender.Stream.ConnectionHash,
-          sender.Stream.ConnectionEndpoint);
-
-        sender.Stream.Write(Responses.FriendAlert("ERROR: Invalid characters in name.")).Then(a => sender.Stream.Terminate());
-        return false;
-      }
       else
       {
         Log.Information("Terminating connection of {name}/{id} from {hash}/{address} - invalid login due to player already online",
@@ -75,7 +78,9 @@ namespace pepperspray.CoreServer.Protocol.Requests
           sender.Stream.ConnectionHash,
           sender.Stream.ConnectionEndpoint);
 
-        sender.Stream.Write(Responses.FriendAlert("ERROR: Player already logged in. Please change name or wait 15 seconds if you think this is an error."))
+        var message = String.Format("ERROR: Player already logged in. Please change name or wait {0} seconds if you think this is an error.", this.config.PlayerInactivityTimeout);
+
+        sender.Stream.Write(Responses.FriendAlert(message))
           .Then(a => sender.Stream.Terminate());
         return false;
       }
