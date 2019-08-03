@@ -47,7 +47,7 @@ namespace pepperspray.CIO
     public IMultiPromise<byte[]> InputStream()
     {
       var promise = new MultiPromise<byte[]>();
-      CIOReactor.Spawn("inputStreamOf" + this.socket.GetHashCode(), () =>
+      CIOReactor.Spawn("inputStreamOf" + this.ConnectionHash, true, () =>
       {
         var sync = new ManualResetEvent(false);
         var run = true;
@@ -63,14 +63,14 @@ namespace pepperspray.CIO
               run = false;
               Log.Debug("Empty response from {hash}, terminating.", this.ConnectionHash);
               promise.Reject(new Exception("Closed"));
-            } else {
+            } else { 
               promise.SingleResolve(value);
             }
 
             sync.Set();
-          }, ex =>
+          }).Catch(ex =>
           {
-            Log.Debug("readPacket() from {hash} rejected, terminating.", this.ConnectionHash);
+            Log.Debug("readPacket() from {hash} rejected.", this.ConnectionHash);
             run = false;
             promise.Reject(ex);
             sync.Set();
@@ -80,7 +80,11 @@ namespace pepperspray.CIO
         }
 
         Log.Debug("Input stream for {hash} ended", this.ConnectionHash);
+      }).Catch(ex => 
+      {
+        Log.Debug("Input stream {name} for {hash} crashed, rejecting its promise", this.ConnectionHash);
       });
+
       return promise;
     }
 
@@ -116,7 +120,7 @@ namespace pepperspray.CIO
 
     private IPromise<byte[]> readPacket()
     {
-      var promise = new MultiPromise<byte[]>();
+      var promise = new Promise<byte[]>();
       try
       {
         var messageBuffer = new byte[this.socket.ReceiveBufferSize];

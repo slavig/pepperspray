@@ -20,7 +20,7 @@ namespace pepperspray.CoreServer.Protocol
       return sender.IsLoggedIn;
     }
 
-    internal static ARequest Parse(PlayerHandle player, CoreServer server, NodeServerEvent ev)
+    internal static ARequest Parse(PlayerHandle player, CoreServer server, Message ev)
     {
       switch (ev.name)
       {

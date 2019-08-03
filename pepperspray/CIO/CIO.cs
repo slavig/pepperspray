@@ -25,18 +25,23 @@ namespace pepperspray.CIO
     public class CIOThread: Promise<Nothing>
     {
       private Thread t;
-      internal CIOThread(string name, Action action)
+      private bool restart;
+      private uint restartCount;
+
+      internal CIOThread(string name, bool restart, Action action)
       {
+        this.restart = restart;
         this.t = new Thread(new ThreadStart(() =>
         {
           try
           {
+            Utils.Logging.ConfigureExceptionHandler();
             action();
+            this.Resolve(new Nothing());
           }
-          catch (Exception) { }
-          finally
-          {
-            this.Resolve(null);
+          catch (Exception e) {
+            Log.Error("Thread {id} crashed with following exception: {ex}", this.t.ManagedThreadId, e);
+            this.Reject(e);
           }
         }));
 
@@ -58,9 +63,14 @@ namespace pepperspray.CIO
       }
     }
 
+    public static CIOThread Spawn(string name, bool restart, Action action)
+    {
+      return new CIOThread(name, restart, action).Start();
+    }
+
     public static CIOThread Spawn(string name, Action action)
     {
-      return new CIOThread(name, action).Start();
+      return new CIOThread(name, false, action).Start();
     }
   }
 }

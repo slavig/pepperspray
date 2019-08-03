@@ -16,21 +16,34 @@ namespace pepperspray.Utils
 {
   internal class Logging
   {
-    public static void ConfigureLogger(LogEventLevel level = LogEventLevel.Information)
+    private static Logging instance = new Logging();
+
+    public static void ConfigureLogger(LogEventLevel level)
     {
       Log.Logger = new LoggerConfiguration()
         .Enrich.With(new CallerEnricher())
         .Enrich.With(new ThreadIdEnricher())
          .MinimumLevel.Verbose()
-         .WriteTo.File("peppersprayData\\pepperspray.log",
-             outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}/{ThreadId}#{Class}] {Message:lj}{NewLine}{Exception}",
-             rollingInterval: RollingInterval.Day,
-             rollOnFileSizeLimit: true)
+         .WriteTo.Async(a => a.RollingFile("peppersprayData\\pepperspray-{Date}.log", outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}/{ThreadId}#{Class}] {Message:lj}{NewLine}{Exception}"))
          .WriteTo.Console(
            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
-           restrictedToMinimumLevel: level
-         )
+           restrictedToMinimumLevel: level)
          .CreateLogger();
+    }
+
+    public static void ConfigureExceptionHandler()
+    {
+      AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(instance.UnhandledExceptionCaught);
+    }
+
+    private void UnhandledExceptionCaught(object sender, UnhandledExceptionEventArgs args)
+    {
+      var ex = args.ExceptionObject;
+      Log.Fatal("Unhandled exception at thread {ThreadId}/{ThreadName} (terminating {terminating}): {name}",
+        Thread.CurrentThread.ManagedThreadId,
+        Thread.CurrentThread.Name,
+        args.IsTerminating,
+        ex.ToString());
     }
   }
 
@@ -82,32 +95,5 @@ namespace pepperspray.Utils
 
   public static class Extensions
   {
-    public static string DebugDescription(this NodeServerEvent msg) {
-      string description = null;
-      if (msg.data is List<object>)
-      {
-        description = (msg.data as List<object>).Aggregate("", (i, a) => i + " " + a);
-      } else if (msg.data is List<string>)
-      {
-        description = (msg.data as List<string>).Aggregate("", (i, a) => i + " " + a);
-      } else if (msg.data is Dictionary<string, string>)
-      {
-        description = (msg.data as Dictionary<string, string>).Aggregate("", (i, a) => i + " " + a.Key + "=" + a.Value);
-      } else if (msg.data is Dictionary<string, object>)
-      {
-        description = (msg.data as Dictionary<string, object>).Aggregate("", (i, a) => i + " " + a.Key + "=" + a.Value);
-      } else if (msg.data is Dictionary<String, object>)
-      {
-        description = (msg.data as Dictionary<String, object>).Aggregate("", (i, a) => i + " " + a.Key + "=" + a.Value);
-      } else if (msg.data is Dictionary<String, String>)
-      {
-        description = (msg.data as Dictionary<String, String>).Aggregate("", (i, a) => i + " " + a.Key + "=" + a.Value);
-      } else if (msg.data != null)
-      {
-        description = msg.data.ToString();
-      }
-
-      return description;
-    }
   }
 }

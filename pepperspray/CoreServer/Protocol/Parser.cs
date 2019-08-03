@@ -16,7 +16,7 @@ namespace pepperspray.CoreServer.Protocol
 {
   internal class Parser
   {
-    internal static byte[] SerializeEvent(NodeServerEvent e)
+    internal static byte[] SerializeMessage(Message e)
     {
       var networkMessage = Parser.networkMessageFrom(e);
       var tcpMessage = Parser.tcpMessageFrom(networkMessage);
@@ -26,12 +26,17 @@ namespace pepperspray.CoreServer.Protocol
       return result;
     }
 
-    internal static NodeServerEvent ParseEvent(byte[] bytes, int seekPos, out int seekTo)
+    internal static Message ParseMessage(byte[] bytes, int seekPos, out int seekTo)
     {
       var tcpMessage = Parser.tcpMessageFrom(bytes, seekPos, out seekTo);
       if (tcpMessage == null)
       {
         return null;
+      }
+
+      if (tcpMessage.MessageType == NetMessageType.Ping)
+      {
+        return Message.Ping;
       }
 
       var networkMessage = Parser.networkMessageFrom(tcpMessage);
@@ -41,7 +46,8 @@ namespace pepperspray.CoreServer.Protocol
         var parsedObject = reader.ReadObject();
         if (parsedObject is NodeServerEvent)
         {
-          return parsedObject as NodeServerEvent;
+          var ev = parsedObject as NodeServerEvent;
+          return new Message(ev.name, ev.data);
         }
       }
       catch (Exception) { }
@@ -72,11 +78,15 @@ namespace pepperspray.CoreServer.Protocol
       }
     }
 
-    private static NetworkMessage networkMessageFrom(NodeServerEvent e)
+    private static NetworkMessage networkMessageFrom(Message e)
     {
+      var nodeEvent = new NodeServerEvent();
+      nodeEvent.name = e.name;
+      nodeEvent.data = e.data;
+
       var memoryStream = new MemoryStream();
       var writer = new BinaryWriter(memoryStream);
-      writer.WriteObject(e);
+      writer.WriteObject(nodeEvent);
 
       byte[] bytes = new byte[memoryStream.Length];
       Array.Copy(memoryStream.GetBuffer(), bytes, memoryStream.Length);

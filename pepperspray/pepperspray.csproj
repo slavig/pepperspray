@@ -51,11 +51,17 @@
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.2.8.0\lib\net46\Serilog.dll</HintPath>
     </Reference>
+    <Reference Include="Serilog.Sinks.Async, Version=1.4.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.Sinks.Async.1.4.0\lib\net461\Serilog.Sinks.Async.dll</HintPath>
+    </Reference>
     <Reference Include="Serilog.Sinks.Console, Version=3.1.1.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.Sinks.Console.3.1.1\lib\net45\Serilog.Sinks.Console.dll</HintPath>
     </Reference>
     <Reference Include="Serilog.Sinks.File, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.Sinks.File.4.0.0\lib\net45\Serilog.Sinks.File.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Sinks.RollingFile, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.Sinks.RollingFile.3.3.0\lib\net45\Serilog.Sinks.RollingFile.dll</HintPath>
     </Reference>
     <Reference Include="Spike.Runtime, Version=3.0.5759.23517, Culture=neutral, PublicKeyToken=bbbae3b375c299b6, processorArchitecture=MSIL">
       <HintPath>..\packages\SpikeEngine.3.0.5759.23517\lib\Spike.Runtime.dll</HintPath>
@@ -85,12 +91,22 @@
     <Compile Include="CIO\MultiPromise.cs" />
     <Compile Include="CIO\PromiseExtensions.cs" />
     <Compile Include="CoreServer\Game\UserRoom.cs" />
+    <Compile Include="CoreServer\Protocol\ChatAuthValidator.cs" />
+    <Compile Include="CoreServer\Protocol\Message.cs" />
     <Compile Include="CoreServer\Protocol\Requests\CloseRoom.cs" />
     <Compile Include="CoreServer\Protocol\Requests\GetUserRoomList.cs" />
     <Compile Include="CoreServer\Protocol\Requests\OpenRoom.cs" />
+    <Compile Include="CoreServer\Shell\ACommand.cs" />
+    <Compile Include="CoreServer\Shell\Help.cs" />
+    <Compile Include="CoreServer\Shell\Players.cs" />
+    <Compile Include="CoreServer\Shell\ShellDispatcher.cs" />
+    <Compile Include="CoreServer\Shell\Kick.cs" />
+    <Compile Include="CoreServer\Shell\Superuser.cs" />
     <Compile Include="ExternalServer\Controllers\CharacterController.cs" />
     <Compile Include="ExternalServer\Controllers\WorldController.cs" />
     <Compile Include="ExternalServer\ExternalServer.cs" />
+    <Compile Include="ExternalServer\Storage\WorldStorage.cs" />
+    <Compile Include="Utils\Configuration.cs" />
     <Compile Include="Utils\Debug.cs" />
     <Compile Include="pepperspray.cs" />
     <Compile Include="CIO\Promise\EnumerableExt.cs" />
@@ -116,7 +132,9 @@
     <Compile Include="CoreServer\Protocol\Requests\Login.cs" />
     <Compile Include="CoreServer\Protocol\Requests\Send.cs" />
     <Compile Include="CoreServer\Protocol\Responses.cs" />
+    <Compile Include="Utils\DI.cs" />
     <Compile Include="Utils\Hashing.cs" />
+    <Compile Include="Utils\NameValidator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

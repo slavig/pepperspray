@@ -9,26 +9,25 @@ using System.Threading;
 
 using RSG;
 using Serilog;
+using pepperspray.Utils;
 
 namespace pepperspray.CIO
 {
   class Listener
   {
     private Socket listener;
+    private Configuration config = DI.Get<Configuration>();
 
     public Listener()
     {
     }
 
-    public Listener Bind(String ip, int port)
+    public Listener Bind()
     {
-      var addr = IPAddress.Parse(ip);
+      var addr = this.config.CoreServerAddress;
+      var port = this.config.CoreServerPort;
 
-      IPHostEntry ipHostInfo = Dns.Resolve(Dns.GetHostName());
-      IPAddress ipAddress = ipHostInfo.AddressList[0];
-      IPEndPoint localEndPoint = new IPEndPoint(ipAddress, port);
-
-      Log.Information("Binding core server to {addr}:{port} (DNS tells us {dns_ip})", ip, port, ipAddress);
+      Log.Information("Binding core server to {addr}:{port} (DNS tells us {dns_ip})", addr, port);
       this.listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
       this.listener.Bind(new IPEndPoint(addr, port));
       this.listener.Listen(100);
@@ -39,7 +38,7 @@ namespace pepperspray.CIO
     public IMultiPromise<CIOSocket> Incoming()
     {
       var promise = new MultiPromise<CIOSocket>();
-      CIOReactor.Spawn("incomingConnections", () =>
+      CIOReactor.Spawn("incomingConnections", true, () =>
       {
         try
         {
@@ -67,7 +66,7 @@ namespace pepperspray.CIO
         }
         catch (Exception e)
         {
-          Log.Error("Listener caught exception: {exception}", e);
+          Log.Error("Rejecting Incoming() promise, listener caught exception: {exception}", e);
           promise.Reject(e);
         }
       });

@@ -13,13 +13,13 @@ namespace pepperspray.CoreServer.Protocol.Requests
 {
   internal class CloseRoom: ARequest
   {
-    private string lobbyIdentifier;
+    private string identifier;
 
-    internal static CloseRoom Parse(NodeServerEvent ev)
+    internal static CloseRoom Parse(Message ev)
     {
       return new CloseRoom
       {
-        lobbyIdentifier = ev.data.ToString()
+        identifier = ev.data.ToString()
       };
     }
 
@@ -30,22 +30,37 @@ namespace pepperspray.CoreServer.Protocol.Requests
         return false;
       }
 
-      if (!this.lobbyIdentifier.StartsWith(sender.Name))
+      if (!this.identifier.StartsWith(sender.Name))
       {
         return false;
       }
 
-      return server.World.FindUserRoom(this.lobbyIdentifier) != null;
+      return server.World.FindUserRoom(this.identifier) != null;
     }
 
     internal override IPromise<Nothing> Process(PlayerHandle sender, CoreServer server)
     {
-      lock(server)
+      PlayerHandle[] lobbyPlayers = new PlayerHandle[] { };
+      UserRoom userRoom = null;
+
+      lock (server)
       {
-        server.World.RemoveUserRoom(this.lobbyIdentifier);
+        var lobby = server.World.FindLobby(this.identifier);
+        if (lobby != null)
+        {
+          lobbyPlayers = lobby.Players.ToArray();
+        }
+
+        userRoom = server.World.FindUserRoom(this.identifier);
+        if (userRoom == null)
+        {
+          return Nothing.Resolved();
+        }
+
+        server.World.RemoveUserRoom(this.identifier);
       }
 
-      return Nothing.Resolved();
+      return new CombinedPromise<Nothing>(lobbyPlayers.Select(a => a.Stream.Write(Responses.UserRoomClosed(userRoom))));
     }
   }
 }

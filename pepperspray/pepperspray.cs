@@ -11,6 +11,7 @@ using RSG;
 using Serilog;
 using Serilog.Events;
 using pepperspray.CIO;
+using pepperspray.Utils;
 using pepperspray.CoreServer;
 using pepperspray.ExternalServer;
 
@@ -24,27 +25,38 @@ namespace pepperspray
 
     public static int Main(String[] args)
     {
-      Utils.Logging.ConfigureLogger(LogEventLevel.Debug);
-      if (args.Count() < 2)
+      if (!System.Diagnostics.Debugger.IsAttached)
       {
-        Log.Fatal("Arguments required: IP PORT");
+        Utils.Logging.ConfigureLogger(LogEventLevel.Information);
+        Utils.Logging.ConfigureExceptionHandler();
+      }
+      else
+      {
+        Utils.Logging.ConfigureLogger(LogEventLevel.Verbose);
       }
 
-      var address = args[0];
-      var port = System.Convert.ToInt32(args[1]);
-      Log.Information("pepperspray v0.1");
+      DI.Setup();
+      var config = DI.Get<Configuration>();
+      if (System.Diagnostics.Debugger.IsAttached)
+      {
+        var localhostAddress = IPAddress.Parse("127.0.0.1");
+        config.CoreServerAddress = localhostAddress;
+        config.MiscServerAddress = localhostAddress;
+      }
+
+      Log.Information("pepperspray v0.3");
       var coreServer = new CoreServer.CoreServer();
       var externalServer = new ExternalServer.ExternalServer();
 
       var coreTask = new CIO.Listener()
-        .Bind(address, port)
+        .Bind()
         .Incoming()
         .Map(connection => coreServer.ConnectPlayer(connection))
         .Map(player => player.Stream.Stream()
           .Map(ev => coreServer.ProcessCommand(player, ev))
           .Catch(ex => { coreServer.PlayerLoggedOff(player); player.Stream.Terminate(); }));
 
-      var externalTask = externalServer.Listen(address, port + 1);
+      var externalTask = externalServer.Listen();
 
       PromiseHelpers.All(coreTask, externalTask).Join();
       return 0;

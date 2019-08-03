@@ -8,15 +8,17 @@ using RSG;
 using Serilog;
 using pepperspray.CIO;
 using pepperspray.CoreServer.Game;
+using pepperspray.Utils;
 using ThreeDXChat.Networking.NodeNet;
 
 namespace pepperspray.CoreServer.Protocol.Requests
 {
   internal class Login : ARequest
   {
+    private NameValidator nameValidator = DI.Get<NameValidator>();
     private string name, hash, sex;
 
-    internal static Login Parse(NodeServerEvent ev)
+    internal static Login Parse(Message ev)
     {
       if (ev.data is Dictionary<string, object> == false)
       {
@@ -45,10 +47,27 @@ namespace pepperspray.CoreServer.Protocol.Requests
 
     internal override bool Validate(PlayerHandle sender, CoreServer server)
     {
-      if (server.World.FindPlayer(this.name) == null)
+      var existingPlayer = server.World.FindPlayer(this.name);
+      if (existingPlayer == null)
       {
         return true;
-      } else
+      }
+      else if (server.CheckPlayerTimeout(existingPlayer))
+      {
+        return true;
+      }
+      else if (!this.nameValidator.Validate(this.name))
+      {
+        Log.Information("Terminating connection of {name}/{id} from {hash}/{address} - name is not valid",
+          this.name,
+          this.hash,
+          sender.Stream.ConnectionHash,
+          sender.Stream.ConnectionEndpoint);
+
+        sender.Stream.Write(Responses.FriendAlert("ERROR: Invalid characters in name.")).Then(a => sender.Stream.Terminate());
+        return false;
+      }
+      else
       {
         Log.Information("Terminating connection of {name}/{id} from {hash}/{address} - invalid login due to player already online",
           this.name,
@@ -56,7 +75,8 @@ namespace pepperspray.CoreServer.Protocol.Requests
           sender.Stream.ConnectionHash,
           sender.Stream.ConnectionEndpoint);
 
-        sender.Stream.Terminate();
+        sender.Stream.Write(Responses.FriendAlert("ERROR: Player already logged in. Please change name or wait 15 seconds if you think this is an error."))
+          .Then(a => sender.Stream.Terminate());
         return false;
       }
     }

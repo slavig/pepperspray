@@ -5,16 +5,16 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 using pepperspray.Utils;
 using WatsonWebserver;
-using System.Text.RegularExpressions;
 
 namespace pepperspray.ExternalServer.Controllers
 {
   internal class CharacterController
   {
-    private Regex nameRegex = new Regex("^\\w{3,}$");
+    private NameValidator nameValidator = DI.Get<NameValidator>();
 
     internal CharacterController(Server s)
     {
@@ -32,7 +32,7 @@ namespace pepperspray.ExternalServer.Controllers
         return ExternalServer.FailureResponse(req);
       }
 
-      return new HttpResponse(req, 200, null, "text/plain", this.nameRegex.IsMatch(name) ? "ok" : "bad_name");
+      return new HttpResponse(req, 200, null, "text/plain", this.nameValidator.Validate(name) ? "ok" : "bad_name");
     }
 
     internal HttpResponse CreateChar(HttpRequest req)
@@ -43,7 +43,7 @@ namespace pepperspray.ExternalServer.Controllers
         return ExternalServer.FailureResponse(req);
       }
 
-      if (!this.nameRegex.IsMatch(name))
+      if (!this.nameValidator.Validate(name))
       {
         return ExternalServer.FailureResponse(req);
       }
@@ -63,7 +63,7 @@ namespace pepperspray.ExternalServer.Controllers
         return ExternalServer.FailureResponse(req);
       }
 
-      if (!this.nameRegex.IsMatch(name))
+      if (!this.nameValidator.Validate(name))
       {
         return ExternalServer.FailureResponse(req);
       }

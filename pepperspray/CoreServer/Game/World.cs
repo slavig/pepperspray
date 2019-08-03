@@ -12,10 +12,10 @@ namespace pepperspray.CoreServer.Game
 {
   internal class World
   {
-    private Dictionary<string, Lobby> lobbies = new Dictionary<string, Lobby>();
     private Dictionary<string, UserRoom> userRooms = new Dictionary<string, UserRoom>();
     private Dictionary<string, PlayerHandle> players = new Dictionary<string, PlayerHandle>();
 
+    internal Dictionary<string, Lobby> Lobbies = new Dictionary<string, Lobby>();
     internal IEnumerable<PlayerHandle> Players { get { return this.players.Values;  } }
 
     internal IEnumerable<UserRoom> PublicRooms
@@ -25,9 +25,9 @@ namespace pepperspray.CoreServer.Game
 
     internal Lobby FindLobby(string identifier)
     {
-      if (this.lobbies.ContainsKey(identifier))
+      if (this.Lobbies.ContainsKey(identifier))
       {
-        return this.lobbies[identifier];
+        return this.Lobbies[identifier];
       } else
       {
         return null;
@@ -75,17 +75,17 @@ namespace pepperspray.CoreServer.Game
       Log.Information("Creating lobby {identifier}", identifier);
 
       var lobby = new Lobby(identifier);
-      this.lobbies.Add(identifier, lobby);
+      this.Lobbies.Add(identifier, lobby);
       return lobby;
     }
 
     internal void RemoveLobby(Lobby lobby)
     {
-      if (this.lobbies.ContainsKey(lobby.Identifier))
+      if (this.Lobbies.ContainsKey(lobby.Identifier))
       {
         Log.Information("Removing lobby {identifier}", lobby.Identifier);
 
-        this.lobbies.Remove(lobby.Identifier);
+        this.Lobbies.Remove(lobby.Identifier);
       } else
       {
         Log.Warning("Couldn't remove lobby - {identifier} doesn't exist", lobby.Identifier);

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RSG.Exceptions;
+using Serilog;
 
 namespace RSG
 {
@@ -365,6 +366,7 @@ namespace RSG
         }
         catch (Exception ex)
         {
+          Log.Debug("Promise {promise} rejected due to unhandled exception: {exception}", this, ex);
           rejectable.Reject(ex);
         }
       }

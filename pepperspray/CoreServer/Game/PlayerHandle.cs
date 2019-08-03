@@ -16,6 +16,8 @@ namespace pepperspray.CoreServer.Game
   internal class PlayerHandle
   {
     internal bool IsLoggedIn = false;
+    internal bool IsAdmin = false;
+
     internal string Name;
     internal string Hash;
     internal string Sex;
@@ -24,9 +26,9 @@ namespace pepperspray.CoreServer.Game
 
     internal EventStream Stream;
 
-    internal PlayerHandle(EventStream writer)
+    internal PlayerHandle(EventStream stream)
     {
-      this.Stream = writer;
+      this.Stream = stream;
     }
   }
 }

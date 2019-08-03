@@ -23,7 +23,7 @@ namespace pepperspray.CoreServer
       this.server = server;
     }
 
-    internal IPromise<Nothing> Dispatch(PlayerHandle client, NodeServerEvent eventMsg)
+    internal IPromise<Nothing> Dispatch(PlayerHandle client, Message eventMsg)
     {
       ARequest request = ARequest.Parse(client, this.server, eventMsg);
 

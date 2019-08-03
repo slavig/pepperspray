@@ -10,6 +10,7 @@ namespace pepperspray.CIO
   public interface IMultiPromise<A>: IPromise<A>
   {
     IMultiPromise<A> SingleThen(Action<A> func);
+    IMultiPromise<A> SingleCatch(Action<Exception> func);
     IMultiPromise<B> Map<B>(Func<A, B> func);
     IMultiPromise<B> CompactMap<B>(Func<A, B> func);
     IMultiPromise<B> Into<B>(Func<MultiPromise<A>, IMultiPromise<B>> func);
@@ -19,18 +20,32 @@ namespace pepperspray.CIO
   public class MultiPromise<T>: Promise<T>, IMultiPromise<T>
   {
     private Action<T> singleThenFunc;
+    private Action<Exception> singleCatchFunc;
 
     public void SingleResolve(T item)
     {
       if (this.singleThenFunc != null)
       {
-        this.singleThenFunc(item);
+        try
+        {
+          this.singleThenFunc(item);
+        }
+        catch (Exception e)
+        {
+          this.singleCatchFunc(e);
+        }
       }
     }
 
     public IMultiPromise<T> SingleThen(Action<T> func)
     {
       this.singleThenFunc = func;
+      return this;
+    }
+
+    public IMultiPromise<T> SingleCatch(Action<Exception> func)
+    {
+      this.singleCatchFunc = func;
       return this;
     }
 

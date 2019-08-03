@@ -33,6 +33,13 @@ namespace pepperspray.CIO
           {
             this.Reject(ex);
           }
+        }).Catch(ex =>
+        {
+          hitCount += 1;
+          if (hitCount == promises.Count())
+          {
+            this.Reject(ex);
+          }
         })).ToList();
     }
   }

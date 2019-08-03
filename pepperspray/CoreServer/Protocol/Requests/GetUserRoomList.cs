@@ -13,7 +13,7 @@ namespace pepperspray.CoreServer.Protocol.Requests
 {
   internal class GetUserRoomList: ARequest
   {
-    internal static GetUserRoomList Parse(NodeServerEvent ev)
+    internal static GetUserRoomList Parse(Message ev)
     {
       return new GetUserRoomList();
     }

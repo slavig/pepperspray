@@ -18,7 +18,7 @@ namespace pepperspray.CoreServer.Protocol.Requests
     private uint numberOfPlayers;
     private UserRoom.AccessType accessType;
 
-    internal static OpenRoom Parse(NodeServerEvent ev)
+    internal static OpenRoom Parse(Message ev)
     {
       if (ev.data is List<string> == false)
       {

@@ -20,12 +20,33 @@ namespace pepperspray.CoreServer
   internal class CoreServer
   {
     internal World World;
+    internal string ServerName = "Server $";
+
+    private NameValidator nameValidator = DI.Get<NameValidator>();
     private EventDispatcher dispatcher;
 
     internal CoreServer()
     {
       this.World = new World();
       this.dispatcher = new EventDispatcher(this);
+      this.nameValidator.ServerName = this.ServerName;
+
+      CIOReactor.Spawn("playerTimeoutWatchdog", () =>
+      {
+        while (true)
+        {
+          Thread.Sleep(TimeSpan.FromSeconds(15));
+
+          lock (this)
+          {
+            var players = this.World.Players.ToArray();
+            foreach (var handle in players)
+            {
+              this.CheckPlayerTimeout(handle);
+            }
+          }
+        }
+      });
     }
 
     internal void Sink<T>(IPromise<T> promise)
@@ -42,9 +63,12 @@ namespace pepperspray.CoreServer
       return handle;
     }
 
-    internal Nothing ProcessCommand(PlayerHandle handle, NodeServerEvent msg)
+    internal Nothing ProcessCommand(PlayerHandle handle, Message msg)
     {
-      Log.Debug("<= {player} {event_name}: \"{event}\"", handle.Name, msg.name, msg.DebugDescription());
+      Log.Debug("<= {player}@{lobby} {event_description}", 
+        handle.Name, 
+        handle.CurrentLobby != null ? handle.CurrentLobby.Identifier : null, 
+        msg.DebugDescription());
 
       var promise = this.dispatcher.Dispatch(handle, msg);
       if (promise != null)
@@ -76,6 +100,11 @@ namespace pepperspray.CoreServer
         {
           player.CurrentLobby.RemovePlayer(player);
           playersToNotify = player.CurrentLobby.Players.ToArray();
+
+          if (player.CurrentLobby.Players.Count() == 0)
+          {
+            this.World.RemoveLobby(player.CurrentLobby);
+          }
         }
 
         this.World.RemovePlayer(player);
@@ -83,6 +112,26 @@ namespace pepperspray.CoreServer
 
       Log.Debug("Notifying {number_of_players} that {name} logged off.", playersToNotify.Count(), player.Name);
       this.Sink(new CombinedPromise<Nothing>(playersToNotify.Select(b => b.Stream.Write(Responses.PlayerLeave(player)))));
+    }
+
+    internal bool CheckPlayerTimeout(PlayerHandle handle)
+    {
+      var delta = DateTime.Now - handle.Stream.LastCommunicationDate;
+      if (delta.Seconds > 15)
+      {
+        Log.Debug("Disconnecting player {player}/{hash}/{endpoint} due to time out (last heard of {delta} ago)",
+          handle.Name,
+          handle.Stream.ConnectionHash,
+          handle.Stream.ConnectionEndpoint,
+          delta);
+
+        this.PlayerLoggedOff(handle);
+        handle.Stream.Terminate();
+
+        return true;
+      }
+
+      return false;
     }
   }
 }

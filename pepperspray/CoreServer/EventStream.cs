@@ -26,9 +26,17 @@ namespace pepperspray.CoreServer
       get
       {
         var endpoint = this.socket.Endpoint;
-        return String.Format("{0}:{1}", endpoint.Address, endpoint.Port);
+        if (endpoint != null)
+        {
+          return String.Format("{0}:{1}", endpoint.Address, endpoint.Port);
+        }
+        else
+        {
+          return "null";
+        }
       }
     }
+    internal DateTime LastCommunicationDate;
 
     private CIOSocket socket;
     private byte[] slidingBuffer;
@@ -42,19 +50,26 @@ namespace pepperspray.CoreServer
 
     internal IPromise<Nothing> Terminate()
     {
-      Log.Debug("Terminating connection");
-      this.socket.Shutdown();
+      try
+      {
+        Log.Debug("Terminating connection");
+        this.socket.Shutdown();
+      }
+      catch (Exception) {}
+
       return Nothing.Resolved();
     }
 
-    internal IPromise<Nothing> Write(NodeServerEvent outEvent)
+    internal IPromise<Nothing> Write(Message outEvent)
     {
-      return this.socket.Write(Parser.SerializeEvent(outEvent));
+      Log.Verbose("=> {sender} {message}", this.ConnectionHash, outEvent.DebugDescription());
+
+      return this.socket.Write(Parser.SerializeMessage(outEvent));
     }
 
-    internal IMultiPromise<NodeServerEvent> Stream()
+    internal IMultiPromise<Message> Stream()
     {
-      var promise = new MultiPromise<NodeServerEvent>();
+      var promise = new MultiPromise<Message>();
       Log.Debug("Starting event stream for {hash}", this.ConnectionHash);
       this.socket.InputStream().SingleThen(bytes =>
       {
@@ -67,9 +82,9 @@ namespace pepperspray.CoreServer
           int seekTo = 0;
           int newCount = this.slidingBuffer.Count();
 
-          NodeServerEvent ev = Parser.ParseEvent(this.slidingBuffer, seekTo, out seekTo);
-
-          if (ev != null)
+          Message ev = Parser.ParseMessage(this.slidingBuffer, seekTo, out seekTo);
+          this.LastCommunicationDate = DateTime.Now;
+          if (ev.Type == Message.MessageType.Event)
           {
             promise.SingleResolve(ev);
           }
@@ -81,22 +96,22 @@ namespace pepperspray.CoreServer
             Array.Resize(ref this.slidingBuffer, newCount);
           }
 
-          if (newCount > EventStream.SlidingBufferLimit) 
+          if (newCount > EventStream.SlidingBufferLimit)
           {
-            Log.Error("EventStream {hash} exceeded buffer limit: {total_bytes} total bytes", newCount);
+            Log.Error("EventStream {hash} exceeded buffer limit: {total_bytes} total bytes", this.ConnectionHash, newCount);
             promise.Reject(new Exception("Sliding buffer limit exceeded."));
             break;
           }
 
           if (seekTo == 0)
           {
-            Log.Warning("{hash} failed to parse event, total {total_bytes} in bufffer", this.slidingBuffer.Count());
+            Log.Warning("{hash} failed to parse event, total {total_bytes} in bufffer", this.ConnectionHash, this.slidingBuffer.Count());
             break;
           }
         }
-      })
-      .Catch(ex => {
-        promise.Reject(ex);
+      }).Catch(exception =>
+      {
+        promise.Reject(exception);
       });
 
       return promise;

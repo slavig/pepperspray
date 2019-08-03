@@ -17,7 +17,7 @@ namespace pepperspray.CoreServer.Protocol.Requests
     private string lobbyIdentifier;
     private Lobby lobby;
 
-    internal static JoinRoom Parse(NodeServerEvent ev)
+    internal static JoinRoom Parse(Message ev)
     {
       return new JoinRoom
       {

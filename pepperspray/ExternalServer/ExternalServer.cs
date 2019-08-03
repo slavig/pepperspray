@@ -1,20 +1,24 @@
-﻿using HttpMultipartParser;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net;
 
+using HttpMultipartParser;
 using Serilog;
 using RSG;
 using WatsonWebserver;
 using pepperspray.CIO;
+using pepperspray.Utils;
 
 namespace pepperspray.ExternalServer
 {
   internal class ExternalServer
   {
+    private Configuration config = DI.Get<Configuration>();
+
     internal static string newsPath = ".\\peppersprayData\\news.txt";
     internal static string worldDirectoryPath = ".\\peppersprayData\\worlds\\";
     internal static string characterPresetsDirectoryPath = ".\\peppersprayData\\presets\\";
@@ -23,8 +27,10 @@ namespace pepperspray.ExternalServer
 
     private Server server;
 
-    internal IPromise<Nothing> Listen(string ip, int port)
+    internal IPromise<Nothing> Listen()
     {
+      var ip = this.config.MiscServerAddress.ToString();
+      var port = this.config.MiscServerPort;
       Log.Information("Binding external server to {ip}:{port}", ip, port);
 
       this.server = new Server(ip, port, false, DefaultRoute);
@@ -32,7 +38,7 @@ namespace pepperspray.ExternalServer
       this.server.StaticRoutes.Add(HttpMethod.POST, "/getmoney", this.GetMoney);
       this.server.StaticRoutes.Add(HttpMethod.POST, "/news.php", this.News);
 
-      new Controllers.WorldController(this.server);
+      new Controllers.WorldController(this.server, new Storage.WorldStorage(this.config.WorldCacheCapacity));
       new Controllers.CharacterController(this.server);
 
       return new Promise<Nothing>();

@@ -14,7 +14,7 @@ namespace pepperspray.CoreServer.Protocol.Requests
 {
   internal class LeaveRoom: ARequest
   {
-    internal static LeaveRoom Parse(NodeServerEvent ev)
+    internal static LeaveRoom Parse(Message ev)
     {
       return new LeaveRoom();
     }

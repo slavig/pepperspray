@@ -8,6 +8,8 @@ using RSG;
 using Serilog;
 using pepperspray.CIO;
 using pepperspray.CoreServer.Game;
+using pepperspray.CoreServer.Shell;
+using pepperspray.Utils;
 using ThreeDXChat.Networking.NodeNet;
 
 namespace pepperspray.CoreServer.Protocol.Requests
@@ -15,15 +17,50 @@ namespace pepperspray.CoreServer.Protocol.Requests
   internal abstract class Send: ARequest
   {
     protected string contents;
+    private ShellDispatcher shellDispatcher = DI.Get<ShellDispatcher>();
+    private string[] messagePrefixes = new string[]
+    {
+      "~worldchat/",
+      "~chat/",
+      "~private/",
+    };
 
     internal abstract IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, CoreServer server);
 
+    internal override bool Validate(PlayerHandle sender, CoreServer server)
+    {
+      if (!base.Validate(sender, server))
+      {
+        return false;
+      } else
+      {
+        return true;
+      }
+    }
+
     internal override IPromise<Nothing> Process(PlayerHandle sender, CoreServer server)
     {
-      var commands = this.Recepients(sender, server)
-        .Select(r => r.Stream.Write(Responses.Message(sender, this.contents)));
+      var text = "";
+      foreach (string prefix in this.messagePrefixes)
+      {
+        if (this.contents.StartsWith(prefix))
+        {
+          text = this.contents.Substring(prefix.Count());
+          break;
+        }
+      }
 
-      return new CombinedPromise<Nothing>(commands);
+      if (this.shellDispatcher.ShouldDispatch(text))
+      {
+        return this.shellDispatcher.Dispatch(sender, server, text);
+      }
+      else
+      {
+        var commands = this.Recepients(sender, server)
+          .Select(r => r.Stream.Write(Responses.Message(sender, this.contents)));
+
+        return new CombinedPromise<Nothing>(commands);
+      }
     }
   }
 
@@ -32,7 +69,7 @@ namespace pepperspray.CoreServer.Protocol.Requests
     private string recepientName;
     private PlayerHandle recepient;
 
-    internal static SendPM Parse(NodeServerEvent ev)
+    internal static SendPM Parse(Message ev)
     {
       if (ev.data is List<string> == false)
       {
@@ -58,6 +95,11 @@ namespace pepperspray.CoreServer.Protocol.Requests
         return false;
       }
 
+      if (this.recepientName == server.ServerName)
+      {
+        return true;
+      }
+
       this.recepient = server.World.FindPlayer(this.recepientName);
       if (this.recepient == null)
       {
@@ -69,13 +111,19 @@ namespace pepperspray.CoreServer.Protocol.Requests
 
     internal override IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, CoreServer server)
     {
-      return new PlayerHandle[] { this.recepient };
+      if (this.recepient != null)
+      {
+        return new PlayerHandle[] { this.recepient };
+      } else
+      {
+        return new PlayerHandle[] { };
+      }
     }
   }
 
   internal class SendLocal: Send
   {
-    internal static SendLocal Parse(NodeServerEvent ev)
+    internal static SendLocal Parse(Message ev)
     {
       return new SendLocal
       {
@@ -91,7 +139,7 @@ namespace pepperspray.CoreServer.Protocol.Requests
 
   internal class SendWorld: Send
   {
-    internal static SendWorld Parse(NodeServerEvent ev)
+    internal static SendWorld Parse(Message ev)
     {
       return new SendWorld
       {
