@@ -1,0 +1,10 @@
+<configuration>
+	<address>
+		<core ip="auto" port="8126"/>
+		<misc ip="auto" port="8127"/>
+	</address>
+	<admin-tokens>
+		<token id="example_token" hash="MD5_UPPERCASE_HASH_GOES_HERE"/>
+	</admin-tokens>
+	<world-cache capacity="20"/>
+</configuration>
