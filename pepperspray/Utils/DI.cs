@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,7 +26,7 @@ namespace pepperspray.Utils
 
     internal static void Setup()
     {
-      DI.Register(new Configuration(".\\peppersprayData\\configuration.xml"));
+      DI.Register(new Configuration(Path.Combine("peppersprayData", "configuration.xml")));
       DI.Register(new ActionsAuthenticator());
       DI.Register(new ShellDispatcher());
       DI.Register(new NameValidator());

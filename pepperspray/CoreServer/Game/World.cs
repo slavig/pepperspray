@@ -123,6 +123,11 @@ namespace pepperspray.CoreServer.Game
       }
     }
 
+    internal UserRoom FindUserRoom(PlayerHandle handle)
+    {
+      return this.userRooms.Values.Where(a => a.User == handle).FirstOrDefault(null);
+    }
+
     internal void AddPlayer(PlayerHandle player)
     {
       this.players[player.Name] = player;
@@ -132,7 +137,7 @@ namespace pepperspray.CoreServer.Game
     {
       this.players.Remove(player.Name);
 
-      foreach (var room in this.userRooms.Where(a => a.Value.User == player))
+      foreach (var room in this.userRooms.Where(a => a.Value.User == player).ToArray())
       {
         this.RemoveUserRoom(room.Key);
       }

@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Serilog;
+
 namespace pepperspray.CIO
 {
   public interface IMultiPromise<A>: IPromise<A>
@@ -24,29 +26,42 @@ namespace pepperspray.CIO
 
     public void SingleResolve(T item)
     {
-      if (this.singleThenFunc != null)
+      lock (this)
       {
-        try
+        if (this.singleThenFunc != null)
         {
-          this.singleThenFunc(item);
-        }
-        catch (Exception e)
-        {
-          this.singleCatchFunc(e);
+          try
+          {
+            this.singleThenFunc(item);
+          }
+          catch (Exception e)
+          {
+            Log.Debug("MultiPromise {promise} rejected due to unhandled exception: {exception}", this, e);
+            if (this.singleCatchFunc != null)
+            {
+              this.singleCatchFunc(e);
+            }
+          }
         }
       }
     }
 
     public IMultiPromise<T> SingleThen(Action<T> func)
     {
-      this.singleThenFunc = func;
-      return this;
+      lock (this)
+      {
+        this.singleThenFunc = func;
+        return this;
+      }
     }
 
     public IMultiPromise<T> SingleCatch(Action<Exception> func)
     {
-      this.singleCatchFunc = func;
-      return this;
+      lock (this)
+      {
+        this.singleCatchFunc = func;
+        return this;
+      }
     }
 
     public IMultiPromise<B> Into<B>(Func<MultiPromise<T>, IMultiPromise<B>> func)

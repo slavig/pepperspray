@@ -97,6 +97,7 @@
     <Compile Include="CoreServer\Protocol\Requests\GetUserRoomList.cs" />
     <Compile Include="CoreServer\Protocol\Requests\OpenRoom.cs" />
     <Compile Include="CoreServer\Shell\ACommand.cs" />
+    <Compile Include="CoreServer\Shell\AdminPlayers.cs" />
     <Compile Include="CoreServer\Shell\Help.cs" />
     <Compile Include="CoreServer\Shell\PrivateMessage.cs" />
     <Compile Include="CoreServer\Shell\Players.cs" />

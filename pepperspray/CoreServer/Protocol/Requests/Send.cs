@@ -73,11 +73,11 @@ namespace pepperspray.CoreServer.Protocol.Requests
 
     internal static SendPM Parse(Message ev)
     {
-      if (ev.data is List<string> == false)
+      if (!(ev.data is List<object>))
       {
         return null;
       }
-      var arguments = ev.data as List<string>;
+      var arguments = ev.data as List<object>;
       if (arguments.Count() < 2)
       {
         return null;

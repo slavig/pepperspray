@@ -109,7 +109,8 @@ namespace pepperspray.ExternalServer.Storage
       {
         identifier = Utils.Hashing.Md5(uid);
       }
-      return ExternalServer.worldDirectoryPath + "\\" + identifier + ".world";
+
+      return Path.Combine(ExternalServer.worldDirectoryPath, identifier + ".world");
     }
   }
 }

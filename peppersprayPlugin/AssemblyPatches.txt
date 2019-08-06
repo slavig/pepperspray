@@ -49,7 +49,6 @@
 	global::login.forumurl = peppersprayPlugin.Locator.Config.ExternalAddress;
 	global::login.coreurl = global::login.mainweburl + "chat.php";
 	global::login.newsurl = global::login.mainweburl + "news.php?ver=3";
-
 ```
 
 #### EventServerClientJS/NodeConnect (prepend)
@@ -62,6 +61,10 @@
 #### loginGUI/Start (prepend)
 ```
 	this.addNewBox("Welcome to <b>pepperspray v0.1-alpha</b>!|<b>pepperspray</b> is an open-source 3DXChat server & client patch implementation by <b>Ezekiel_2517</b>.<br>Contribute on GitHub:|http://127.0.0.1:2518/news/images/img.png|http://github.com/peppersprayEzekiel|");
+	this.loginField = "pepperspray.ezekiel@gmail.com";
+	this.passField = "easteregg";
+	((InputField)this.elements["login"].GetComponent(typeof(InputField))).text = this.loginField;
+	((InputField)this.elements["pass"].GetComponent(typeof(InputField))).text = this.passField;
 ```
 
 #### GUIcontrol:49

@@ -27,7 +27,7 @@ namespace pepperspray.CIO
       var addr = this.config.CoreServerAddress;
       var port = this.config.CoreServerPort;
 
-      Log.Information("Binding core server to {addr}:{port} (DNS tells us {dns_ip})", addr, port);
+      Log.Information("Binding core server to {addr}:{port}", addr, port);
       this.listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
       this.listener.Bind(new IPEndPoint(addr, port));
       this.listener.Listen(100);

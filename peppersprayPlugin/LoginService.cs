@@ -11,6 +11,11 @@ namespace peppersprayPlugin
   {
     public string Login(string username, string passworldHash)
     {
+      if (username.Trim().Equals(""))
+      {
+        return "answer=fail";
+      }
+
       var response = "answer=ok";
 
       int i = 1;

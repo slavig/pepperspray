@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,7 +25,7 @@ namespace pepperspray.Utils
         .Enrich.With(new CallerEnricher())
         .Enrich.With(new ThreadIdEnricher())
          .MinimumLevel.Verbose()
-         .WriteTo.Async(a => a.RollingFile("peppersprayData\\pepperspray-{Date}.log", outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}/{ThreadId}#{Class}] {Message:lj}{NewLine}{Exception}"))
+         .WriteTo.Async(a => a.RollingFile(Path.Combine("peppersprayData", "pepperspray-{Date}.log"), outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}/{ThreadId}#{Class}] {Message:lj}{NewLine}{Exception}"))
          .WriteTo.Console(
            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
            restrictedToMinimumLevel: level)

@@ -95,7 +95,7 @@ namespace pepperspray.ExternalServer.Controllers
         return ExternalServer.FailureResponse(req);
       }
 
-      return new HttpResponse(req, 200, null, "text/plain", File.ReadAllText(ExternalServer.characterPresetsDirectoryPath + path));
+      return new HttpResponse(req, 200, null, "text/plain", File.ReadAllText(Path.Combine(ExternalServer.characterPresetsDirectoryPath, path)));
     }
   }
 }

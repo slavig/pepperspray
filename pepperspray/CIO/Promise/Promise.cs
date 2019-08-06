@@ -448,11 +448,16 @@ namespace RSG
       {
         if (CurState != PromiseState.Pending)
         {
+          Log.Error("Promise rejected multiple times (exception {ex})", ex);
+          Log.Error("Stack: {stack}", Environment.StackTrace);
+          return;
+          /*
           throw new PromiseStateException(
               "Attempt to reject a promise that is already in state: " + CurState
               + ", a promise can only be rejected when it is still in state: "
               + PromiseState.Pending
           );
+          */
         }
 
         rejectionException = ex;

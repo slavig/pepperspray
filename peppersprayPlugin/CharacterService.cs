@@ -29,7 +29,7 @@ namespace peppersprayPlugin
 
       public bool Equals(Character other)
       {
-        return other.Name == this.Name;
+        return other.Name == this.Name || other.Data == this.Data;
       }
     }
 
@@ -68,6 +68,7 @@ namespace peppersprayPlugin
       {
         this.Characters.Remove(character);
       }
+
       this.Characters.Insert(0, character);
 
       int count = 0;

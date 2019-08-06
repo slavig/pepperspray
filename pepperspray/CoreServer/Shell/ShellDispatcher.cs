@@ -18,6 +18,7 @@ namespace pepperspray.CoreServer.Shell
       new Superuser(),
       new Kick(),
       new Players(),
+      new AdminPlayers(),
       new PrivateMessage(),
       new Help(),
     };
@@ -30,7 +31,8 @@ namespace pepperspray.CoreServer.Shell
       } if (message.StartsWith("/"))
       {
         return true;
-      } else
+      }
+      else
       {
         return false;
       }

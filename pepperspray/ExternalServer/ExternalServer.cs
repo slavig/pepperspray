@@ -19,11 +19,11 @@ namespace pepperspray.ExternalServer
   {
     private Configuration config = DI.Get<Configuration>();
 
-    internal static string newsPath = ".\\peppersprayData\\news.txt";
-    internal static string worldDirectoryPath = ".\\peppersprayData\\worlds\\";
-    internal static string characterPresetsDirectoryPath = ".\\peppersprayData\\presets\\";
+    internal static string newsPath = Path.Combine("peppersprayData", "news.txt");
+    internal static string worldDirectoryPath = Path.Combine("peppersprayData", "worlds");
+    internal static string characterPresetsDirectoryPath = Path.Combine("peppersprayData", "presets");
 
-    internal static string staticsPath = "/peppersprayData/static/";
+    internal static string staticsUrl = "/peppersprayData/static/";
 
     private Server server;
 
@@ -34,9 +34,10 @@ namespace pepperspray.ExternalServer
       Log.Information("Binding external server to {ip}:{port}", ip, port);
 
       this.server = new Server(ip, port, false, DefaultRoute);
-      this.server.ContentRoutes.Add(ExternalServer.staticsPath, true);
-      this.server.StaticRoutes.Add(HttpMethod.POST, "/getmoney", this.GetMoney);
+      this.server.ContentRoutes.Add(ExternalServer.staticsUrl, true);
+      this.server.StaticRoutes.Add(HttpMethod.GET, "/getmoney", this.GetMoney);
       this.server.StaticRoutes.Add(HttpMethod.POST, "/news.php", this.News);
+      this.server.StaticRoutes.Add(HttpMethod.POST, "/offlineMsgCheck", this.OfflineMsgCheck);
 
       new Controllers.WorldController(this.server, new Storage.WorldStorage(this.config.WorldCacheCapacity));
       new Controllers.CharacterController(this.server);
@@ -56,7 +57,12 @@ namespace pepperspray.ExternalServer
 
     internal HttpResponse GetMoney(HttpRequest req)
     {
-      return new HttpResponse(req, 200, null, "text/plain", "2517");
+      return new HttpResponse(req, 200, null, "text/plain", "25170");
+    }
+
+    internal HttpResponse OfflineMsgCheck(HttpRequest req)
+    {
+      return new HttpResponse(req, 200, null, "text/plain", "[]");
     }
 
     internal static HttpResponse FailureResponse(HttpRequest req)

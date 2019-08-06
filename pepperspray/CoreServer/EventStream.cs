@@ -84,7 +84,8 @@ namespace pepperspray.CoreServer
 
           Message ev = Parser.ParseMessage(this.slidingBuffer, seekTo, out seekTo);
           this.LastCommunicationDate = DateTime.Now;
-          if (ev.Type == Message.MessageType.Event)
+
+          if (ev != null && ev.Type == Message.MessageType.Event)
           {
             promise.SingleResolve(ev);
           }

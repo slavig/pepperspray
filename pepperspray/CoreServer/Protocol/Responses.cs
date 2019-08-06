@@ -21,7 +21,7 @@ namespace pepperspray.CoreServer.Protocol
       var builder = new StringBuilder("userroomlist=");
       foreach (UserRoom room in list)
       {
-        builder.AppendFormat("{0}|{1}|house|0|{2}|{3}|False|{4}|+", room.User.Name, room.Identifier, room.NumberOfPlayers, room.Name, room.User.Id);
+        builder.AppendFormat("{0}|{1}|house|0|{2}|{3}|False|{4}|+", room.User.Name, room.Identifier, room.NumberOfPlayers >= 0 ? room.NumberOfPlayers : 0, room.Name, room.User.Id);
       }
 
       return new Message("srv", builder.ToString());
