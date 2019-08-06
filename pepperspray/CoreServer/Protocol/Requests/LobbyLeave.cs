@@ -8,15 +8,18 @@ using RSG;
 using Serilog;
 using pepperspray.CIO;
 using pepperspray.CoreServer.Game;
-using ThreeDXChat.Networking.NodeNet;
+using pepperspray.SharedServices;
+using pepperspray.CoreServer.Services;
 
 namespace pepperspray.CoreServer.Protocol.Requests
 {
-  internal class LeaveRoom: ARequest
+  internal class LobbyLeave: ARequest
   {
-    internal static LeaveRoom Parse(Message ev)
+    private LobbyService lobbyService = DI.Auto<LobbyService>();
+
+    internal static LobbyLeave Parse(Message ev)
     {
-      return new LeaveRoom();
+      return new LobbyLeave();
     }
 
     internal override IPromise<Nothing> Process(PlayerHandle sender, CoreServer server)

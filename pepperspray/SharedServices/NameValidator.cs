@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
-namespace pepperspray.Utils
+namespace pepperspray.SharedServices
 {
   internal class NameValidator
   {

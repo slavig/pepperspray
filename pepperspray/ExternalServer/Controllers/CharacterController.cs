@@ -8,13 +8,14 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
 using pepperspray.Utils;
+using pepperspray.SharedServices;
 using WatsonWebserver;
 
 namespace pepperspray.ExternalServer.Controllers
 {
   internal class CharacterController
   {
-    private NameValidator nameValidator = DI.Get<NameValidator>();
+    private NameValidator nameValidator = DI.Auto<NameValidator>();
 
     internal CharacterController(Server s)
     {

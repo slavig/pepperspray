@@ -11,8 +11,9 @@ using Serilog;
 using pepperspray.CIO;
 using pepperspray.CoreServer.Protocol;
 using pepperspray.CoreServer.Game;
+using pepperspray.CoreServer.Services;
 using pepperspray.Utils;
-using ThreeDXChat.Networking.NodeNet;
+using pepperspray.SharedServices;
 
 namespace pepperspray.CoreServer
 {
@@ -22,14 +23,23 @@ namespace pepperspray.CoreServer
     internal World World;
     internal string ServerName = "pepperspray";
 
-    private NameValidator nameValidator = DI.Get<NameValidator>();
-    private Configuration config = DI.Get<Configuration>();
+    private NameValidator nameValidator;
+    private Configuration config;
+    private UserRoomService userRoomService;
+    private ActionsAuthenticator actionsAuthenticator;
     private EventDispatcher dispatcher;
 
     internal CoreServer()
     {
+      DI.Register(this);
+
+      this.config = DI.Get<Configuration>();
+      this.nameValidator = DI.Auto<NameValidator>();
+      this.userRoomService = DI.Auto<UserRoomService>();
+      this.actionsAuthenticator = DI.Auto<ActionsAuthenticator>();
+      this.dispatcher = DI.Auto<EventDispatcher>();
+
       this.World = new World();
-      this.dispatcher = new EventDispatcher(this);
       this.nameValidator.ServerName = this.ServerName;
 
       CIOReactor.Spawn("playerTimeoutWatchdog", () =>
@@ -40,10 +50,18 @@ namespace pepperspray.CoreServer
 
           lock (this)
           {
-            var players = this.World.Players.ToArray();
-            foreach (var handle in players)
+            Log.Debug("Checking players timeouts");
+
+            try
             {
-              this.CheckPlayerTimeout(handle);
+              var players = this.World.Players.ToArray();
+              foreach (var handle in players)
+              {
+                this.CheckPlayerTimeout(handle);
+              }
+            } catch (Exception e)
+            {
+              Log.Error("Caught exception in playerTimeoutWatchdog: {ex}", e);
             }
           }
         }
@@ -93,6 +111,8 @@ namespace pepperspray.CoreServer
     internal void PlayerLoggedOff(PlayerHandle player)
     {
       Log.Information("Player {name} logged off (connection {hash}/{endpoint})", player.Name, player.Stream.ConnectionHash, player.Stream.ConnectionEndpoint);
+      this.userRoomService.PlayerLoggedOff(player);
+      this.actionsAuthenticator.PlayerLoggedOff(player);
 
       PlayerHandle[] playersToNotify = new PlayerHandle[] { };
       lock (this)
@@ -121,6 +141,8 @@ namespace pepperspray.CoreServer
     internal bool CheckPlayerTimeout(PlayerHandle handle)
     {
       var delta = DateTime.Now - handle.Stream.LastCommunicationDate;
+      Log.Verbose("Player {name} last seen in {delta}", handle.Name, delta.Seconds);
+
       if (delta.Seconds > this.config.PlayerInactivityTimeout)
       {
         Log.Debug("Disconnecting player {player}/{hash}/{endpoint} due to time out (last heard of {delta} ago)",
@@ -130,7 +152,7 @@ namespace pepperspray.CoreServer
           delta);
 
         this.PlayerLoggedOff(handle);
-        handle.Stream.Write(Responses.ServerMessage(this, "KICKED: Timed out."));
+        handle.Stream.Write(Responses.FriendAlert("KICKED: Timed out."));
         handle.Stream.Terminate();
 
         return true;

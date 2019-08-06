@@ -366,7 +366,7 @@ namespace RSG
         }
         catch (Exception ex)
         {
-          Log.Debug("Promise {promise} rejected due to unhandled exception: {exception}", this, ex);
+          Log.Error("Promise {promise} rejected due to unhandled exception: {exception}", this, ex);
           rejectable.Reject(ex);
         }
       }
@@ -449,7 +449,6 @@ namespace RSG
         if (CurState != PromiseState.Pending)
         {
           Log.Error("Promise rejected multiple times (exception {ex})", ex);
-          Log.Error("Stack: {stack}", Environment.StackTrace);
           return;
           /*
           throw new PromiseStateException(

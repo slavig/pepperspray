@@ -19,6 +19,7 @@ namespace pepperspray.CoreServer.Shell
       new Kick(),
       new Players(),
       new AdminPlayers(),
+      new AdminBroadcast(),
       new PrivateMessage(),
       new Help(),
     };

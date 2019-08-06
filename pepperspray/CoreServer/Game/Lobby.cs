@@ -8,8 +8,29 @@ namespace pepperspray.CoreServer.Game
 {
   internal class Lobby
   {
+    private static Dictionary<string, string> locationsMapping = new Dictionary<string, string>
+    {
+      { "SALOON", "Saloon" },
+      { "beach", "Beach" },
+      { "island", "Island" },
+      { "CLUB_NEW", "Fresco" },
+      { "YACHT", "Yacht" },
+      { "club", "Nightclub" },
+      { "BDSM_club", "Sin Club" },
+    };
+
     internal string Identifier;
+    internal string Name {
+      get
+      {
+        string name = null;
+        Lobby.locationsMapping.TryGetValue(this.Identifier, out name);
+        return name;
+      }
+    }
+
     internal UserRoom UserRoom;
+    internal int NumberOfPlayers;
     internal bool IsUserRoom { get { return this.UserRoom != null; } }
     internal List<PlayerHandle> Players;
 
@@ -22,6 +43,7 @@ namespace pepperspray.CoreServer.Game
     internal void AddPlayer(PlayerHandle player)
     {
       this.Players.Add(player);
+      this.NumberOfPlayers++;
 
       if (this.IsUserRoom)
       {
@@ -32,6 +54,7 @@ namespace pepperspray.CoreServer.Game
     internal void RemovePlayer(PlayerHandle player)
     {
       this.Players.Remove(player);
+      this.NumberOfPlayers--;
 
       if (this.IsUserRoom)
       {

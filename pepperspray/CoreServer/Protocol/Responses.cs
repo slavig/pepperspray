@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using pepperspray.CoreServer.Game;
-using ThreeDXChat.Networking.NodeNet;
+using pepperspray.Utils;
 
 namespace pepperspray.CoreServer.Protocol
 {
@@ -16,15 +16,31 @@ namespace pepperspray.CoreServer.Protocol
       return new Message("srv", "connected");
     }
 
-    internal static Message UserRoomList(IEnumerable<UserRoom> list)
+    internal static Message UserRoomList(IEnumerable<Lobby> lobbyList)
     {
       var builder = new StringBuilder("userroomlist=");
-      foreach (UserRoom room in list)
+      foreach (var lobby in lobbyList.OrderBy(a => !a.IsUserRoom))
       {
-        builder.AppendFormat("{0}|{1}|house|0|{2}|{3}|False|{4}|+", room.User.Name, room.Identifier, room.NumberOfPlayers >= 0 ? room.NumberOfPlayers : 0, room.Name, room.User.Id);
+        if (lobby.IsUserRoom)
+        {
+          builder.AppendFormat("{0}+", Responses.UserRoomRecord(lobby.UserRoom));
+        } else 
+        {
+          continue;
+        }
       }
 
       return new Message("srv", builder.ToString());
+    }
+
+    internal static string UserRoomRecord(UserRoom room)
+    {
+        return String.Format("{0}|{1}|house|0|{2}|{3}|False|{4}|", room.User.Name, room.Identifier, room.NumberOfPlayers >= 0 ? room.NumberOfPlayers : 0, room.Name, room.User.Id);
+    }
+
+    internal static string ServerRoomRecord(Lobby lobby)
+    {
+      return String.Format("{0}|{1}||0|{2}|{3}|False|{4}|", "Server", lobby.Identifier, lobby.NumberOfPlayers, lobby.Name, Hashing.Md5("Server"));
     }
 
     internal static Message UserRoomClosed(UserRoom room)

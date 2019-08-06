@@ -7,7 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Xml;
 
-namespace pepperspray.Utils
+namespace pepperspray.SharedServices
 {
   internal class Configuration
   {

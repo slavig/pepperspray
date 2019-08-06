@@ -10,18 +10,13 @@ using pepperspray.CIO;
 using pepperspray.CoreServer.Game;
 using pepperspray.CoreServer.Protocol;
 using pepperspray.Utils;
-using ThreeDXChat.Networking.NodeNet;
+using pepperspray.SharedServices;
 
 namespace pepperspray.CoreServer
 {
   internal class EventDispatcher
   {
-    private CoreServer server;
-
-    internal EventDispatcher(CoreServer server)
-    {
-      this.server = server;
-    }
+    private CoreServer server = DI.Get<CoreServer>();
 
     internal IPromise<Nothing> Dispatch(PlayerHandle client, Message eventMsg)
     {

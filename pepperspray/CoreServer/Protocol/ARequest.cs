@@ -27,15 +27,15 @@ namespace pepperspray.CoreServer.Protocol
         case "login":
           return Requests.Login.Parse(ev);
         case "joinroom":
-          return Requests.JoinRoom.Parse(ev);
+          return Requests.LobbyJoin.Parse(ev);
         case "leaveroom":
-          return Requests.LeaveRoom.Parse(ev);
+          return Requests.LobbyLeave.Parse(ev);
         case "openroom":
-          return Requests.OpenRoom.Parse(ev);
+          return Requests.RoomOpen.Parse(ev);
         case "closeroom":
-          return Requests.CloseRoom.Parse(ev);
+          return Requests.RoomClose.Parse(ev);
         case "getUserRoomList":
-          return Requests.GetUserRoomList.Parse(ev);
+          return Requests.RoomList.Parse(ev);
         case "sendroom":
           return Requests.SendLocal.Parse(ev);
         case "sendworld":

@@ -125,7 +125,15 @@ namespace pepperspray.CoreServer.Game
 
     internal UserRoom FindUserRoom(PlayerHandle handle)
     {
-      return this.userRooms.Values.Where(a => a.User == handle).FirstOrDefault(null);
+      foreach (var room in this.userRooms.Values)
+      {
+        if (room.User == handle)
+        {
+          return room;
+        }
+      }
+
+      return null;
     }
 
     internal void AddPlayer(PlayerHandle player)

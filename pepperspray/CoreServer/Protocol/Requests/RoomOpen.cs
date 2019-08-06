@@ -7,18 +7,22 @@ using System.Threading.Tasks;
 using RSG;
 using pepperspray.CIO;
 using pepperspray.CoreServer.Game;
-using ThreeDXChat.Networking.NodeNet;
+using pepperspray.CoreServer.Services;
+using pepperspray.Utils;
+using pepperspray.SharedServices;
 
 namespace pepperspray.CoreServer.Protocol.Requests
 {
-  internal class OpenRoom: ARequest
+  internal class RoomOpen: ARequest
   {
     private string lobbyIdentifier;
     private string name;
-    private uint numberOfPlayers;
+    private int numberOfPlayers;
     private UserRoom.AccessType accessType;
 
-    internal static OpenRoom Parse(Message ev)
+    private UserRoomService userRoomService = DI.Auto<UserRoomService>();
+
+    internal static RoomOpen Parse(Message ev)
     {
       if (ev.data is List<object> == false)
       {
@@ -39,8 +43,8 @@ namespace pepperspray.CoreServer.Protocol.Requests
         return null;
       }
 
-      var numberOfPlayers = System.Convert.ToUInt32(arguments[2].ToString());
-      return new OpenRoom
+      var numberOfPlayers = System.Convert.ToInt32(arguments[2].ToString());
+      return new RoomOpen
       {
         lobbyIdentifier = lobbyIdentifier,
         name = name,
@@ -75,12 +79,7 @@ namespace pepperspray.CoreServer.Protocol.Requests
         NumberOfPlayers = this.numberOfPlayers
       };
 
-      lock(server)
-      {
-        server.World.AddUserRoom(room);
-      }
-
-      return Nothing.Resolved();
+      return this.userRoomService.OpenRoom(sender, server, room);
     }
   }
 }

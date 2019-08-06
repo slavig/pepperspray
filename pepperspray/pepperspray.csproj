@@ -91,12 +91,15 @@
     <Compile Include="CIO\MultiPromise.cs" />
     <Compile Include="CIO\PromiseExtensions.cs" />
     <Compile Include="CoreServer\Game\UserRoom.cs" />
-    <Compile Include="CoreServer\Protocol\ActionsAuthenticator.cs" />
+    <Compile Include="CoreServer\Services\ActionsAuthenticator.cs" />
     <Compile Include="CoreServer\Protocol\Message.cs" />
-    <Compile Include="CoreServer\Protocol\Requests\CloseRoom.cs" />
-    <Compile Include="CoreServer\Protocol\Requests\GetUserRoomList.cs" />
-    <Compile Include="CoreServer\Protocol\Requests\OpenRoom.cs" />
+    <Compile Include="CoreServer\Protocol\Requests\RoomClose.cs" />
+    <Compile Include="CoreServer\Protocol\Requests\RoomList.cs" />
+    <Compile Include="CoreServer\Protocol\Requests\RoomOpen.cs" />
+    <Compile Include="CoreServer\Services\LobbyService.cs" />
+    <Compile Include="CoreServer\Services\UserRoomService.cs" />
     <Compile Include="CoreServer\Shell\ACommand.cs" />
+    <Compile Include="CoreServer\Shell\AdminBroadcast.cs" />
     <Compile Include="CoreServer\Shell\AdminPlayers.cs" />
     <Compile Include="CoreServer\Shell\Help.cs" />
     <Compile Include="CoreServer\Shell\PrivateMessage.cs" />
@@ -108,7 +111,7 @@
     <Compile Include="ExternalServer\Controllers\WorldController.cs" />
     <Compile Include="ExternalServer\ExternalServer.cs" />
     <Compile Include="ExternalServer\Storage\WorldStorage.cs" />
-    <Compile Include="Utils\Configuration.cs" />
+    <Compile Include="SharedServices\Configuration.cs" />
     <Compile Include="Utils\Debug.cs" />
     <Compile Include="pepperspray.cs" />
     <Compile Include="CIO\Promise\EnumerableExt.cs" />
@@ -129,14 +132,14 @@
     <Compile Include="CoreServer\Protocol\Parser.cs" />
     <Compile Include="CIO\Listener.cs" />
     <Compile Include="CoreServer\Protocol\ARequest.cs" />
-    <Compile Include="CoreServer\Protocol\Requests\JoinRoom.cs" />
-    <Compile Include="CoreServer\Protocol\Requests\LeaveRoom.cs" />
+    <Compile Include="CoreServer\Protocol\Requests\LobbyJoin.cs" />
+    <Compile Include="CoreServer\Protocol\Requests\LobbyLeave.cs" />
     <Compile Include="CoreServer\Protocol\Requests\Login.cs" />
     <Compile Include="CoreServer\Protocol\Requests\Send.cs" />
     <Compile Include="CoreServer\Protocol\Responses.cs" />
-    <Compile Include="Utils\DI.cs" />
+    <Compile Include="SharedServices\DI.cs" />
     <Compile Include="Utils\Hashing.cs" />
-    <Compile Include="Utils\NameValidator.cs" />
+    <Compile Include="SharedServices\NameValidator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

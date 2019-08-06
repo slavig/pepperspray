@@ -9,8 +9,9 @@ using Serilog;
 using pepperspray.CIO;
 using pepperspray.CoreServer.Game;
 using pepperspray.CoreServer.Shell;
+using pepperspray.CoreServer.Services;
 using pepperspray.Utils;
-using ThreeDXChat.Networking.NodeNet;
+using pepperspray.SharedServices;
 
 namespace pepperspray.CoreServer.Protocol.Requests
 {
@@ -24,8 +25,8 @@ namespace pepperspray.CoreServer.Protocol.Requests
       "~private/",
     };
 
-    protected ShellDispatcher shellDispatcher = DI.Get<ShellDispatcher>();
-    protected ActionsAuthenticator actionsAuthenticator = DI.Get<ActionsAuthenticator>();
+    protected ShellDispatcher shellDispatcher = DI.Auto<ShellDispatcher>();
+    protected ActionsAuthenticator actionsAuthenticator = DI.Auto<ActionsAuthenticator>();
 
     internal abstract IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, CoreServer server);
 
@@ -34,7 +35,8 @@ namespace pepperspray.CoreServer.Protocol.Requests
       if (!base.Validate(sender, server))
       {
         return false;
-      } else
+      }
+      else
       {
         return true;
       }
@@ -155,7 +157,14 @@ namespace pepperspray.CoreServer.Protocol.Requests
 
     internal override IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, CoreServer server)
     {
-      return sender.CurrentLobby.Players.Except(new PlayerHandle[] { sender });
+      if (sender.CurrentLobby != null)
+      {
+        return sender.CurrentLobby.Players.Except(new PlayerHandle[] { sender });
+      }
+      else
+      {
+        return new PlayerHandle[] { };
+      }
     }
   }
 

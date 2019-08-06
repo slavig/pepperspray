@@ -10,6 +10,7 @@ using System.Threading;
 using RSG;
 using Serilog;
 using pepperspray.Utils;
+using pepperspray.SharedServices;
 
 namespace pepperspray.CIO
 {

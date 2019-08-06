@@ -17,6 +17,6 @@ namespace pepperspray.CoreServer.Game
     internal string Identifier;
     internal AccessType Access;
     internal PlayerHandle User;
-    internal uint NumberOfPlayers;
+    internal int NumberOfPlayers;
   }
 }

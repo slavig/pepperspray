@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 using pepperspray.CoreServer.Game;
 using pepperspray.CoreServer.Protocol;
 using pepperspray.CoreServer.Shell;
+using pepperspray.CoreServer.Services;
 
-namespace pepperspray.Utils
+namespace pepperspray.SharedServices
 {
   internal class DI
   {
@@ -20,6 +21,16 @@ namespace pepperspray.Utils
       return DI.registeredServices[typeof(T)] as T;
     }
 
+    internal static T Auto<T>() where T: class, new()
+    {
+      if (!DI.registeredServices.ContainsKey(typeof(T)))
+      {
+        DI.registeredServices[typeof(T)] = new T();
+      }
+
+      return DI.Get<T>();
+    }
+
     internal static void Register<T>(T service) where T : class {
       DI.registeredServices[typeof(T)] = service;
     }
@@ -27,9 +38,12 @@ namespace pepperspray.Utils
     internal static void Setup()
     {
       DI.Register(new Configuration(Path.Combine("peppersprayData", "configuration.xml")));
+      /*
       DI.Register(new ActionsAuthenticator());
       DI.Register(new ShellDispatcher());
       DI.Register(new NameValidator());
+      DI.Register(new UserRoomService());
+      */
     }
   }
 }

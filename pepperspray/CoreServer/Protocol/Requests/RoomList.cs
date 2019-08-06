@@ -11,22 +11,22 @@ using ThreeDXChat.Networking.NodeNet;
 
 namespace pepperspray.CoreServer.Protocol.Requests
 {
-  internal class GetUserRoomList: ARequest
+  internal class RoomList: ARequest
   {
-    internal static GetUserRoomList Parse(Message ev)
+    internal static RoomList Parse(Message ev)
     {
-      return new GetUserRoomList();
+      return new RoomList();
     }
 
     internal override IPromise<Nothing> Process(PlayerHandle sender, CoreServer server)
     {
-      List<UserRoom> list = null;
+      Message response = null;
       lock (server)
       {
-        list = server.World.PublicRooms.ToList();
+        response = Responses.UserRoomList(server.World.Lobbies.Values);
       }
 
-      return sender.Stream.Write(Responses.UserRoomList(list));
+      return sender.Stream.Write(response);
     }
   }
 }

@@ -46,6 +46,9 @@ namespace pepperspray.CIO
 
     public IMultiPromise<byte[]> InputStream()
     {
+      var watch = new Stopwatch(); ;
+      watch.Start();
+
       var promise = new MultiPromise<byte[]>();
       CIOReactor.Spawn("inputStreamOf" + this.ConnectionHash, true, () =>
       {
@@ -82,7 +85,7 @@ namespace pepperspray.CIO
         Log.Debug("Input stream for {hash} ended", this.ConnectionHash);
       }).Catch(ex => 
       {
-        Log.Debug("Input stream {name} for {hash} crashed, rejecting its promise", this.ConnectionHash);
+        Log.Error("Input stream {name} for {hash} crashed, rejecting its promise", this.ConnectionHash);
       });
 
       return promise;

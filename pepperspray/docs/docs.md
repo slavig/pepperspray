@@ -44,3 +44,9 @@ userroomlist=xXChrisyXx|xXChrisyXx_room|house|0|12|RockinRebels|False|149345
 +Thralia|Thralia_room|house|2|2|Darkling Haven|False|60055
 +Salazarr|Salazarr_room|house|0|2|BBC FOR SLUT|False|11111
 ```
+
+Groups
+invite to player: `Lzzy~ask/groupchat|f|177661`
+when you send invite `service mygroup=177661`, `service grouplist=Lzzy+`
+when you accept invite `service mygroup=177661`, `service grouplist=Lzzy+EzekielTwentyFive+`
+when player accepts invite: `service groupadd=Lzzy=f=`

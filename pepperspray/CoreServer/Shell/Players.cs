@@ -8,21 +8,14 @@ using RSG;
 using pepperspray.CIO;
 using pepperspray.CoreServer.Game;
 using pepperspray.CoreServer.Protocol;
+using pepperspray.CoreServer.Services;
+using pepperspray.SharedServices;
 
 namespace pepperspray.CoreServer.Shell
 {
   internal class Players: AShellCommand
   {
-    private static Dictionary<string, string> locationsMapping = new Dictionary<string, string>
-    {
-      { "SALOON", "Saloon" },
-      { "beach", "Beach" },
-      { "island", "Island" },
-      { "CLUB_NEW", "Fresco" },
-      { "YACHT", "Yacht" },
-      { "club", "Nightclub" },
-      { "BDSM_club", "Sin Club" },
-    };
+    private LobbyService lobbyService = DI.Auto<LobbyService>();
     
     internal override bool WouldDispatch(string tag)
     {
@@ -37,8 +30,8 @@ namespace pepperspray.CoreServer.Shell
       {
         foreach (var item in server.World.Lobbies)
         {
-          string name;
-          if (Players.locationsMapping.TryGetValue(item.Key, out name))
+          string name = item.Value.Name;
+          if (name != null)
           {
             builder.AppendFormat(" {0} ({1}),", name, item.Value.Players.Count());
           }

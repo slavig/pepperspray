@@ -25,17 +25,29 @@ namespace pepperspray.CoreServer.Shell
 
     internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, CoreServer server, string tag, IEnumerable<string> arguments)
     {
+      string query = null;
+      if (arguments.Count() > 0)
+      {
+        query = arguments.First();
+      }
+
       var builder = new StringBuilder("Online players: ");
       var output = new List<IPromise<Nothing>>();
 
       lock (server)
       {
+        builder.AppendFormat("(total {0})", server.World.Players.Count());
         foreach (var player in server.World.Players)
         {
+          if (query != null && !player.Name.Contains(query))
+          {
+            continue;
+          }
+
           builder.AppendFormat(" {0} (at {1}),", player.Name, player.CurrentLobby != null ? player.CurrentLobby.Identifier : "editor");
           if (builder.Length > 200)
           {
-            output.Add(dispatcher.Output(sender, server, output.ToString()));
+            output.Add(dispatcher.Output(sender, server, builder.ToString()));
             builder.Clear();
           }
         }

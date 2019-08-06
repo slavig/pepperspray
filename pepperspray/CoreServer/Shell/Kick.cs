@@ -10,6 +10,7 @@ using pepperspray.CIO;
 using pepperspray.CoreServer.Game;
 using pepperspray.CoreServer.Protocol;
 using pepperspray.Utils;
+using pepperspray.SharedServices;
 
 namespace pepperspray.CoreServer.Shell
 {

@@ -12,6 +12,7 @@ using RSG;
 using WatsonWebserver;
 using pepperspray.CIO;
 using pepperspray.Utils;
+using pepperspray.SharedServices;
 
 namespace pepperspray.ExternalServer
 {

@@ -14,6 +14,7 @@ using pepperspray.CIO;
 using pepperspray.Utils;
 using pepperspray.CoreServer;
 using pepperspray.ExternalServer;
+using pepperspray.SharedServices;
 
 namespace pepperspray
 {

@@ -9,14 +9,14 @@ using Serilog;
 using pepperspray.CIO;
 using pepperspray.CoreServer.Game;
 using pepperspray.Utils;
-using ThreeDXChat.Networking.NodeNet;
+using pepperspray.SharedServices;
 
 namespace pepperspray.CoreServer.Protocol.Requests
 {
   internal class Login : ARequest
   {
-    private NameValidator nameValidator = DI.Get<NameValidator>();
     private Configuration config = DI.Get<Configuration>();
+    private NameValidator nameValidator = DI.Auto<NameValidator>();
 
     private string name, hash, sex;
 

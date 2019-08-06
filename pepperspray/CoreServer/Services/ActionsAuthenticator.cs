@@ -5,9 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Serilog;
+using RSG;
 using pepperspray.CoreServer.Game;
+using pepperspray.CIO;
 
-namespace pepperspray.CoreServer.Protocol
+namespace pepperspray.CoreServer.Services
 {
   internal class ActionsAuthenticator
   {
@@ -29,6 +31,7 @@ namespace pepperspray.CoreServer.Protocol
         action,
         none
       }
+
       internal CommandType Type;
       internal string Name;
       internal string[] Arguments;
@@ -54,7 +57,7 @@ namespace pepperspray.CoreServer.Protocol
       }
     }
 
-    private Dictionary<string, PoseAgreement> activeAgreements = new Dictionary<string, PoseAgreement>();
+    private List<PoseAgreement> activeAgreements = new List<PoseAgreement>();
     private Dictionary<string, AuthenticationTemplate> authTemplates = new Dictionary<string, AuthenticationTemplate>
     {
       { "walk", new AuthenticationTemplate {ArgumentIndex  = 3} },
@@ -63,12 +66,11 @@ namespace pepperspray.CoreServer.Protocol
       { "runPropAction", new AuthenticationTemplate {ArgumentIndex  = 1} },
       { "takeFood", new AuthenticationTemplate {ArgumentIndex  = 0} },
       { "eatFood", new AuthenticationTemplate {ArgumentIndex  = 0} },
+      { "stopSexPS", new AuthenticationTemplate {ArgumentIndex  = 0} },
+      { "acceptDance", new AuthenticationTemplate {ArgumentIndex  = 0} },
+      { "ApplyCoupleDance", new AuthenticationTemplate {ArgumentIndex  = 0} },
+      { "ApplyStopCoupleDance", new AuthenticationTemplate {ArgumentIndex  = 0} },
     };
-
-    internal ActionsAuthenticator()
-    {
-
-    }
 
     internal bool ShouldProcess(PlayerHandle sender, PlayerHandle recepient, string message)
     {
@@ -92,9 +94,14 @@ namespace pepperspray.CoreServer.Protocol
           Log.Debug("Agreement of {initiator} - added {name}", recepient.Name, sender.Name);
           agreement.Participants.Add(sender.Name);
         }
-        else if (command.Name.Equals("useSexPose"))
+        else if (command.Name.Equals("askForPose"))
         {
-          Log.Debug("Agreement of {initiator} - fullfilled and removed");
+          Log.Debug("Agreement containing {player} removed, moving to next agreement", sender.Name);
+          this.removeAgreement(sender.Name);
+        }
+        else if (command.Name.Equals("stopSexPS"))
+        {
+          Log.Debug("Agreement containing {player} removed due to pose stop request", sender.Name);
           this.removeAgreement(sender.Name);
         }
 
@@ -153,6 +160,12 @@ namespace pepperspray.CoreServer.Protocol
       }
     }
 
+    internal IPromise<Nothing> PlayerLoggedOff(PlayerHandle player)
+    {
+      this.removeAgreement(player.Name);
+      return Nothing.Resolved();
+    }
+
     private PoseAgreement findOrCreateAgreement(string initiatorName)
     {
       var agreement = this.findAgreement(initiatorName);
@@ -162,25 +175,31 @@ namespace pepperspray.CoreServer.Protocol
       }
 
       agreement = new PoseAgreement { Initiator = initiatorName };
-      this.activeAgreements[initiatorName] = agreement;
+      this.activeAgreements.Add(agreement);
       return agreement;
     }
 
     private PoseAgreement findAgreement(string initiatorName)
     {
-      if (this.activeAgreements.ContainsKey(initiatorName))
+      foreach (var agreement in this.activeAgreements)
       {
-        return this.activeAgreements[initiatorName];
-      } else {
-        return null;
+        if (agreement.Contains(initiatorName))
+        {
+          return agreement;
+        }
       }
+
+      return null;
     }
 
-    private void removeAgreement(string initiatorName)
+    private void removeAgreement(string playerName)
     {
-      if (this.activeAgreements.ContainsKey(initiatorName))
+      foreach (var agreement in this.activeAgreements.ToArray())
       {
-        this.activeAgreements.Remove(initiatorName);
+        if (agreement.Contains(playerName))
+        {
+          this.activeAgreements.Remove(agreement);
+        }
       }
     }
 
