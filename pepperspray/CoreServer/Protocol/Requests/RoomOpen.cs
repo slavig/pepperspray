@@ -43,13 +43,26 @@ namespace pepperspray.CoreServer.Protocol.Requests
         return null;
       }
 
-      var numberOfPlayers = System.Convert.ToInt32(arguments[2].ToString());
+      UserRoom.AccessType accessType;
+      switch (System.Convert.ToInt32(arguments[2].ToString()))
+      {
+        case 0:
+        case 1:
+          accessType = UserRoom.AccessType.ForAll;
+          break;
+        case 2:
+          accessType = UserRoom.AccessType.ForGroup;
+          break;
+        default:
+          return null;
+      }
+
       return new RoomOpen
       {
         lobbyIdentifier = lobbyIdentifier,
         name = name,
-        numberOfPlayers = numberOfPlayers,
-        accessType = UserRoom.AccessType.ForAll
+        numberOfPlayers = 0,
+        accessType = accessType,
       };
     }
 

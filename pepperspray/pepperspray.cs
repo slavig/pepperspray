@@ -45,7 +45,7 @@ namespace pepperspray
         config.MiscServerAddress = localhostAddress;
       }
 
-      Log.Information("pepperspray v0.4");
+      Log.Information("pepperspray v0.5");
       var coreServer = new CoreServer.CoreServer();
       var externalServer = new ExternalServer.ExternalServer();
 

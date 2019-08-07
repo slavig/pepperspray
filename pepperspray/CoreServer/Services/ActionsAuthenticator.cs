@@ -66,7 +66,8 @@ namespace pepperspray.CoreServer.Services
       { "runPropAction", new AuthenticationTemplate {ArgumentIndex  = 1} },
       { "takeFood", new AuthenticationTemplate {ArgumentIndex  = 0} },
       { "eatFood", new AuthenticationTemplate {ArgumentIndex  = 0} },
-      { "stopSexPS", new AuthenticationTemplate {ArgumentIndex  = 0} },
+      // @TODO: provide adequate authentication for this commmand
+      // { "stopSexPS", new AuthenticationTemplate {ArgumentIndex  = 0} },
       { "acceptDance", new AuthenticationTemplate {ArgumentIndex  = 0} },
       { "ApplyCoupleDance", new AuthenticationTemplate {ArgumentIndex  = 0} },
       { "ApplyStopCoupleDance", new AuthenticationTemplate {ArgumentIndex  = 0} },

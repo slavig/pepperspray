@@ -26,6 +26,7 @@ namespace pepperspray.CoreServer
     private NameValidator nameValidator;
     private Configuration config;
     private UserRoomService userRoomService;
+    private GroupService groupService;
     private ActionsAuthenticator actionsAuthenticator;
     private EventDispatcher dispatcher;
 
@@ -37,6 +38,7 @@ namespace pepperspray.CoreServer
       this.nameValidator = DI.Auto<NameValidator>();
       this.userRoomService = DI.Auto<UserRoomService>();
       this.actionsAuthenticator = DI.Auto<ActionsAuthenticator>();
+      this.groupService = DI.Auto<GroupService>();
       this.dispatcher = DI.Auto<EventDispatcher>();
 
       this.World = new World();
@@ -101,6 +103,7 @@ namespace pepperspray.CoreServer
     internal void PlayerLoggedIn(PlayerHandle player)
     {
       Log.Information("Player {name} logged in, connection {hash}/{endpoint}", player.Name, player.Stream.ConnectionHash, player.Stream.ConnectionEndpoint);
+      this.groupService.PlayerLoggedIn(player);
 
       lock (this)
       {
@@ -113,6 +116,7 @@ namespace pepperspray.CoreServer
       Log.Information("Player {name} logged off (connection {hash}/{endpoint})", player.Name, player.Stream.ConnectionHash, player.Stream.ConnectionEndpoint);
       this.userRoomService.PlayerLoggedOff(player);
       this.actionsAuthenticator.PlayerLoggedOff(player);
+      this.groupService.PlayerLoggedOff(player);
 
       PlayerHandle[] playersToNotify = new PlayerHandle[] { };
       lock (this)

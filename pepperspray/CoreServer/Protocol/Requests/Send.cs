@@ -23,6 +23,7 @@ namespace pepperspray.CoreServer.Protocol.Requests
       "~worldchat/",
       "~chat/",
       "~private/",
+      "~groupchat/",
     };
 
     protected ShellDispatcher shellDispatcher = DI.Auto<ShellDispatcher>();
@@ -104,29 +105,66 @@ namespace pepperspray.CoreServer.Protocol.Requests
         return true;
       }
 
-      this.recepient = server.World.FindPlayer(this.recepientName);
-      if (this.recepient == null)
-      {
-        return false;
-      }
-
       if (!this.actionsAuthenticator.ShouldProcess(sender, this.recepient, this.contents))
       {
         return false;
       }
+
+      this.recepient = server.World.FindPlayer(this.recepientName);
 
       return true;
     }
 
     internal override IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, CoreServer server)
     {
+      return new PlayerHandle[] { this.recepient };
+    }
+
+    internal override IPromise<Nothing> Process(PlayerHandle sender, CoreServer server)
+    {
       if (this.recepient != null)
       {
-        return new PlayerHandle[] { this.recepient };
-      } else
-      {
-        return new PlayerHandle[] { };
+        return base.Process(sender, server);
       }
+      else if (this.recepientName.Equals(server.ServerName))
+      {
+        return Nothing.Resolved();
+      } 
+      else
+      {
+        return sender.Stream.Write(Responses.ServerPrivateChatMessage(this.recepientName, "Player is offline."));
+      }
+    }
+  }
+
+  internal class SendGroup: Send
+  {
+    internal static SendGroup Parse(Message ev)
+    {
+      return new SendGroup
+      {
+        contents = ev.data.ToString()
+      };
+    }
+
+    internal override bool Validate(PlayerHandle sender, CoreServer server)
+    {
+      if (!base.Validate(sender, server))
+      {
+        return false;
+      }
+ 
+      if (!this.actionsAuthenticator.ShouldProcess(sender, null, this.contents))
+      {
+        return false;
+      }
+
+      return sender.CurrentGroup != null;
+    }
+
+    internal override IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, CoreServer server)
+    {
+      return sender.CurrentGroup.Players.Except(new PlayerHandle[] { sender });
     }
   }
 
@@ -152,19 +190,12 @@ namespace pepperspray.CoreServer.Protocol.Requests
         return false;
       }
 
-      return true;
+      return sender.CurrentLobby != null;
     }
 
     internal override IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, CoreServer server)
     {
-      if (sender.CurrentLobby != null)
-      {
-        return sender.CurrentLobby.Players.Except(new PlayerHandle[] { sender });
-      }
-      else
-      {
-        return new PlayerHandle[] { };
-      }
+      return sender.CurrentLobby.Players.Except(new PlayerHandle[] { sender });
     }
   }
 

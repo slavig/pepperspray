@@ -15,13 +15,15 @@ namespace pepperspray.CoreServer.Game
 {
   internal class PlayerHandle
   {
-    internal bool IsLoggedIn = false;
-    internal bool IsAdmin = false;
-
     internal string Name;
     internal string Hash;
     internal string Sex;
     internal string Id;
+
+    internal bool IsLoggedIn = false;
+    internal bool IsAdmin = false;
+
+    internal Group CurrentGroup;
     internal Lobby CurrentLobby;
 
     internal EventStream Stream;

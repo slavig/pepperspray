@@ -16,18 +16,12 @@ namespace pepperspray.CoreServer.Protocol
       return new Message("srv", "connected");
     }
 
-    internal static Message UserRoomList(IEnumerable<Lobby> lobbyList)
+    internal static Message UserRoomList(IEnumerable<UserRoom> roomList)
     {
       var builder = new StringBuilder("userroomlist=");
-      foreach (var lobby in lobbyList.OrderBy(a => !a.IsUserRoom))
+      foreach (var room in roomList)
       {
-        if (lobby.IsUserRoom)
-        {
-          builder.AppendFormat("{0}+", Responses.UserRoomRecord(lobby.UserRoom));
-        } else 
-        {
-          continue;
-        }
+        builder.AppendFormat("{0}+", Responses.UserRoomRecord(room));
       }
 
       return new Message("srv", builder.ToString());
@@ -58,6 +52,32 @@ namespace pepperspray.CoreServer.Protocol
       return new Message("srv", "joinedlobby");
     }
 
+    internal static Message MyGroup(Group group)
+    {
+      return new Message("srv", "mygroup=" + group.Identifier);
+    }
+
+    internal static Message GroupList(IEnumerable<PlayerHandle> players)
+    {
+      var builder = new StringBuilder("grouplist=");
+      foreach (var player in players)
+      {
+        builder.AppendFormat("{0}+", player.Name);
+      }
+
+      return new Message("srv", builder.ToString());
+    }
+
+    internal static Message GroupAdd(PlayerHandle player)
+    {
+      return new Message("srv", String.Format("groupadd={0}={1}", player.Name, player.Sex));
+    }
+
+    internal static Message GroupLeave(PlayerHandle player)
+    {
+      return new Message("srv", String.Format("groupleave={0}=", player.Name));
+    }
+
     internal static Message NewPlayer(PlayerHandle player)
     {
       return new Message("srv", "newplayer=" + player.Id + "=" + player.Name + "=" + player.Sex);
@@ -73,7 +93,7 @@ namespace pepperspray.CoreServer.Protocol
         {
           { "name", sender.Name },
           { "id", sender.Hash },
-          { "data", contents }
+          { "data", contents },
         }
       );
     }
@@ -81,6 +101,16 @@ namespace pepperspray.CoreServer.Protocol
     internal static Message PrivateChatMessage(PlayerHandle sender, string contents)
     {
       return Responses.Message(sender, "~private/" + contents);
+    }
+
+    internal static Message ServerPrivateChatMessage(string sender, string contents)
+    {
+      return new Message("msg", new Dictionary<string, object>
+      {
+        { "name", sender },
+        { "id", "0" },
+        { "data", "~private/" + contents },
+      });
     }
 
     internal static Message ServerMessage(CoreServer server, string contents) {

@@ -10,7 +10,8 @@ namespace pepperspray.CoreServer.Game
   {
     internal enum AccessType
     {
-      ForAll
+      ForAll,
+      ForGroup
     }
 
     internal string Name;

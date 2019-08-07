@@ -90,12 +90,16 @@
     <Compile Include="CIO\CombinedPromise.cs" />
     <Compile Include="CIO\MultiPromise.cs" />
     <Compile Include="CIO\PromiseExtensions.cs" />
+    <Compile Include="CoreServer\Game\Group.cs" />
     <Compile Include="CoreServer\Game\UserRoom.cs" />
+    <Compile Include="CoreServer\Protocol\Requests\GroupJoin.cs" />
+    <Compile Include="CoreServer\Protocol\Requests\GroupLeave.cs" />
     <Compile Include="CoreServer\Services\ActionsAuthenticator.cs" />
     <Compile Include="CoreServer\Protocol\Message.cs" />
     <Compile Include="CoreServer\Protocol\Requests\RoomClose.cs" />
     <Compile Include="CoreServer\Protocol\Requests\RoomList.cs" />
     <Compile Include="CoreServer\Protocol\Requests\RoomOpen.cs" />
+    <Compile Include="CoreServer\Services\GroupService.cs" />
     <Compile Include="CoreServer\Services\LobbyService.cs" />
     <Compile Include="CoreServer\Services\UserRoomService.cs" />
     <Compile Include="CoreServer\Shell\ACommand.cs" />

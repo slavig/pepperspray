@@ -16,22 +16,18 @@ namespace pepperspray.CoreServer.Game
     private Dictionary<string, PlayerHandle> players = new Dictionary<string, PlayerHandle>();
 
     internal Dictionary<string, Lobby> Lobbies = new Dictionary<string, Lobby>();
-    internal IEnumerable<PlayerHandle> Players { get { return this.players.Values;  } }
 
-    internal IEnumerable<UserRoom> PublicRooms
+    internal IEnumerable<PlayerHandle> Players { get { return this.players.Values;  } }
+    internal IEnumerable<UserRoom> UserRooms
     {
       get { return this.userRooms.Values; }
     }
 
     internal Lobby FindLobby(string identifier)
     {
-      if (this.Lobbies.ContainsKey(identifier))
-      {
-        return this.Lobbies[identifier];
-      } else
-      {
-        return null;
-      }
+      Lobby lobby = null;
+      this.Lobbies.TryGetValue(identifier, out lobby);
+      return lobby;
     }
 
     internal Lobby FindOrCreateLobby(string identifier)
@@ -43,8 +39,20 @@ namespace pepperspray.CoreServer.Game
       }
 
       lobby.UserRoom = this.FindUserRoom(identifier);
-
       return lobby;
+    }
+
+    internal Group FindGroup(int identifier)
+    {
+      foreach (var player in this.Players)
+      {
+        if (player.CurrentGroup.Identifier == identifier)
+        {
+          return player.CurrentGroup;
+        }
+      }
+
+      return null;
     }
 
     internal PlayerHandle FindPlayer(string name, string id = null)

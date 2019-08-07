@@ -45,6 +45,31 @@ namespace pepperspray.CoreServer.Services
       return new CombinedPromise<Nothing>(lobbyPlayers.Select(a => a.Stream.Write(Responses.UserRoomClosed(room))));
     }
 
+    internal IPromise<Nothing> ListRooms(PlayerHandle sender)
+    {
+      var list = new List<UserRoom>();
+      lock(this.server)
+      {
+        foreach (var room in this.server.World.UserRooms)
+        {
+          switch (room.Access)
+          {
+            case UserRoom.AccessType.ForAll:
+              list.Add(room);
+              break;
+            case UserRoom.AccessType.ForGroup:
+              if (sender.CurrentGroup == room.User.CurrentGroup)
+              {
+                list.Add(room);
+              }
+              break;
+          }
+        }
+      }
+
+      return sender.Stream.Write(Responses.UserRoomList(list));
+    }
+
     internal IPromise<Nothing> PlayerLoggedOff(PlayerHandle sender)
     {
       if (!sender.IsLoggedIn)

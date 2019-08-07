@@ -12,10 +12,15 @@ namespace pepperspray.SharedServices
     internal string ServerName = "";
 
     private Regex nameRegex = new Regex("^\\w{3,32}$");
+    private static List<string> reservedNames = new List<string>
+    {
+      "Admin", "Server", "Support", "pepperspray"
+    };
 
     internal bool Validate(string name)
     {
-      return !name.Equals(this.ServerName) && this.nameRegex.IsMatch(name);
+      var trimmedName = name.Trim();
+      return !trimmedName.Equals(this.ServerName) && !NameValidator.reservedNames.Contains(trimmedName) && this.nameRegex.IsMatch(name);
     }
   }
 }

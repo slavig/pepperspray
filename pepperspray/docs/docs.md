@@ -47,6 +47,11 @@ userroomlist=xXChrisyXx|xXChrisyXx_room|house|0|12|RockinRebels|False|149345
 
 Groups
 invite to player: `Lzzy~ask/groupchat|f|177661`
-when you send invite `service mygroup=177661`, `service grouplist=Lzzy+`
-when you accept invite `service mygroup=177661`, `service grouplist=Lzzy+EzekielTwentyFive+`
+
+when you accept invite `joingroup 207600`, `service mygroup=177661`, `service grouplist=Lzzy+EzekielTwentyFive+`
 when player accepts invite: `service groupadd=Lzzy=f=`
+when player leaves group `service groupleave=Lzzy=`
+when you leave group `service mygroup=207652`
+
+???
+when you send invite `service mygroup=177661`, `service grouplist=Lzzy+`

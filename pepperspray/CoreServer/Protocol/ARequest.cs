@@ -34,8 +34,14 @@ namespace pepperspray.CoreServer.Protocol
           return Requests.RoomOpen.Parse(ev);
         case "closeroom":
           return Requests.RoomClose.Parse(ev);
+        case "joingroup":
+          return Requests.GroupJoin.Parse(ev);
+        case "leavegroup":
+          return Requests.GroupLeave.Parse(ev);
         case "getUserRoomList":
           return Requests.RoomList.Parse(ev);
+        case "sendgroup":
+          return Requests.SendGroup.Parse(ev);
         case "sendroom":
           return Requests.SendLocal.Parse(ev);
         case "sendworld":

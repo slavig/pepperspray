@@ -5,25 +5,26 @@ using System.Text;
 using System.Threading.Tasks;
 
 using RSG;
+using Serilog;
 using pepperspray.CIO;
 using pepperspray.CoreServer.Game;
-using pepperspray.CoreServer.Services;
 using pepperspray.SharedServices;
+using pepperspray.CoreServer.Services;
 
 namespace pepperspray.CoreServer.Protocol.Requests
 {
-  internal class RoomList: ARequest
+  internal class GroupLeave: ARequest
   {
-    private UserRoomService userRoomService = DI.Auto<UserRoomService>();
+    private GroupService groupService = DI.Auto<GroupService>();
 
-    internal static RoomList Parse(Message ev)
+    internal static GroupLeave Parse(Message ev)
     {
-      return new RoomList();
+      return new GroupLeave {};
     }
 
     internal override IPromise<Nothing> Process(PlayerHandle sender, CoreServer server)
     {
-      return this.userRoomService.ListRooms(sender);
+      return this.groupService.LeaveGroup(sender);
     }
   }
 }
