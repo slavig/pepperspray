@@ -17,6 +17,19 @@ namespace pepperspray.CoreServer.Services
   {
     private CoreServer server = DI.Get<CoreServer>();
 
+    internal bool PlayerCanJoinRoom(PlayerHandle player, UserRoom room)
+    {
+      switch (room.Access)
+      {
+        case UserRoom.AccessType.ForAll:
+          return true;
+        case UserRoom.AccessType.ForGroup:
+          return player.CurrentGroup == room.User.CurrentGroup;
+        default:
+          return false;
+      }
+    }
+
     internal IPromise<Nothing> OpenRoom(PlayerHandle sender, CoreServer server, UserRoom room) 
     {
       lock(server)
@@ -52,17 +65,9 @@ namespace pepperspray.CoreServer.Services
       {
         foreach (var room in this.server.World.UserRooms)
         {
-          switch (room.Access)
+          if (this.PlayerCanJoinRoom(sender, room))
           {
-            case UserRoom.AccessType.ForAll:
-              list.Add(room);
-              break;
-            case UserRoom.AccessType.ForGroup:
-              if (sender.CurrentGroup == room.User.CurrentGroup)
-              {
-                list.Add(room);
-              }
-              break;
+            list.Add(room);
           }
         }
       }

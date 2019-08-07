@@ -39,7 +39,7 @@ namespace pepperspray.CoreServer.Protocol.Requests
         this.lobby = server.World.FindOrCreateLobby(this.lobbyIdentifier);
       }
 
-      return true;
+      return lobbyService.PlayerCanJoinLobby(sender, this.lobby);
     }
 
     internal override IPromise<Nothing> Process(PlayerHandle sender, CoreServer server)

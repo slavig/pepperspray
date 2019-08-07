@@ -22,7 +22,7 @@ namespace pepperspray.CoreServer.Services
     internal void PlayerLoggedIn(PlayerHandle sender)
     {
       this.ResetGroup(sender);
-      sender.Stream.Write(Responses.MyGroup(sender.CurrentGroup));
+      this.JoinGroup(sender, sender.CurrentGroup);
     }
 
     internal void PlayerLoggedOff(PlayerHandle sender)

@@ -17,6 +17,19 @@ namespace pepperspray.CoreServer.Services
   internal class LobbyService
   {
     private CoreServer server = DI.Get<CoreServer>();
+    private UserRoomService userRoomService = DI.Auto<UserRoomService>();
+
+    internal bool PlayerCanJoinLobby(PlayerHandle player, Lobby lobby)
+    {
+      if (lobby.IsUserRoom)
+      {
+        return this.userRoomService.PlayerCanJoinRoom(player, lobby.UserRoom);
+      }
+      else
+      {
+        return true;
+      }
+    }
 
     internal IPromise<Nothing> Join(PlayerHandle player, Lobby lobby)
     {

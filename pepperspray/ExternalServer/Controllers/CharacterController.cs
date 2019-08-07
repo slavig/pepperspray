@@ -23,6 +23,7 @@ namespace pepperspray.ExternalServer.Controllers
       s.StaticRoutes.Add(HttpMethod.POST, "/createchar", this.CreateChar);
       s.StaticRoutes.Add(HttpMethod.POST, "/changechar", this.ChangeChar);
       s.StaticRoutes.Add(HttpMethod.POST, "/getdefaultchar", this.GetDefaultChar);
+      s.StaticRoutes.Add(HttpMethod.POST, "/getbotchar", this.GetBotChar);
     }
 
     internal HttpResponse CheckName(HttpRequest req)
@@ -94,6 +95,27 @@ namespace pepperspray.ExternalServer.Controllers
       } else
       {
         return ExternalServer.FailureResponse(req);
+      }
+
+      return new HttpResponse(req, 200, null, "text/plain", File.ReadAllText(Path.Combine(ExternalServer.characterPresetsDirectoryPath, path)));
+    }
+
+    internal HttpResponse GetBotChar(HttpRequest req)
+    {
+      string uid = ExternalServer.GetFormParameter(req, "uid");
+      if (uid == null)
+      {
+        return ExternalServer.FailureResponse(req);
+      }
+
+      string path = null;
+      if (uid.Equals("1"))
+      {
+        path = "botMale.base64";
+      }
+      else
+      {
+        path = "botFemale.base64";
       }
 
       return new HttpResponse(req, 200, null, "text/plain", File.ReadAllText(Path.Combine(ExternalServer.characterPresetsDirectoryPath, path)));

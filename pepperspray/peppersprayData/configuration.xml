@@ -4,8 +4,8 @@
 		<misc ip="auto" port="8127"/>
 	</address>
 	<admin-tokens>
-		<token id="example_token" hash="MD5_UPPERCASE_HASH_GOES_HERE"/>
+		<token id="ezekiel" hash="444E15DE56410F9DE2565A7C800D8B6C"/>
 	</admin-tokens>
-	<player-inactivity-timeout seconds="5"/>
+	<player-inactivity-timeout seconds="20"/>
 	<world-cache capacity="20"/>
 </configuration>

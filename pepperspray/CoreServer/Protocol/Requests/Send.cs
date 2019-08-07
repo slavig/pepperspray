@@ -105,31 +105,33 @@ namespace pepperspray.CoreServer.Protocol.Requests
         return true;
       }
 
+      this.recepient = server.World.FindPlayer(this.recepientName);
       if (!this.actionsAuthenticator.ShouldProcess(sender, this.recepient, this.contents))
       {
         return false;
       }
-
-      this.recepient = server.World.FindPlayer(this.recepientName);
 
       return true;
     }
 
     internal override IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, CoreServer server)
     {
-      return new PlayerHandle[] { this.recepient };
+      if (this.recepient != null)
+      {
+        return new PlayerHandle[] { this.recepient };
+      }
+      else
+      {
+        return new PlayerHandle[] { };
+      }
     }
 
     internal override IPromise<Nothing> Process(PlayerHandle sender, CoreServer server)
     {
-      if (this.recepient != null)
+      if (this.recepient != null || this.recepientName.Equals(server.ServerName))
       {
         return base.Process(sender, server);
       }
-      else if (this.recepientName.Equals(server.ServerName))
-      {
-        return Nothing.Resolved();
-      } 
       else
       {
         return sender.Stream.Write(Responses.ServerPrivateChatMessage(this.recepientName, "Player is offline."));
