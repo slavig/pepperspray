@@ -18,7 +18,8 @@ namespace pepperspray.CoreServer.Protocol.Requests
     private Configuration config = DI.Get<Configuration>();
     private NameValidator nameValidator = DI.Auto<NameValidator>();
 
-    private string name, hash, sex;
+    private string name, hash, sex, token;
+    private int protocolVersion;
 
     internal static Login Parse(Message ev)
     {
@@ -31,6 +32,7 @@ namespace pepperspray.CoreServer.Protocol.Requests
       string name = arguments["name"].ToString();
       string hash = arguments["id"].ToString();
       string sex = arguments["sex"].ToString();
+      string token = arguments["token"].ToString();
 
       if (name != null && hash != null && sex != null)
       {
@@ -38,7 +40,8 @@ namespace pepperspray.CoreServer.Protocol.Requests
         {
           name = name,
           hash = hash,
-          sex = sex
+          sex = sex,
+          token = token,
         };
       }
       else
@@ -58,6 +61,19 @@ namespace pepperspray.CoreServer.Protocol.Requests
           sender.Stream.ConnectionEndpoint);
 
         sender.Stream.Write(Responses.FriendAlert("ERROR: Invalid characters in name. Please use only letters and numbers.")).Then(a => sender.Stream.Terminate());
+        return false;
+      }
+
+      this.protocolVersion = Convert.ToInt32(this.token);
+      if (this.protocolVersion < server.MinimumProtocolVersion)
+      {
+        Log.Information("Terminating connection of {name}/{id} from {hash}/{address} - outdated client",
+          this.name,
+          this.hash,
+          sender.Stream.ConnectionHash,
+          sender.Stream.ConnectionEndpoint);
+
+        sender.Stream.Write(Responses.FriendAlert("ERROR: Outdated client version. Please update client."));
         return false;
       }
 

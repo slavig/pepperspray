@@ -55,3 +55,7 @@ when you leave group `service mygroup=207652`
 
 ???
 when you send invite `service mygroup=177661`, `service grouplist=Lzzy+`
+
+Position
+data=~action/walk|7.71|0|5.13|Ezekiel_2517|8.84|0.01|5.94|)
+data=~action/setPlayerPosition|Ezekiel_2517|8.841823|0.00793457|5.93932|

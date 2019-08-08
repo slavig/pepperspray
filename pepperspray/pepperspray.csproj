@@ -115,6 +115,11 @@
     <Compile Include="ExternalServer\Controllers\WorldController.cs" />
     <Compile Include="ExternalServer\ExternalServer.cs" />
     <Compile Include="ExternalServer\Storage\WorldStorage.cs" />
+    <Compile Include="Resources\Strings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
     <Compile Include="SharedServices\Configuration.cs" />
     <Compile Include="Utils\Debug.cs" />
     <Compile Include="pepperspray.cs" />
@@ -150,6 +155,12 @@
     <None Include="docs\docs.md" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Strings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

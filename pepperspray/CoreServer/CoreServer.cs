@@ -22,6 +22,7 @@ namespace pepperspray.CoreServer
   {
     internal World World;
     internal string ServerName = "pepperspray";
+    internal int MinimumProtocolVersion = 1;
 
     private NameValidator nameValidator;
     private Configuration config;

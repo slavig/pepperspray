@@ -29,7 +29,7 @@ namespace peppersprayPlugin
         i++;
       }
 
-      response += String.Format("\r\ntoken=0");
+      response += String.Format("\r\ntoken=" + Locator.ProtocolVersion);
 
       return response;
     }
