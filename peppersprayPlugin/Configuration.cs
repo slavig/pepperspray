@@ -17,14 +17,16 @@ namespace peppersprayPlugin
       public Int32 Port;
     }
 
-    public Address CoreAddress;
-    public string ExternalAddress;
+    public Address ChatAddress;
+    public string RestAPIAddress;
+    public string LoginAddress;
 
     public static Configuration Load()
     {
       var confidDoc = Utils.OpenXml(Configuration.configPath());
-      var coreAddressNode = confidDoc.SelectSingleNode("servers/core");
-      var extAddressNode = confidDoc.SelectSingleNode("servers/external");
+      var coreAddressNode = confidDoc.SelectSingleNode("servers/chat");
+      var extAddressNode = confidDoc.SelectSingleNode("servers/rest-api");
+      var loginAddressNode = confidDoc.SelectSingleNode("servers/login");
 
       var coreAddressComponents = coreAddressNode.InnerText.Split(new char[] { ':' });
       var coreAddress = new Address
@@ -35,8 +37,9 @@ namespace peppersprayPlugin
 
       return new Configuration
       {
-        CoreAddress = coreAddress,
-        ExternalAddress = extAddressNode.InnerText,
+        ChatAddress = coreAddress,
+        RestAPIAddress = extAddressNode.InnerText,
+        LoginAddress = loginAddressNode.InnerText
       };
     }
 

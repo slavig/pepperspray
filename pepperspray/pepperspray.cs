@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Net;
+using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,8 +13,8 @@ using Serilog;
 using Serilog.Events;
 using pepperspray.CIO;
 using pepperspray.Utils;
-using pepperspray.CoreServer;
-using pepperspray.ExternalServer;
+using pepperspray.ChatServer;
+using pepperspray.RestAPIServer;
 using pepperspray.SharedServices;
 
 namespace pepperspray
@@ -26,7 +27,8 @@ namespace pepperspray
 
     public static int Main(String[] args)
     {
-      if (!System.Diagnostics.Debugger.IsAttached)
+      var debugMode = System.Diagnostics.Debugger.IsAttached;
+      if (!debugMode)
       {
         Utils.Logging.ConfigureLogger(LogEventLevel.Information);
         Utils.Logging.ConfigureExceptionHandler();
@@ -36,30 +38,24 @@ namespace pepperspray
         Utils.Logging.ConfigureLogger(LogEventLevel.Verbose);
       }
 
-      DI.Setup();
-      var config = DI.Get<Configuration>();
-      if (System.Diagnostics.Debugger.IsAttached)
+      var config = new Configuration(Path.Combine("peppersprayData", "configuration.xml"));
+      DI.Register(config);
+
+      if (debugMode)
       {
         var localhostAddress = IPAddress.Parse("127.0.0.1");
-        config.CoreServerAddress = localhostAddress;
-        config.MiscServerAddress = localhostAddress;
+        config.ChatServerAddress = localhostAddress;
+        config.RestAPIServerAddress = localhostAddress;
+        config.LoginServerAddress = localhostAddress;
+        config.PlayerInactivityTimeout = 10 * 60;
       }
 
       Log.Information("pepperspray v0.5");
-      var coreServer = new CoreServer.CoreServer();
-      var externalServer = new ExternalServer.ExternalServer();
+      var coreServer = DI.Auto<ChatServerListener>();
+      var externalServer = DI.Auto<RestAPIServer.RestAPIServerListener>();
+      var loginServer = DI.Auto<LoginServer.LoginServerListener>();
+      Promise<Nothing>.Race(coreServer.Listen(), externalServer.Listen(), loginServer.Listen()).Join();
 
-      var coreTask = new CIO.Listener()
-        .Bind()
-        .Incoming()
-        .Map(connection => coreServer.ConnectPlayer(connection))
-        .Map(player => player.Stream.Stream()
-          .Map(ev => coreServer.ProcessCommand(player, ev))
-          .Catch(ex => { coreServer.PlayerLoggedOff(player); player.Stream.Terminate(); }));
-
-      var externalTask = externalServer.Listen();
-
-      PromiseHelpers.All(coreTask, externalTask).Join();
       return 0;
     }
   }

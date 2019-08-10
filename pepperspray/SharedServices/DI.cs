@@ -5,10 +5,10 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-using pepperspray.CoreServer.Game;
-using pepperspray.CoreServer.Protocol;
-using pepperspray.CoreServer.Shell;
-using pepperspray.CoreServer.Services;
+using pepperspray.ChatServer.Game;
+using pepperspray.ChatServer.Protocol;
+using pepperspray.ChatServer.Shell;
+using pepperspray.ChatServer.Services;
 
 namespace pepperspray.SharedServices
 {
@@ -33,17 +33,6 @@ namespace pepperspray.SharedServices
 
     internal static void Register<T>(T service) where T : class {
       DI.registeredServices[typeof(T)] = service;
-    }
-
-    internal static void Setup()
-    {
-      DI.Register(new Configuration(Path.Combine("peppersprayData", "configuration.xml")));
-      /*
-      DI.Register(new ActionsAuthenticator());
-      DI.Register(new ShellDispatcher());
-      DI.Register(new NameValidator());
-      DI.Register(new UserRoomService());
-      */
     }
   }
 }

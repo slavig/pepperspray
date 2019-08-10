@@ -12,6 +12,8 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,8 +35,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ChunkDecoder, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ChunkDecoder.1.0.2\lib\netstandard2.0\ChunkDecoder.dll</HintPath>
+    <Reference Include="ChunkDecoder, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ChunkDecoder.1.0.3\lib\netstandard2.0\ChunkDecoder.dll</HintPath>
+    </Reference>
+    <Reference Include="DotNetCross.Memory.Unsafe, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetCross.Memory.Unsafe.0.3.0\lib\netstandard1.0\DotNetCross.Memory.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Protobuf, Version=3.6.1.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Protobuf.3.6.1\lib\net45\Google.Protobuf.dll</HintPath>
     </Reference>
     <Reference Include="HttpMultipartParser, Version=2.2.4.0, Culture=neutral, PublicKeyToken=6d293681fa6c7a03, processorArchitecture=MSIL">
       <HintPath>..\packages\HttpMultipartParser.2.2.4\lib\net46\HttpMultipartParser.dll</HintPath>
@@ -42,11 +50,23 @@
     <Reference Include="IpMatcher, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\IpMatcher.1.0.1\lib\net452\IpMatcher.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Context, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nito.AsyncEx.Context.5.0.0\lib\netstandard2.0\Nito.AsyncEx.Context.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Tasks, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nito.AsyncEx.Tasks.5.0.0\lib\netstandard2.0\Nito.AsyncEx.Tasks.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.Disposables, Version=2.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nito.Disposables.2.0.1\lib\net461\Nito.Disposables.dll</HintPath>
     </Reference>
     <Reference Include="RegexMatcher, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RegexMatcher.1.0.2\lib\netstandard2.0\RegexMatcher.dll</HintPath>
+    </Reference>
+    <Reference Include="Remotion.Linq, Version=2.2.0.0, Culture=neutral, PublicKeyToken=fee00910d6e5f53b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Remotion.Linq.2.2.0\lib\net45\Remotion.Linq.dll</HintPath>
     </Reference>
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.2.8.0\lib\net46\Serilog.dll</HintPath>
@@ -66,8 +86,45 @@
     <Reference Include="Spike.Runtime, Version=3.0.5759.23517, Culture=neutral, PublicKeyToken=bbbae3b375c299b6, processorArchitecture=MSIL">
       <HintPath>..\packages\SpikeEngine.3.0.5759.23517\lib\Spike.Runtime.dll</HintPath>
     </Reference>
+    <Reference Include="SQLite-net, Version=1.5.231.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\sqlite-net-pcl.1.5.231\lib\netstandard1.1\SQLite-net.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.batteries_green, Version=1.1.11.121, Culture=neutral, PublicKeyToken=a84b7dcfb1391f7f, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCLRaw.bundle_green.1.1.11\lib\net45\SQLitePCLRaw.batteries_green.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.batteries_v2, Version=1.1.11.121, Culture=neutral, PublicKeyToken=8226ea5df37bcae9, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCLRaw.bundle_green.1.1.11\lib\net45\SQLitePCLRaw.batteries_v2.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.core, Version=1.1.11.121, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCLRaw.core.1.1.11\lib\net45\SQLitePCLRaw.core.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.provider.e_sqlite3, Version=1.1.11.121, Culture=neutral, PublicKeyToken=9c301db686d0bd12, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCLRaw.provider.e_sqlite3.net45.1.1.11\lib\net45\SQLitePCLRaw.provider.e_sqlite3.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.2.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.1.5.0\lib\netstandard2.0\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Drawing.Design" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Reflection.TypeExtensions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reflection.TypeExtensions.4.3.0\lib\net46\System.Reflection.TypeExtensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.4.0\lib\net461\System.ValueTuple.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -80,47 +137,59 @@
     <Reference Include="UnityEngine">
       <HintPath>E:\Stuff\3DXChat339_EZMod_Dirty\3DXChat_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
-    <Reference Include="WatsonWebserver, Version=2.1.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Watson.2.1.2\lib\netstandard2.0\WatsonWebserver.dll</HintPath>
+    <Reference Include="WatsonWebserver, Version=2.1.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Watson.2.1.5\lib\netstandard2.0\WatsonWebserver.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChatServer\ChatServerListener.cs" />
+    <Compile Include="ChatServer\Protocol\Requests\GetOnline.cs" />
     <Compile Include="CIO\CIO.cs" />
     <Compile Include="CIO\CIOSocket.cs" />
     <Compile Include="CIO\CombinedPromise.cs" />
     <Compile Include="CIO\MultiPromise.cs" />
     <Compile Include="CIO\PromiseExtensions.cs" />
-    <Compile Include="CoreServer\Game\Group.cs" />
-    <Compile Include="CoreServer\Game\UserRoom.cs" />
-    <Compile Include="CoreServer\Protocol\Requests\GroupJoin.cs" />
-    <Compile Include="CoreServer\Protocol\Requests\GroupLeave.cs" />
-    <Compile Include="CoreServer\Services\ActionsAuthenticator.cs" />
-    <Compile Include="CoreServer\Protocol\Message.cs" />
-    <Compile Include="CoreServer\Protocol\Requests\RoomClose.cs" />
-    <Compile Include="CoreServer\Protocol\Requests\RoomList.cs" />
-    <Compile Include="CoreServer\Protocol\Requests\RoomOpen.cs" />
-    <Compile Include="CoreServer\Services\GroupService.cs" />
-    <Compile Include="CoreServer\Services\LobbyService.cs" />
-    <Compile Include="CoreServer\Services\UserRoomService.cs" />
-    <Compile Include="CoreServer\Shell\ACommand.cs" />
-    <Compile Include="CoreServer\Shell\AdminBroadcast.cs" />
-    <Compile Include="CoreServer\Shell\AdminPlayers.cs" />
-    <Compile Include="CoreServer\Shell\Help.cs" />
-    <Compile Include="CoreServer\Shell\PrivateMessage.cs" />
-    <Compile Include="CoreServer\Shell\Players.cs" />
-    <Compile Include="CoreServer\Shell\ShellDispatcher.cs" />
-    <Compile Include="CoreServer\Shell\Kick.cs" />
-    <Compile Include="CoreServer\Shell\Superuser.cs" />
-    <Compile Include="ExternalServer\Controllers\CharacterController.cs" />
-    <Compile Include="ExternalServer\Controllers\WorldController.cs" />
-    <Compile Include="ExternalServer\ExternalServer.cs" />
-    <Compile Include="ExternalServer\Storage\WorldStorage.cs" />
+    <Compile Include="ChatServer\Game\Group.cs" />
+    <Compile Include="ChatServer\Game\UserRoom.cs" />
+    <Compile Include="ChatServer\Protocol\Requests\FriendRequest.cs" />
+    <Compile Include="ChatServer\Protocol\Requests\GroupJoin.cs" />
+    <Compile Include="ChatServer\Protocol\Requests\GroupLeave.cs" />
+    <Compile Include="ChatServer\Services\ActionsAuthenticator.cs" />
+    <Compile Include="ChatServer\Protocol\Message.cs" />
+    <Compile Include="ChatServer\Protocol\Requests\RoomClose.cs" />
+    <Compile Include="ChatServer\Protocol\Requests\RoomList.cs" />
+    <Compile Include="ChatServer\Protocol\Requests\RoomOpen.cs" />
+    <Compile Include="ChatServer\Services\GroupService.cs" />
+    <Compile Include="ChatServer\Services\LobbyService.cs" />
+    <Compile Include="ChatServer\Services\UserRoomService.cs" />
+    <Compile Include="ChatServer\Shell\ACommand.cs" />
+    <Compile Include="ChatServer\Shell\AdminBroadcast.cs" />
+    <Compile Include="ChatServer\Shell\AdminPlayers.cs" />
+    <Compile Include="ChatServer\Shell\Help.cs" />
+    <Compile Include="ChatServer\Shell\PrivateMessage.cs" />
+    <Compile Include="ChatServer\Shell\Players.cs" />
+    <Compile Include="ChatServer\Shell\ShellDispatcher.cs" />
+    <Compile Include="ChatServer\Shell\Kick.cs" />
+    <Compile Include="RestAPIServer\Controllers\CharacterController.cs" />
+    <Compile Include="RestAPIServer\Controllers\FriendsController.cs" />
+    <Compile Include="RestAPIServer\Controllers\LoginController.cs" />
+    <Compile Include="RestAPIServer\Controllers\WorldController.cs" />
+    <Compile Include="RestAPIServer\RestAPIServerListener.cs" />
+    <Compile Include="SharedServices\Models\Client.cs" />
+    <Compile Include="LoginServer\LoginServerListener.cs" />
+    <Compile Include="SharedServices\LoginService.cs" />
+    <Compile Include="RestAPIServer\Services\RequestHelpers.cs" />
+    <Compile Include="RestAPIServer\Storage\WorldStorage.cs" />
+    <Compile Include="SharedServices\Models\Character.cs" />
     <Compile Include="Resources\Strings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
+    <Compile Include="SharedServices\CharacterService.cs" />
     <Compile Include="SharedServices\Configuration.cs" />
+    <Compile Include="SharedServices\Database.cs" />
+    <Compile Include="SharedServices\Models\User.cs" />
     <Compile Include="Utils\Debug.cs" />
     <Compile Include="pepperspray.cs" />
     <Compile Include="CIO\Promise\EnumerableExt.cs" />
@@ -132,21 +201,22 @@
     <Compile Include="CIO\Promise\Promise_NonGeneric.cs" />
     <Compile Include="CIO\Promise\Tuple.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="CoreServer\EventDispatcher.cs" />
-    <Compile Include="CoreServer\CoreServer.cs" />
-    <Compile Include="CoreServer\Game\Lobby.cs" />
-    <Compile Include="CoreServer\Game\PlayerHandle.cs" />
-    <Compile Include="CoreServer\Game\World.cs" />
-    <Compile Include="CoreServer\EventStream.cs" />
-    <Compile Include="CoreServer\Protocol\Parser.cs" />
+    <Compile Include="ChatServer\EventDispatcher.cs" />
+    <Compile Include="ChatServer\ChatManager.cs" />
+    <Compile Include="ChatServer\Game\Lobby.cs" />
+    <Compile Include="ChatServer\Game\PlayerHandle.cs" />
+    <Compile Include="ChatServer\Game\World.cs" />
+    <Compile Include="ChatServer\EventStream.cs" />
+    <Compile Include="ChatServer\Protocol\Parser.cs" />
     <Compile Include="CIO\Listener.cs" />
-    <Compile Include="CoreServer\Protocol\ARequest.cs" />
-    <Compile Include="CoreServer\Protocol\Requests\LobbyJoin.cs" />
-    <Compile Include="CoreServer\Protocol\Requests\LobbyLeave.cs" />
-    <Compile Include="CoreServer\Protocol\Requests\Login.cs" />
-    <Compile Include="CoreServer\Protocol\Requests\Send.cs" />
-    <Compile Include="CoreServer\Protocol\Responses.cs" />
+    <Compile Include="ChatServer\Protocol\ARequest.cs" />
+    <Compile Include="ChatServer\Protocol\Requests\LobbyJoin.cs" />
+    <Compile Include="ChatServer\Protocol\Requests\LobbyLeave.cs" />
+    <Compile Include="ChatServer\Protocol\Requests\Login.cs" />
+    <Compile Include="ChatServer\Protocol\Requests\Send.cs" />
+    <Compile Include="ChatServer\Protocol\Responses.cs" />
     <Compile Include="SharedServices\DI.cs" />
+    <Compile Include="Utils\ErrorException.cs" />
     <Compile Include="Utils\Hashing.cs" />
     <Compile Include="SharedServices\NameValidator.cs" />
   </ItemGroup>
@@ -162,5 +232,19 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets'))" />
+    <Error Condition="!Exists('..\packages\SQLitePCLRaw.lib.e_sqlite3.linux.1.1.11\build\net35\SQLitePCLRaw.lib.e_sqlite3.linux.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SQLitePCLRaw.lib.e_sqlite3.linux.1.1.11\build\net35\SQLitePCLRaw.lib.e_sqlite3.linux.targets'))" />
+    <Error Condition="!Exists('..\packages\SQLitePCLRaw.lib.e_sqlite3.osx.1.1.11\build\net35\SQLitePCLRaw.lib.e_sqlite3.osx.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SQLitePCLRaw.lib.e_sqlite3.osx.1.1.11\build\net35\SQLitePCLRaw.lib.e_sqlite3.osx.targets'))" />
+    <Error Condition="!Exists('..\packages\SQLitePCLRaw.lib.e_sqlite3.v110_xp.1.1.11\build\net35\SQLitePCLRaw.lib.e_sqlite3.v110_xp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SQLitePCLRaw.lib.e_sqlite3.v110_xp.1.1.11\build\net35\SQLitePCLRaw.lib.e_sqlite3.v110_xp.targets'))" />
+  </Target>
+  <Import Project="..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" />
+  <Import Project="..\packages\SQLitePCLRaw.lib.e_sqlite3.linux.1.1.11\build\net35\SQLitePCLRaw.lib.e_sqlite3.linux.targets" Condition="Exists('..\packages\SQLitePCLRaw.lib.e_sqlite3.linux.1.1.11\build\net35\SQLitePCLRaw.lib.e_sqlite3.linux.targets')" />
+  <Import Project="..\packages\SQLitePCLRaw.lib.e_sqlite3.osx.1.1.11\build\net35\SQLitePCLRaw.lib.e_sqlite3.osx.targets" Condition="Exists('..\packages\SQLitePCLRaw.lib.e_sqlite3.osx.1.1.11\build\net35\SQLitePCLRaw.lib.e_sqlite3.osx.targets')" />
+  <Import Project="..\packages\SQLitePCLRaw.lib.e_sqlite3.v110_xp.1.1.11\build\net35\SQLitePCLRaw.lib.e_sqlite3.v110_xp.targets" Condition="Exists('..\packages\SQLitePCLRaw.lib.e_sqlite3.v110_xp.1.1.11\build\net35\SQLitePCLRaw.lib.e_sqlite3.v110_xp.targets')" />
 </Project>

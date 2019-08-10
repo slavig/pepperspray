@@ -1,42 +1,17 @@
 ﻿## Assembly-CSharp.dll
 #### SocketServer/Init (replace)
 ```
-	this.StartCoroutine(this.MakeInteractable());
-
-	private IEnumerator<WaitForSeconds> MakeInteractable()
-	{
-		yield return new WaitForSeconds(0.1f);
-		login.api.loginBtn.interactable = true;
-		yield break;
-	}
-```
-
-#### SocketServer/Init (replace, compat. with tv mod)
-```
-	this.StartCoroutine(this.MakeInteractable());
-
-	private IEnumerator MakeInteractable()
-	{
-		yield return new WaitForSeconds(0.1f);
-		loginGUI.api.blockLogin(false);
-		yield break;
-	} 
-```
-
-#### SocketServer/login (replace)
-```
-	var response = peppersprayPlugin.Locator.LoginService.Login(email, mhash);
-	this.OnResponce(null, null, new object[] { response });
+    this.manager = new SocketManager(new Uri(peppersprayPlugin.Locator.Config.LoginAddress + "socket.io/"), socketOptions);
 ```
 
 #### WorldLoader/UploadToServer (replace line)
 ```
-	WWW upload = new WWW(peppersprayPlugin.Locator.Config.ExternalAddress + "uploadworld2.php", postForm);
+	WWW upload = new WWW(peppersprayPlugin.Locator.Config.RestAPIAddress + "uploadworld2.php", postForm);
 ```
 
 #### WorldLoader/DownloadFromServer (replace line)
 ```
-	WWW download = new WWW(peppersprayPlugin.Locator.Config.ExternalAddress + "getworld2.php", postForm);
+	WWW download = new WWW(peppersprayPlugin.Locator.Config.RestAPIAddress + "getworld2.php", postForm);
 ```
 
 ## Assembly-CSharp-firstpass.dll
@@ -56,46 +31,24 @@
 ## Assembly-UnityScript.dll
 #### EventServerClientJS/NodeConnect (prepend)
 ```
-	this._client.ip = peppersprayPlugin.Locator.Config.CoreAddress.Ip;
-	this._client.ip2 = peppersprayPlugin.Locator.Config.CoreAddress.Ip;
-	this._client.port = peppersprayPlugin.Locator.Config.CoreAddress.Port;
-```
-
-#### GUIcontrol:485
-```
-	foreach (loaderWoman loaderWoman in UnityEngine.Object.FindObjectsOfType<loaderWoman>())
-	{
-		if (loaderWoman.transform.parent.name == "woman" || loaderWoman.transform.parent.name == "man")
-		{
-			loaderWoman.charSc.SendMessage("SaveCharData");
-			peppersprayPlugin.Locator.CharacterService.PushCharacter(new peppersprayPlugin.CharacterService.Character {
-				Name = login.login,
-				Sex = login.sex,
-				Data = character.myCharData,
-			});
-			break;
-		}
-	}
+	this._client.ip = peppersprayPlugin.Locator.Config.ChatAddress.Ip;
+	this._client.ip2 = peppersprayPlugin.Locator.Config.ChatAddress.Ip;
+	this._client.port = peppersprayPlugin.Locator.Config.ChatAddress.Port;
 ```
 
 #### login/Awake (prepend)
 ```
-	restApi.url = peppersprayPlugin.Locator.Config.ExternalAddress;
-	global::login.mainweburl = peppersprayPlugin.Locator.Config.ExternalAddress;
-	global::login.forumurl = peppersprayPlugin.Locator.Config.ExternalAddress;
+	restApi.url = peppersprayPlugin.Locator.Config.RestAPIAddress;
+	global::login.mainweburl = peppersprayPlugin.Locator.Config.RestAPIAddress;
+	global::login.forumurl = peppersprayPlugin.Locator.Config.RestAPIAddress;
 	global::login.coreurl = global::login.mainweburl + "chat.php";
 	global::login.newsurl = global::login.mainweburl + "news.php?ver=3";
 ```
 
 #### loginGUI/Start (prepend)
 ```
-		var pepperspayBanner = String.Format("Welcome to <b>pepperspray v{0}</b>!|<b>pepperspray</b> is an open-source 3DXChat server & client patch implementation by <b>Ezekiel_2517</b>.<br>Contribute on GitHub:|{1}",
-			peppersprayPlugin.Locator.Version,
-			"http://127.0.0.1:2518/news/images/img.png|http://github.com/peppersprayEzekiel|");
+    var pepperspayBanner = String.Format("Welcome to <b>pepperspray v{0}</b>!|<b>pepperspray</b> is an open-source 3DXChat server & client patch implementation by <b>Ezekiel_2517</b>.<br>Contribute on GitHub: <i>github.com/peppersprayEzekiel</i>|{1}",
+        peppersprayPlugin.Locator.Version) + "|";
 
-		this.addNewBox(pepperspayBanner);
-		this.loginField = "pepperspray.ezekiel@gmail.com";
-		this.passField = "easteregg";
-		((InputField)this.elements["login"].GetComponent(typeof(InputField))).text = this.loginField;
-		((InputField)this.elements["pass"].GetComponent(typeof(InputField))).text = this.passField;
+    this.addNewBox(pepperspayBanner);
 ```

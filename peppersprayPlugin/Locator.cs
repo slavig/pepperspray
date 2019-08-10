@@ -9,17 +9,9 @@ namespace peppersprayPlugin
   public class Locator
   {
     public static Configuration Config = Configuration.Load();
-    public static CharacterService CharacterService = CharacterService.Load();
-    public static LoginService LoginService = new LoginService();
-
     public static Locator Instance = new Locator();
 
     public static string Version = "0.5";
     public static string ProtocolVersion = "2";
-
-    public static void ReloadCharacters()
-    {
-      Locator.CharacterService = CharacterService.Load();
-    }
   }
 }

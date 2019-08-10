@@ -8,7 +8,7 @@ using RSG;
 
 namespace pepperspray.CIO
 {
-  class CombinedPromise<A>: MultiPromise<A>
+  public class CombinedPromise<A>: MultiPromise<A>
   {
     private List<IPromise> promises;
 
@@ -41,6 +41,14 @@ namespace pepperspray.CIO
             this.Reject(ex);
           }
         })).ToList();
+    }
+  }
+
+  public class Combined
+  {
+    public static CombinedPromise<T> Promise<T>(IEnumerable<IPromise<T>> gen)
+    {
+      return new CombinedPromise<T>(gen);
     }
   }
 }

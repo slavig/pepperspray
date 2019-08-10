@@ -57,5 +57,37 @@ when you leave group `service mygroup=207652`
 when you send invite `service mygroup=177661`, `service grouplist=Lzzy+`
 
 Position
+```
 data=~action/walk|7.71|0|5.13|Ezekiel_2517|8.84|0.01|5.94|)
 data=~action/setPlayerPosition|Ezekiel_2517|8.841823|0.00793457|5.93932|
+```
+
+Friends (`/friends`)
+```
+		[{"id": ID,"n":"NAME","s":"SEX"}] (json)
+
+```
+
+Friend add request (to server)
+```
+ friend "friend (2)"
+```
+
+Friend add request (to recepient)
+```
+	.: <serv2 friend 
+	friend, AngelGTi, f, 86634
+```
+
+Frined 
+
+Profile (`/getprofile`, param `id`)
+```
+		{"id":"149508","name":"ezekieltwentyfive","sex":"m","profile":{"age": "20", "interest": "men & women",  "location": "aaa", "about": "bbb"},"gifts":0,"married":{"id":0,"name":null,"sex":null},"ava":0,"photos":2,"photoslots":{}}
+```
+
+Save profile (`/saveprofile`), params:
+```
+	"id": "ID"
+	"profile": "{\r\n  \"age\": \"20\",\r\n  \"interest\": \"Men & Women\",\r\n  \"location\": \"AAA\",\r\n  \"about\": \"DDD\"\r\n}"]
+```

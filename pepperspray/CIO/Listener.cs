@@ -14,21 +14,21 @@ using pepperspray.SharedServices;
 
 namespace pepperspray.CIO
 {
-  class Listener
+  class CIOListener
   {
     private Socket listener;
     private Configuration config = DI.Get<Configuration>();
 
-    public Listener()
+    private string name;
+
+    public CIOListener(string name)
     {
+      this.name = name;
     }
 
-    public Listener Bind()
+    public CIOListener Bind(IPAddress addr, int port)
     {
-      var addr = this.config.CoreServerAddress;
-      var port = this.config.CoreServerPort;
-
-      Log.Information("Binding core server to {addr}:{port}", addr, port);
+      Log.Information("Binding {server} to {addr}:{port}", name, addr, port);
       this.listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
       this.listener.Bind(new IPEndPoint(addr, port));
       this.listener.Listen(100);
@@ -39,35 +39,32 @@ namespace pepperspray.CIO
     public IMultiPromise<CIOSocket> Incoming()
     {
       var promise = new MultiPromise<CIOSocket>();
-      CIOReactor.Spawn("incomingConnections", true, () =>
+      CIOReactor.Spawn(this.name + "_incomingConnections", true, () =>
       {
         try
         {
-          Log.Information("Listening for connections");
+          Log.Information("{server} listening for connections", this.name);
           var sync = new ManualResetEvent(false);
           while (true)
           {
             sync.Reset();
 
-            Log.Verbose("Accepting connection...");
             this.listener.BeginAccept(new AsyncCallback(result =>
             {
-              Log.Verbose("... ending accept connection");
               var socket = this.listener.EndAccept(result);
-              var wrappedSocket = new CIOSocket(socket);
+              var wrappedSocket = new CIOSocket(this.name, socket);
 
-              Log.Debug("Accepted connection {hash} from {ip}", wrappedSocket.GetHashCode(), wrappedSocket.Endpoint);
+              Log.Debug("{server} accepted connection {hash} from {ip}", this.name, wrappedSocket.GetHashCode(), wrappedSocket.Endpoint);
               promise.SingleResolve(wrappedSocket);
               sync.Set();
             }), null);
 
-            Log.Verbose("Waiting on sync");
             sync.WaitOne();
           }
         }
         catch (Exception e)
         {
-          Log.Error("Rejecting Incoming() promise, listener caught exception: {exception}", e);
+          Log.Error("{server} rejecting Incoming() promise, listener caught exception: {exception}", this.name, e);
           promise.Reject(e);
         }
       });

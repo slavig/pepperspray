@@ -38,9 +38,11 @@ namespace pepperspray.CIO
       }
     }
 
+    private string name;
     private Socket socket;
-    public CIOSocket(Socket socket)
+    public CIOSocket(string name, Socket socket)
     {
+      this.name = name;
       this.socket = socket;
     }
 
@@ -50,12 +52,12 @@ namespace pepperspray.CIO
       watch.Start();
 
       var promise = new MultiPromise<byte[]>();
-      CIOReactor.Spawn("inputStreamOf" + this.ConnectionHash, true, () =>
+      CIOReactor.Spawn(this.name + "_inputStreamOf" + this.ConnectionHash, true, () =>
       {
         var sync = new ManualResetEvent(false);
         var run = true;
 
-        Log.Debug("Starting input stream for {hash}", this.ConnectionHash);
+        Log.Debug("{server} starting input stream for {hash}", this.name, this.ConnectionHash);
         while (run)
         {
           sync.Reset();
@@ -64,7 +66,7 @@ namespace pepperspray.CIO
             if (value.Count() == 0)
             {
               run = false;
-              Log.Debug("Empty response from {hash}, terminating.", this.ConnectionHash);
+              Log.Debug("{server} received empty response from {hash}, terminating.", this.name, this.ConnectionHash);
               promise.Reject(new Exception("Closed"));
             } else { 
               promise.SingleResolve(value);
@@ -73,7 +75,7 @@ namespace pepperspray.CIO
             sync.Set();
           }).Catch(ex =>
           {
-            Log.Debug("readPacket() from {hash} rejected.", this.ConnectionHash);
+            Log.Debug("{server} readPacket() from {hash} rejected.", this.name, this.ConnectionHash);
             run = false;
             promise.Reject(ex);
             sync.Set();
@@ -82,10 +84,10 @@ namespace pepperspray.CIO
           sync.WaitOne();
         }
 
-        Log.Debug("Input stream for {hash} ended", this.ConnectionHash);
+        Log.Debug("{server} input stream for {hash} ended", this.name, this.ConnectionHash);
       }).Catch(ex => 
       {
-        Log.Error("Input stream {name} for {hash} crashed, rejecting its promise", this.ConnectionHash);
+        Log.Error("{server} input stream for {hash} crashed, rejecting its promise", this.name, this.ConnectionHash);
       });
 
       return promise;
@@ -136,14 +138,14 @@ namespace pepperspray.CIO
           }
           catch (Exception e)
           {
-            Log.Error("EndReceive failed: {exception}", e);
+            Log.Error("{server} EndReceive failed: {exception}", this.name, e);
             promise.Reject(e);
           }
         }), null);
       }
       catch (Exception e)
       {
-        Log.Error("BeginReceive failed: {exception}", e);
+        Log.Error("{server} BeginReceive failed: {exception}", this.name, e);
         promise.Reject(e);
       }
 

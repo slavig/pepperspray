@@ -20,7 +20,6 @@ namespace pepperspray.CIO
         result = res;
         sync.Set();
       });
-      sync.WaitOne();
       return result;
     }
 

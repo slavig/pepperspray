@@ -1,0 +1,14 @@
+{
+  "name": "pepperspray-socket-ioproxy",
+  "version": "0.0.0",
+  "description": "pepperspraySocketIOProxy",
+  "main": "app.js",
+  "author": {
+    "name": ""
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^2.2.0",
+    "winston": "^3.2.1"
+  }
+}
