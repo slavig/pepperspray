@@ -120,7 +120,7 @@ namespace pepperspray.ChatServer.Protocol
       return new Message("msg", new Dictionary<string, object>
         {
           { "name", sender.Name },
-          { "id", sender.Token },
+          { "id", sender.Id.ToString() },
           { "data", contents },
         }
       );

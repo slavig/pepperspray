@@ -61,7 +61,6 @@
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="GamePatchGuide.md" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

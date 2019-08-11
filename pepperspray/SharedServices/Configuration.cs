@@ -57,7 +57,15 @@ namespace pepperspray.SharedServices
 
         var crossOriginNode = doc.SelectSingleNode("configuration/rest-api-server/cross-origin");
         this.CrossOriginAddress = this.parseAddress(crossOriginNode.Attributes["allow-ip"].InnerText);
-        this.CrossOriginPort = Convert.ToInt32(crossOriginNode.Attributes["port"].InnerText);
+
+        if (crossOriginNode.Attributes["port"] != null)
+        {
+          this.CrossOriginPort = Convert.ToInt32(crossOriginNode.Attributes["port"].InnerText);
+        }
+        else
+        {
+          this.CrossOriginPort = 0;
+        }
 
         var worldCacheNode = doc.SelectSingleNode("configuration/rest-api-server/world-cache");
         this.WorldCacheCapacity = Convert.ToUInt32(worldCacheNode.Attributes["capacity"].InnerText);

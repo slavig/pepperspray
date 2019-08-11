@@ -4,6 +4,17 @@
     this.manager = new SocketManager(new Uri(peppersprayPlugin.Locator.Config.LoginAddress + "socket.io/"), socketOptions);
 ```
 
+#### SocketServer:59
+```
+
+    this.manager.Socket.Emit("login request", new object[]
+    {
+        email,
+        mhash,
+        peppersprayPlugin.Locator.ProtocolVersion
+    });
+```
+
 #### WorldLoader/UploadToServer (replace line)
 ```
 	WWW upload = new WWW(peppersprayPlugin.Locator.Config.RestAPIAddress + "uploadworld2.php", postForm);
@@ -36,4 +47,9 @@
 ```
     global::login.mainweburl = peppersprayPlugin.Locator.Config.RestAPIAddress;
     global::login.forumurl = peppersprayPlugin.Locator.Config.WebAddress;
+```
+
+#### loginGUI/OnClick (replace)
+```
+    string lhs = peppersprayPlugin.Locator.Config.WebAddress;
 ```

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Serilog;
 using Newtonsoft.Json;
 using WatsonWebserver;
 using pepperspray.Utils;
@@ -72,6 +73,7 @@ namespace pepperspray.RestAPIServer.Controllers
       } 
       catch (Exception e)
       {
+        Log.Debug("Client {endpoint} failed to delete account: {exception}", req.GetEndpoint(), e);
         if (e is LoginService.NotFoundException || e is LoginService.InvalidPasswordException)
         {
           return req.TextResponse("fail");

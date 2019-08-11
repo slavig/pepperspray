@@ -71,16 +71,18 @@ namespace pepperspray.LoginServer
                 break;
 
               case "login request":
-                if (ev.Count() < 3)
+                if (ev.Count() < 4)
                 {
                   throw new Exception("invalid request");
                 }
 
                 var username = ev.ElementAt(1).ToString();
                 var passwordHash = ev.ElementAt(2).ToString();
+                var protocolVersion = ev.ElementAt(3).ToString();
                 try
                 {
                   var user = this.loginService.Login(client.Endpoint, username, passwordHash);
+
                   lock(this)
                   {
                     this.loggedClients[user.Token] = client;

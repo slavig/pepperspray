@@ -1,11 +1,27 @@
 <configuration>
-	<address>
-		<core ip="auto" port="8126"/>
-		<misc ip="auto" port="8127"/>
-	</address>
-	<admin-tokens>
-		<token id="ezekiel" hash="444E15DE56410F9DE2565A7C800D8B6C"/>
-	</admin-tokens>
-	<player-inactivity-timeout seconds="20"/>
-	<world-cache capacity="20"/>
+	<chat-server>
+		<addr ip="auto" port="8124" />
+		<player-inactivity-timeout seconds="20" />
+	</chat-server>
+
+	<rest-api-server>
+		<addr ip="auto" port="8080" />
+		<world-cache capacity="20" />
+		<cross-origin allow-ip="auto" port="8082" />
+		<radiostations>
+			<lobby id="SALOON" url="http://dione.shoutca.st:8021/stream" />
+			<lobby id="beach" url="http://dione.shoutca.st:8030/stream.m3u" />
+			<lobby id="island" url="http://dione.shoutca.st:8004/stream" />
+			<lobby id="CLUB_NEW" url="http://dione.shoutca.st:8027/stream" />
+			<lobby id="YACHT" url="http://dione.shoutca.st:8011/stream" />
+			<lobby id="club" url="http://dione.shoutca.st:8033/stream" />
+			<lobby id="BDSM_club" url="http://dione.shoutca.st:8024/stream" />
+		</radiostations>
+	</rest-api-server>
+
+	<login-server>
+		<addr ip="auto" port="8081" />
+	</login-server>
+
+	<token salt="pepperspraySalt" />
 </configuration>

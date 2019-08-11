@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Serilog;
 using Newtonsoft.Json;
 using WatsonWebserver;
 using pepperspray.Utils;
@@ -40,17 +41,19 @@ namespace pepperspray.RestAPIServer.Controllers
         this.characterService.AcceptFriendRequest(req.GetBearerToken(), charId, friendId);
         return req.TextResponse("ok");
       } 
-      catch (FormatException)
+      catch (Exception e)
       {
-        return req.FailureResponse();
-      }
-      catch (ArgumentException)
-      {
-        return req.FailureResponse();
-      }
-      catch (CharacterService.NotAuthorizedException)
-      {
-        return req.FailureResponse();
+        Log.Debug("Client {endpoint} failed to accept friend: {exception}", req.GetEndpoint(), e);
+
+        if (e is FormatException
+          || e is ArgumentException
+          || e is CharacterService.NotAuthorizedException)
+        {
+          return req.FailureResponse();
+        } else
+        {
+          throw e;
+        }
       }
     }
 
@@ -64,17 +67,20 @@ namespace pepperspray.RestAPIServer.Controllers
         this.characterService.DeleteFriend(req.GetBearerToken(), charId, friendId);
         return req.TextResponse("ok");
       } 
-      catch (FormatException)
+      catch (Exception e)
       {
-        return req.FailureResponse();
-      }
-      catch (ArgumentException)
-      {
-        return req.FailureResponse();
-      }
-      catch (CharacterService.NotAuthorizedException)
-      {
-        return req.FailureResponse();
+        Log.Debug("Client {endpoint} failed to delete friend: {exception}", req.GetEndpoint(), e);
+
+        if (e is FormatException
+          || e is ArgumentException
+          || e is CharacterService.NotAuthorizedException)
+        {
+          return req.FailureResponse();
+        }
+        else
+        {
+          throw e;
+        }
       }
     }
 
@@ -85,17 +91,20 @@ namespace pepperspray.RestAPIServer.Controllers
         var charId = Convert.ToUInt32(req.GetFormParameter("id"));
         return req.TextResponse(this.characterService.GetFriends(req.GetBearerToken(), charId));
       } 
-      catch (FormatException)
+      catch (Exception e)
       {
-        return req.FailureResponse();
-      }
-      catch (ArgumentException)
-      {
-        return req.FailureResponse();
-      }
-      catch (CharacterService.NotAuthorizedException)
-      {
-        return req.FailureResponse();
+        Log.Debug("Client {endpoint} failed to load friends: {exception}", req.GetEndpoint(), e);
+
+        if (e is FormatException
+          || e is ArgumentException
+          || e is CharacterService.NotAuthorizedException)
+        {
+          return req.FailureResponse();
+        }
+        else
+        {
+          throw e;
+        }
       }
     }
   }

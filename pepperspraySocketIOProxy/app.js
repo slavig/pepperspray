@@ -70,8 +70,8 @@ socketServer.on("connection", socket => {
 		client.write(JSON.stringify(Array.from(args)));
 	};
 
-	socket.on("login request", (username, password) => {
-		proxy(["login request", username, password]);
+	socket.on("login request", (username, password, version) => {
+		proxy(["login request", username, password, version]);
 	});
 
 	socket.on("retokennect", (token) => {
