@@ -18,6 +18,7 @@ namespace pepperspray.ChatServer.Game
     internal string Identifier;
     internal AccessType Access;
     internal PlayerHandle User;
+    internal bool Prioritized;
     internal int NumberOfPlayers;
   }
 }

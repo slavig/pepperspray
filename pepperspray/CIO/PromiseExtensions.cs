@@ -29,4 +29,15 @@ namespace pepperspray.CIO
       return promise;
     }
   }
+
+  public class WaitPromise: Promise<Nothing>
+  {
+    public WaitPromise(TimeSpan span)
+    {
+      var timer = new Timer(t =>
+      {
+        this.Resolve(new Nothing());
+      }, null, (int)span.TotalMilliseconds, Timeout.Infinite);
+    }
+  }
 }

@@ -47,10 +47,11 @@ namespace pepperspray
         config.ChatServerAddress = localhostAddress;
         config.RestAPIServerAddress = localhostAddress;
         config.LoginServerAddress = localhostAddress;
+        config.CrossOriginAddress = localhostAddress;
         config.PlayerInactivityTimeout = 10 * 60;
       }
 
-      Log.Information("pepperspray v0.5");
+      Log.Information("pepperspray v0.7");
       var coreServer = DI.Auto<ChatServerListener>();
       var externalServer = DI.Auto<RestAPIServer.RestAPIServerListener>();
       var loginServer = DI.Auto<LoginServer.LoginServerListener>();

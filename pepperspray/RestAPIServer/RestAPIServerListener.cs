@@ -6,13 +6,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 
-using HttpMultipartParser;
 using Serilog;
 using RSG;
 using WatsonWebserver;
+using HttpMultipartParser;
 using pepperspray.CIO;
-using pepperspray.Utils;
+using pepperspray.RestAPIServer.Services;
 using pepperspray.SharedServices;
+using pepperspray.Utils;
 
 namespace pepperspray.RestAPIServer
 {
@@ -37,6 +38,7 @@ namespace pepperspray.RestAPIServer
       this.server.ContentRoutes.Add(RestAPIServerListener.staticsUrl, true);
       this.server.StaticRoutes.Add(HttpMethod.GET, "/getmoney", this.GetMoney);
       this.server.StaticRoutes.Add(HttpMethod.POST, "/news.php", this.News);
+      this.server.StaticRoutes.Add(HttpMethod.POST, "/radio.php", this.Radio);
       this.server.StaticRoutes.Add(HttpMethod.POST, "/offlineMsgCheck", this.OfflineMsgCheck);
 
       this.server.StaticRoutes.Add(HttpMethod.OPTIONS, "/login", this.CrossDomainAccessConfig);
@@ -58,7 +60,31 @@ namespace pepperspray.RestAPIServer
 
     internal HttpResponse News(HttpRequest req)
     {
-      return new HttpResponse(req, 200, null, "text/plain", File.ReadAllText(RestAPIServerListener.newsPath));
+      return req.TextResponse(File.ReadAllText(RestAPIServerListener.newsPath));
+    }
+
+    internal HttpResponse Radio(HttpRequest req)
+    {
+      try
+      {
+        string url = "no";
+        var action = req.GetFormParameter("action");
+        switch (action)
+        {
+          case "geturl":
+            var id = req.GetFormParameter("level");
+            this.config.Radiostations.TryGetValue(id, out url);
+
+            return req.TextResponse(url);
+
+          default:
+            return req.FailureResponse();
+        }
+      }
+      catch (ArgumentException)
+      {
+        return req.FailureResponse();
+      }
     }
 
     internal HttpResponse GetMoney(HttpRequest req)

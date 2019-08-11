@@ -97,6 +97,10 @@ namespace pepperspray.ChatServer.Protocol.Requests
       {
         exception = e;
       }
+      catch (Exception e)
+      {
+        exception = new ErrorException("internal", "Internal server error.");
+      }
 
       if (exception != null)
       {
@@ -122,9 +126,10 @@ namespace pepperspray.ChatServer.Protocol.Requests
       sender.Id = this.id;
       sender.Sex = this.sex;
       sender.IsLoggedIn = true;
-      sender.Character = this.character;
+      sender.CharacterId = this.character.Id;
       sender.User = this.user;
       sender.Client = this.client;
+      sender.Token = this.token;
 
       this.client.LoggedCharacter = this.character;
 

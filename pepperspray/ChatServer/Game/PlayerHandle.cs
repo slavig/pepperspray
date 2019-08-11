@@ -21,11 +21,11 @@ namespace pepperspray.ChatServer.Game
 
     internal uint Id;
     internal string Name;
-    internal string Hash;
+    internal string Token;
     internal string Sex;
 
     internal User User;
-    internal Character Character;
+    internal uint CharacterId;
     internal Client Client;
 
     internal Group CurrentGroup;
@@ -40,7 +40,9 @@ namespace pepperspray.ChatServer.Game
 
     internal IPromise<Nothing> Terminate(ErrorException exception)
     {
-      return this.ErrorAlert(exception).Then(a => this.Stream.Terminate());
+      return this.ErrorAlert(exception)
+        .Then(a => new WaitPromise(TimeSpan.FromSeconds(10)))
+        .Then(a => a.Then(b => this.Stream.Terminate()));
     }
 
     internal IPromise<Nothing> ErrorAlert(ErrorException exception)
@@ -49,14 +51,16 @@ namespace pepperspray.ChatServer.Game
       {
         try
         {
-          return this.Client.Emit("alert", exception.PlayerMessage);
+          var message = String.Format("Connection will be terminated in 10 seconds.\n\nReason: {0}\n\nInternal code: {1}.", exception.PlayerMessage, exception.Message);
+          return this.Client.Emit("alert", message);
         }
         catch (LoginServerListener.NotFoundException) { }
       }
 
       if (this.Stream != null)
       {
-        return this.Stream.Write(Responses.MakeshiftAlert(exception.PlayerMessage));
+        var message = String.Format("DISCONNECTED FROM SERVER, disconnecting in 10s.: {0}", exception.PlayerMessage);
+        return this.Stream.Write(Responses.MakeshiftAlert(message));
       }
 
       Log.Warning("Failed to alert player {player} ({hash}/{endpoint}) about exception error {exception}",

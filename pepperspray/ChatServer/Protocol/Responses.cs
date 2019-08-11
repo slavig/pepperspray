@@ -29,7 +29,13 @@ namespace pepperspray.ChatServer.Protocol
 
     internal static string UserRoomRecord(UserRoom room)
     {
-        return String.Format("{0}|{1}|house|0|{2}|{3}|False|{4}|", room.User.Name, room.Identifier, room.NumberOfPlayers >= 0 ? room.NumberOfPlayers : 0, room.Name, room.User.Id);
+        return String.Format("{0}|{1}|house|0|{2}|{3}|{4}|{5}|", 
+          room.User.Name, 
+          room.Identifier, 
+          room.NumberOfPlayers >= 0 ? room.NumberOfPlayers : 0, 
+          room.Name, 
+          room.Prioritized ? "True" : "False", 
+          room.User.Id);
     }
 
     internal static string ServerRoomRecord(Lobby lobby)
@@ -114,7 +120,7 @@ namespace pepperspray.ChatServer.Protocol
       return new Message("msg", new Dictionary<string, object>
         {
           { "name", sender.Name },
-          { "id", sender.Hash },
+          { "id", sender.Token },
           { "data", contents },
         }
       );

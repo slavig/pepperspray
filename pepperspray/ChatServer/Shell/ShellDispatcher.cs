@@ -15,10 +15,12 @@ namespace pepperspray.ChatServer.Shell
   {
     private AShellCommand[] registeredCommands = new AShellCommand[]
     {
-      new Kick(),
-      new Players(),
+      new AdminKick(),
       new AdminPlayers(),
       new AdminBroadcast(),
+      new AdminConfigReload(),
+      new AdminRoomPriority(),
+      new Players(),
       new PrivateMessage(),
       new Help(),
     };
@@ -57,7 +59,7 @@ namespace pepperspray.ChatServer.Shell
         }
       }
 
-      return Nothing.Resolved();
+      return this.Error(sender, server, "Unknown command, see /help.");
     }
 
     internal IPromise<Nothing> Error(PlayerHandle sender, ChatManager server, string format, params object[] arguments)

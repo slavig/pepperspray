@@ -144,6 +144,8 @@
   <ItemGroup>
     <Compile Include="ChatServer\ChatServerListener.cs" />
     <Compile Include="ChatServer\Protocol\Requests\GetOnline.cs" />
+    <Compile Include="ChatServer\Shell\AdminConfigReload.cs" />
+    <Compile Include="ChatServer\Shell\AdminRoomPriority.cs" />
     <Compile Include="CIO\CIO.cs" />
     <Compile Include="CIO\CIOSocket.cs" />
     <Compile Include="CIO\CombinedPromise.cs" />
@@ -169,7 +171,7 @@
     <Compile Include="ChatServer\Shell\PrivateMessage.cs" />
     <Compile Include="ChatServer\Shell\Players.cs" />
     <Compile Include="ChatServer\Shell\ShellDispatcher.cs" />
-    <Compile Include="ChatServer\Shell\Kick.cs" />
+    <Compile Include="ChatServer\Shell\AdminKick.cs" />
     <Compile Include="RestAPIServer\Controllers\CharacterController.cs" />
     <Compile Include="RestAPIServer\Controllers\FriendsController.cs" />
     <Compile Include="RestAPIServer\Controllers\LoginController.cs" />

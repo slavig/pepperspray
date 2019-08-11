@@ -32,7 +32,7 @@ namespace pepperspray.SharedServices
       {
         lock(this.db)
         {
-          var character = this.findAndAuthorize(user.Token, id);
+          var character = this.FindAndAuthorize(user.Token, id);
           if (!character.Name.Equals(name) || !character.Sex.Equals(sex))
           {
             throw new InvalidNameException();
@@ -116,7 +116,7 @@ namespace pepperspray.SharedServices
       {
         lock(this.db)
         {
-          var character = this.findAndAuthorize(token, id);
+          var character = this.FindAndAuthorize(token, id);
           character.Name = newName;
           character.Sex = newSex;
 
@@ -138,7 +138,7 @@ namespace pepperspray.SharedServices
       {
         lock(this.db)
         {
-          var character = this.findAndAuthorize(token, id);
+          var character = this.FindAndAuthorize(token, id);
           character.Appearance = data;
 
           this.db.CharacterUpdate(character);
@@ -159,7 +159,7 @@ namespace pepperspray.SharedServices
       {
         lock(this.db)
         {
-          var character = this.findAndAuthorize(token, id);
+          var character = this.FindAndAuthorize(token, id);
           this.db.CharacterDeleteById(character.Id);
         }
       }
@@ -199,7 +199,7 @@ namespace pepperspray.SharedServices
       {
         lock (this.db)
         {
-          var character = this.findAndAuthorize(token, id);
+          var character = this.FindAndAuthorize(token, id);
           character.ProfileJSON = json;
 
           this.db.CharacterUpdate(character);
@@ -223,7 +223,7 @@ namespace pepperspray.SharedServices
         lock(this.db)
         {
           friendCharacter = this.db.CharacterFindById(friendId);
-          character = this.findAndAuthorize(token, id);
+          character = this.FindAndAuthorize(token, id);
         }
 
         character.AddFriend(friendCharacter);
@@ -263,7 +263,7 @@ namespace pepperspray.SharedServices
 
         lock (this.db)
         {
-          character = this.findAndAuthorize(token, id);
+          character = this.FindAndAuthorize(token, id);
         }
 
         character.RemoveFriend(friendId);
@@ -313,7 +313,7 @@ namespace pepperspray.SharedServices
 
         lock(this.db)
         {
-          character = this.findAndAuthorize(token, id);
+          character = this.FindAndAuthorize(token, id);
         }
 
         return character.FriendsJSON;
@@ -358,7 +358,7 @@ namespace pepperspray.SharedServices
       return File.ReadAllText(Path.Combine(CharacterService.characterPresetsDirectoryPath, path));
     }
 
-    internal Character findAndAuthorize(string token, uint id)
+    internal Character FindAndAuthorize(string token, uint id)
     {
       try
       {

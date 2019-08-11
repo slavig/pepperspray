@@ -18,12 +18,14 @@ namespace peppersprayPlugin
     }
 
     public Address ChatAddress;
+    public string WebAddress;
     public string RestAPIAddress;
     public string LoginAddress;
 
     public static Configuration Load()
     {
       var confidDoc = Utils.OpenXml(Configuration.configPath());
+      var webAddressNode = confidDoc.SelectSingleNode("servers/web");
       var coreAddressNode = confidDoc.SelectSingleNode("servers/chat");
       var extAddressNode = confidDoc.SelectSingleNode("servers/rest-api");
       var loginAddressNode = confidDoc.SelectSingleNode("servers/login");
@@ -38,6 +40,7 @@ namespace peppersprayPlugin
       return new Configuration
       {
         ChatAddress = coreAddress,
+        WebAddress = webAddressNode.InnerText,
         RestAPIAddress = extAddressNode.InnerText,
         LoginAddress = loginAddressNode.InnerText
       };

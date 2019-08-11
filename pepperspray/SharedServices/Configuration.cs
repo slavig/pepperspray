@@ -23,14 +23,23 @@ namespace pepperspray.SharedServices
     internal IPAddress CrossOriginAddress;
     internal int CrossOriginPort;
 
+    internal Dictionary<string, string> Radiostations = new Dictionary<string, string>();
     internal string TokenSalt;
     internal uint WorldCacheCapacity;
     internal int PlayerInactivityTimeout;
 
+    private string path;
+
     internal Configuration(string path)
+    { 
+      this.path = path;
+      this.LoadConfiguration();
+    }
+
+    internal void LoadConfiguration()
     {
       var doc = new XmlDocument();
-      doc.Load(path);
+      doc.Load(this.path);
 
       {
         var chatAddressNode = doc.SelectSingleNode("configuration/chat-server/addr");
@@ -52,6 +61,16 @@ namespace pepperspray.SharedServices
 
         var worldCacheNode = doc.SelectSingleNode("configuration/rest-api-server/world-cache");
         this.WorldCacheCapacity = Convert.ToUInt32(worldCacheNode.Attributes["capacity"].InnerText);
+
+        var radiostationsNodes = doc.SelectSingleNode("configuration/rest-api-server/radiostations");
+        foreach (var nodeElement in radiostationsNodes.ChildNodes)
+        {
+          var node = nodeElement as XmlNode;
+          var lobbyId = node.Attributes["id"].InnerText;
+          var url = node.Attributes["url"].InnerText;
+
+          this.Radiostations[lobbyId] = url;
+        }
       }
 
       {

@@ -14,10 +14,8 @@ using pepperspray.SharedServices;
 
 namespace pepperspray.ChatServer.Shell
 {
-  internal class Kick: AShellCommand
+  internal class AdminRoomPriority: AShellCommand
   {
-    private Configuration config = DI.Get<Configuration>();
-
     internal override bool RequireAdmin()
     {
       return true;
@@ -25,7 +23,7 @@ namespace pepperspray.ChatServer.Shell
 
     internal override bool WouldDispatch(string tag)
     {
-      return tag.Equals("kick");
+      return tag.Equals("aroompriority");
     }
 
     internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
@@ -35,20 +33,15 @@ namespace pepperspray.ChatServer.Shell
         return dispatcher.Error(sender, server, "Invalid arguments");
       }
 
-      var player = server.World.FindPlayer(arguments.ElementAt(0));
-      if (player == null)
+      var id = arguments.ElementAt(0) + "_room";
+      var room = server.World.FindUserRoom(id);
+      if (room == null)
       {
-        return dispatcher.Error(sender, server, "Player not found: \"{0}\"", arguments.First());
+        return dispatcher.Error(sender, server, "Room {0} has not been found.", id);
       }
 
-      var reason = "None.";
-      if (arguments.Count() > 1)
-      {
-        reason = String.Join(" ", arguments.Skip(1));
-      }
-
-      return server.KickPlayer(player, reason)
-        .Then(a => dispatcher.Output(sender, server, "Player kicked"));
+      room.Prioritized = !room.Prioritized;
+      return dispatcher.Output(sender, server, room.Prioritized ? "Room now prioritized." : "Room now not prioritized");
     }
   }
 }
