@@ -1,13 +1,39 @@
 <configuration>
 	<chat-server>
+		<!--
+			Address and port of chat server.
+		-->
 		<addr ip="auto" port="8124" />
+
+		<!-- 
+			If server didn't receive a message in this interval from particular player
+			that player will be kicked.
+		 -->
 		<player-inactivity-timeout seconds="20" />
 	</chat-server>
 
 	<rest-api-server>
+		<!--
+			Address and port of REST API server.
+		-->
 		<addr ip="auto" port="8080" />
+
+		<!--
+			Number of cached words in RAM. Consumes memory, 
+			exact number depends on the worlds in question.
+		-->
 		<world-cache capacity="20" />
+
+		<!--
+			Cross-origin headers configuration, REST API will allow
+			requests from this ip:port combination only 
+			(should be configured to point at peppersprayWeb).
+		-->
 		<cross-origin allow-ip="auto" port="8082" />
+
+		<!--
+			Radiostations for standard locations.
+		-->
 		<radiostations>
 			<lobby id="SALOON" url="http://dione.shoutca.st:8021/stream" />
 			<lobby id="beach" url="http://dione.shoutca.st:8030/stream.m3u" />
@@ -17,16 +43,34 @@
 			<lobby id="club" url="http://dione.shoutca.st:8033/stream" />
 			<lobby id="BDSM_club" url="http://dione.shoutca.st:8024/stream" />
 		</radiostations>
+
 		<mail>
+			<!--
+				SMTP server address and port used to send out e-mails.
+			-->
 			<smtp-server addr="smtp.test.com" port="587" />
+
+			<!--
+				Mail address login credentials.
+			-->
 			<credentials username="test" password="test" />
+
+			<!--
+				Sender for mail messages.
+			-->
 			<sender addr="test@test.com" />
 		</mail>
 	</rest-api-server>
 
 	<login-server>
+		<!--
+			Login server's address and port.
+		-->
 		<addr ip="auto" port="8081" />
 	</login-server>
 
+	<!--
+		Hash salt used to construct access tokens.
+	-->
 	<token salt="pepperspraySalt" />
 </configuration>

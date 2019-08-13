@@ -28,17 +28,7 @@ namespace pepperspray.ChatServer.Shell
 
     internal bool ShouldDispatch(string message)
     {
-      if (message.StartsWith("/me"))
-      {
-        return false;
-      } if (message.StartsWith("/"))
-      {
-        return true;
-      }
-      else
-      {
-        return false;
-      }
+      return message.StartsWith("/") && !message.StartsWith("/me") && !message.StartsWith("/roll");
     }
 
     internal IPromise<Nothing> Dispatch(PlayerHandle sender, ChatManager server, string message)

@@ -34,26 +34,34 @@ namespace pepperspray.ChatServer.Shell
       var builder = new StringBuilder("Online players: ");
       var output = new List<IPromise<Nothing>>();
 
+      List<PlayerHandle> players;
       lock (server)
       {
-        builder.AppendFormat("(total {0})", server.World.Players.Count());
-        foreach (var player in server.World.Players)
-        {
-          if (query != null && !player.Name.Contains(query))
-          {
-            continue;
-          }
+        players = server.World.Players.ToList();
+      }
 
-          builder.AppendFormat(" {0} (at {1}),", player.Name, player.CurrentLobby != null ? player.CurrentLobby.Identifier : "editor");
-          if (builder.Length > 200)
-          {
-            output.Add(dispatcher.Output(sender, server, builder.ToString()));
-            builder.Clear();
-          }
+      players.Sort((a, b) => a.CurrentLobbyName.CompareTo(b.CurrentLobbyName));
+
+      builder.AppendFormat("(total {0})", players.Count());
+      foreach (var player in players)
+      {
+        if (query != null && !player.Name.Contains(query))
+        {
+          continue;
+        }
+
+        builder.AppendFormat(" {0} (at {1}),", player.Name, player.CurrentLobby != null ? player.CurrentLobby.Identifier : "editor");
+        if (builder.Length > 250)
+        {
+          output.Add(dispatcher.Output(sender, server, builder.ToString()));
+          builder.Clear();
         }
       }
 
-      output.Add(dispatcher.Output(sender, server, builder.ToString()));
+      if (builder.ToString().Trim().Count() > 0)
+      {
+        output.Add(dispatcher.Output(sender, server, builder.ToString()));
+      }
       return new CombinedPromise<Nothing>(output);
     }
   }

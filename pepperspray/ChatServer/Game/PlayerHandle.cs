@@ -31,6 +31,14 @@ namespace pepperspray.ChatServer.Game
     internal Group CurrentGroup;
     internal Lobby CurrentLobby;
 
+    internal string CurrentLobbyName
+    {
+      get
+      {
+        return this.CurrentLobby != null ? this.CurrentLobby.Name ?? "unknown" : "none";
+      }
+    }
+
     internal EventStream Stream;
 
     internal PlayerHandle(EventStream stream)
