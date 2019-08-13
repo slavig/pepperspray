@@ -203,6 +203,7 @@
     <Compile Include="RestAPIServer\Controllers\LoginController.cs" />
     <Compile Include="RestAPIServer\Controllers\WorldController.cs" />
     <Compile Include="RestAPIServer\RestAPIServerListener.cs" />
+    <Compile Include="RestAPIServer\Services\MailService.cs" />
     <Compile Include="SharedServices\Models\Client.cs" />
     <Compile Include="LoginServer\LoginServerListener.cs" />
     <Compile Include="SharedServices\LoginService.cs" />

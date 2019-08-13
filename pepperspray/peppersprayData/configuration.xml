@@ -17,6 +17,11 @@
 			<lobby id="club" url="http://dione.shoutca.st:8033/stream" />
 			<lobby id="BDSM_club" url="http://dione.shoutca.st:8024/stream" />
 		</radiostations>
+		<mail>
+			<smtp-server addr="smtp.test.com" port="587" />
+			<credentials username="test" password="test" />
+			<sender addr="test@test.com" />
+		</mail>
 	</rest-api-server>
 
 	<login-server>

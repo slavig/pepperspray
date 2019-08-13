@@ -11,6 +11,15 @@ namespace pepperspray.SharedServices
 {
   internal class Configuration
   {
+    internal class MailConfiguration
+    {
+      internal string ServerAddress;
+      internal int ServerPort;
+      internal string Address;
+      internal string Username;
+      internal string Password;
+    }
+
     internal IPAddress ChatServerAddress;
     internal int ChatServerPort;
 
@@ -27,6 +36,8 @@ namespace pepperspray.SharedServices
     internal string TokenSalt;
     internal uint WorldCacheCapacity;
     internal int PlayerInactivityTimeout;
+
+    internal MailConfiguration Mail;
 
     private string path;
 
@@ -78,6 +89,23 @@ namespace pepperspray.SharedServices
           var url = node.Attributes["url"].InnerText;
 
           this.Radiostations[lobbyId] = url;
+        }
+
+        {
+          var mailNode = doc.SelectSingleNode("configuration/rest-api-server/mail");
+
+          var smptServerNode = mailNode.SelectSingleNode("smtp-server");
+          var credentialsNode = mailNode.SelectSingleNode("credentials");
+          var senderNode = mailNode.SelectSingleNode("sender");
+
+          this.Mail = new Configuration.MailConfiguration
+          {
+            ServerAddress = smptServerNode.Attributes["addr"].InnerText,
+            ServerPort = Convert.ToInt32(smptServerNode.Attributes["port"].InnerText),
+            Username = credentialsNode.Attributes["username"].InnerText,
+            Password = credentialsNode.Attributes["password"].InnerText,
+            Address = senderNode.Attributes["addr"].InnerText,
+          };
         }
       }
 

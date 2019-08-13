@@ -8,6 +8,7 @@ using Serilog;
 using Newtonsoft.Json;
 using pepperspray.SharedServices;
 using pepperspray.LoginServer;
+using pepperspray.RestAPIServer.Services;
 using pepperspray.Utils;
 
 namespace pepperspray.SharedServices
@@ -20,6 +21,7 @@ namespace pepperspray.SharedServices
 
     private Configuration config = DI.Get<Configuration>();
     private Database db = DI.Auto<Database>();
+    private MailService mailService = DI.Auto<MailService>();
     private Random random = DI.Auto<Random>();
     private LoginServer.LoginServerListener socialServer = DI.Auto<LoginServer.LoginServerListener>();
 
@@ -50,6 +52,67 @@ namespace pepperspray.SharedServices
           Log.Debug("Login failed: password doesn't match");
           throw new InvalidPasswordException();
         }
+      }
+      catch (Database.NotFoundException)
+      {
+        throw new NotFoundException();
+      }
+    }
+
+    internal void ChangePassword(string endpoint, string username, string passwordHash, string newPasswordHash)
+    {
+      Log.Information("Client {endpoint} changing password with {username}:{passwordHash} to {newPasswordHash}", endpoint, username, passwordHash, newPasswordHash);
+
+      try
+      {
+        User user = null;
+        lock (this.db)
+        {
+          user = this.db.UserFind(username);
+        }
+
+        if (user.PasswordHash.Equals(passwordHash))
+        {
+          lock(this.db)
+          {
+            user.PasswordHash = newPasswordHash;
+            this.db.UserUpdate(user);
+          }
+        }
+        else
+        {
+          Log.Debug("Change password failed: password doesn't match");
+          throw new InvalidPasswordException();
+        }
+      }
+      catch (Database.NotFoundException)
+      {
+        throw new NotFoundException();
+      }
+    }
+
+    internal void ForgotPassword(string endpoint, string username)
+    {
+      Log.Information("Client {endpoint} asking for password forgot of {username}", endpoint, username);
+
+      try
+      {
+        User user = null;
+        lock (this.db)
+        {
+          user = this.db.UserFind(username);
+        }
+
+        var newPassword = this.generateRandomPassword();
+        var newPasswordHash = this.hashPassword(username, newPassword);
+
+        lock (this.db)
+        {
+          user.PasswordHash = newPasswordHash;
+          this.db.UserUpdate(user);
+        }
+
+        this.mailService.SendMessage(username, "pepperspray - password changed", "New password: {0}", newPassword);
       }
       catch (Database.NotFoundException)
       {
@@ -189,6 +252,22 @@ namespace pepperspray.SharedServices
     private void generateToken(User user)
     {
       user.Token = Hashing.Md5(this.config.TokenSalt + this.random.Next());
+    }
+
+    private string generateRandomPassword()
+    {
+      var builder = new StringBuilder();
+      for (int i = 0; i < 8; i++)
+      {
+        builder.Append(this.random.Next(9));
+      }
+
+      return builder.ToString();
+    }
+
+    private string hashPassword(string username, string password)
+    {
+      return Hashing.Md5(username + password + "login");
     }
   }
 }

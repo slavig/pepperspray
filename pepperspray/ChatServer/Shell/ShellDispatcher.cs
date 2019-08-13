@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using RSG;
 
+using Serilog;
 using pepperspray.CIO;
 using pepperspray.ChatServer.Game;
 using pepperspray.ChatServer.Protocol;
@@ -59,6 +60,7 @@ namespace pepperspray.ChatServer.Shell
         }
       }
 
+      Log.Debug("Unkown shell command from {user} - {command}", sender.Name, message);
       return this.Error(sender, server, "Unknown command, see /help.");
     }
 
