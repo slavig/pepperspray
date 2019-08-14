@@ -11,6 +11,7 @@ namespace pepperspray.ChatServer.Game
     internal enum AccessType
     {
       ForAll,
+      ForFriends,
       ForGroup
     }
 

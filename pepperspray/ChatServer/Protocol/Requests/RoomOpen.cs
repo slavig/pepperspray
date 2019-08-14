@@ -47,8 +47,10 @@ namespace pepperspray.ChatServer.Protocol.Requests
       switch (System.Convert.ToInt32(arguments[2].ToString()))
       {
         case 0:
-        case 1:
           accessType = UserRoom.AccessType.ForAll;
+          break;
+        case 1:
+          accessType = UserRoom.AccessType.ForFriends;
           break;
         case 2:
           accessType = UserRoom.AccessType.ForGroup;

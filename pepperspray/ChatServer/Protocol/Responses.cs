@@ -29,13 +29,28 @@ namespace pepperspray.ChatServer.Protocol
 
     internal static string UserRoomRecord(UserRoom room)
     {
-        return String.Format("{0}|{1}|house|0|{2}|{3}|{4}|{5}|", 
-          room.User.Name, 
-          room.Identifier, 
-          room.NumberOfPlayers >= 0 ? room.NumberOfPlayers : 0, 
-          room.Name, 
-          room.Prioritized ? "True" : "False", 
-          room.User.Id);
+      int accessType = 0;
+      switch (room.Access)
+      {
+        case UserRoom.AccessType.ForAll:
+          accessType = 0;
+          break;
+        case UserRoom.AccessType.ForFriends:
+          accessType = 1;
+          break;
+        case UserRoom.AccessType.ForGroup:
+          accessType = 2;
+          break;
+      }
+
+      return String.Format("{0}|{1}|house|{2}|{3}|{4}|{5}|{6}|",
+        room.User.Name,
+        room.Identifier,
+        accessType,
+        room.NumberOfPlayers >= 0 ? room.NumberOfPlayers : 0,
+        room.Name,
+        room.Prioritized ? "True" : "False",
+        room.User.Id);
     }
 
     internal static string ServerRoomRecord(Lobby lobby)

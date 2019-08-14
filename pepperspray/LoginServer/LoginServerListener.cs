@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text;
@@ -138,11 +139,18 @@ namespace pepperspray.LoginServer
       var promises = new List<IPromise<Nothing>>();
       lock(this)
       {
-        foreach (var client in this.loggedClients)
+        foreach (var client in this.loggedClients.ToArray())
         {
           if (client.Value.LoggedCharacter != null && client.Value.LoggedCharacter.Id == characterId)
           {
-            promises.Add(this.Emit(client.Key, data));
+            try
+            {
+              promises.Add(this.Emit(client.Key, data));
+            }
+            catch (NotFoundException)
+            {
+
+            }
           }
         }
       }
@@ -163,7 +171,15 @@ namespace pepperspray.LoginServer
         Client client = null;
         if (this.loggedClients.TryGetValue(token, out client))
         {
-          return client.Emit(data.ToArray());
+          try
+          {
+            return client.Emit(data.ToArray());
+          }
+          catch (Exception)
+          {
+            this.loggedClients.Remove(token);
+            throw new NotFoundException();
+          }
         }
         else
         {
@@ -177,9 +193,13 @@ namespace pepperspray.LoginServer
       var promises = new List<IPromise<Nothing>>();
       lock(this)
       {
-        foreach (var client in this.loggedClients.Values)
+        foreach (var token in this.loggedClients.Keys)
         {
-          client.Emit(data);
+          try
+          {
+            this.Emit(token, data);
+          }
+          catch (NotFoundException) { }
         }
       }
 

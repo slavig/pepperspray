@@ -23,10 +23,8 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
     internal override IPromise<Nothing> Process(PlayerHandle sender, ChatManager server)
     {
-      var character = this.characterService.FindAndAuthorize(sender.Token, sender.CharacterId);
-      var users = character.GetFriendIDs().Where(ch => server.World.FindPlayerById(ch) != null);
+      var users = sender.Character.GetFriendIDs().Where(ch => server.World.FindPlayerById(ch) != null);
       return sender.Stream.Write(Responses.OnlineUsers(users));
-
     }
   }
 }

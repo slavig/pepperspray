@@ -126,7 +126,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
       sender.Id = this.id;
       sender.Sex = this.sex;
       sender.IsLoggedIn = true;
-      sender.CharacterId = this.character.Id;
+      sender.Character = this.character;
       sender.User = this.user;
       sender.Client = this.client;
       sender.Token = this.token;

@@ -25,7 +25,7 @@ namespace pepperspray.ChatServer.Game
     internal string Sex;
 
     internal User User;
-    internal uint CharacterId;
+    internal Character Character;
     internal Client Client;
 
     internal Group CurrentGroup;

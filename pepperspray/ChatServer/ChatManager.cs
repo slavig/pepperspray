@@ -29,6 +29,7 @@ namespace pepperspray.ChatServer
     private GroupService groupService;
     private ActionsAuthenticator actionsAuthenticator;
     private EventDispatcher dispatcher;
+    private CharacterService characterService;
 
     public ChatManager()
     {
@@ -40,6 +41,7 @@ namespace pepperspray.ChatServer
       this.actionsAuthenticator = DI.Auto<ActionsAuthenticator>();
       this.groupService = DI.Auto<GroupService>();
       this.dispatcher = DI.Auto<EventDispatcher>();
+      this.characterService = DI.Auto<CharacterService>();
 
       this.World = new World();
       this.nameValidator.ServerName = this.Name;
@@ -129,6 +131,11 @@ namespace pepperspray.ChatServer
       this.userRoomService.PlayerLoggedOff(player);
       this.actionsAuthenticator.PlayerLoggedOff(player);
       this.groupService.PlayerLoggedOff(player);
+
+      if (player.Character != null)
+      {
+        this.characterService.LogoutCharacter(player.Character);
+      }
 
       PlayerHandle[] playersToNotify = new PlayerHandle[] { };
       lock (this)

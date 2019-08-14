@@ -15,6 +15,7 @@ using pepperspray.CIO;
 using pepperspray.Utils;
 using pepperspray.ChatServer;
 using pepperspray.RestAPIServer;
+using pepperspray.LoginServer;
 using pepperspray.SharedServices;
 
 namespace pepperspray
@@ -53,8 +54,8 @@ namespace pepperspray
 
       Log.Information("pepperspray v0.7");
       var coreServer = DI.Auto<ChatServerListener>();
-      var externalServer = DI.Auto<RestAPIServer.RestAPIServerListener>();
-      var loginServer = DI.Auto<LoginServer.LoginServerListener>();
+      var externalServer = DI.Auto<RestAPIServerListener>();
+      var loginServer = DI.Auto<LoginServerListener>();
       Promise<Nothing>.Race(coreServer.Listen(), externalServer.Listen(), loginServer.Listen()).Join();
 
       return 0;

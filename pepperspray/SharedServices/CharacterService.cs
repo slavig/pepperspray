@@ -26,6 +26,8 @@ namespace pepperspray.SharedServices
     private Database db = DI.Auto<Database>();
     private LoginServerListener loginServer = DI.Auto<LoginServerListener>();
 
+    private Dictionary<uint, Character> loggedCharacters = new Dictionary<uint, Character>();
+
     internal Character LoginCharacter(User user, uint id, string name, string sex)
     {
       try
@@ -40,12 +42,25 @@ namespace pepperspray.SharedServices
 
           character.LastLogin = DateTime.Now;
           this.db.CharacterUpdate(character);
+          lock(this)
+          {
+            this.loggedCharacters[id] = character;
+          }
+
           return character;
         }
       } 
       catch (Database.NotFoundException)
       {
         throw new NotFoundException();
+      }
+    }
+
+    internal void LogoutCharacter(Character character)
+    {
+      lock(this)
+      {
+        this.loggedCharacters.Remove(character.Id);
       }
     }
 
@@ -179,7 +194,7 @@ namespace pepperspray.SharedServices
         Character character = null;
         lock (this.db)
         {
-          character = this.db.CharacterFindById(id);
+          character = this.Find(id);
         }
 
         return character.GetProfileJSON();
@@ -222,7 +237,7 @@ namespace pepperspray.SharedServices
 
         lock(this.db)
         {
-          friendCharacter = this.db.CharacterFindById(friendId);
+          friendCharacter = this.Find(friendId);
           character = this.FindAndAuthorize(token, id);
         }
 
@@ -272,7 +287,7 @@ namespace pepperspray.SharedServices
         {
           lock (this.db)
           {
-            friendCharacter = this.db.CharacterFindById(friendId);
+            friendCharacter = this.Find(friendId);
           }
 
           friendCharacter.RemoveFriend(character.Id);
@@ -358,13 +373,30 @@ namespace pepperspray.SharedServices
       return File.ReadAllText(Path.Combine(CharacterService.characterPresetsDirectoryPath, path));
     }
 
+    internal Character Find(uint id)
+    {
+      Character character;
+      if (!this.loggedCharacters.TryGetValue(id, out character))
+      {
+        character = this.db.CharacterFindById(id);
+      }
+
+      return character;
+    }
+
     internal Character FindAndAuthorize(string token, uint id)
     {
       try
       {
-      var user = this.db.UserFindByToken(token);
-      var character = this.db.CharacterFindByIdAndUser(id, user.Id);
-      return character;
+        var user = this.db.UserFindByToken(token);
+        var character = this.Find(id);
+
+        if (character.UserId != user.Id)
+        {
+          throw new NotAuthorizedException();
+        }
+
+        return character;
       }
       catch (Database.NotFoundException)
       {
