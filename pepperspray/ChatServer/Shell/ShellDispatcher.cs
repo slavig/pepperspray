@@ -33,6 +33,7 @@ namespace pepperspray.ChatServer.Shell
 
     internal IPromise<Nothing> Dispatch(PlayerHandle sender, ChatManager server, string message)
     {
+      Log.Debug("Shell dispatches command from {name}: {cmd}", sender.Name, message);
       string[] components = message.Substring(1).Split(' ');
       string tag = components.First();
       foreach (var command in this.registeredCommands)

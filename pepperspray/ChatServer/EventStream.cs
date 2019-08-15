@@ -106,7 +106,7 @@ namespace pepperspray.ChatServer
 
           if (seekTo == 0)
           {
-            Log.Warning("{hash} failed to parse event, total {total_bytes} in bufffer", this.ConnectionHash, this.slidingBuffer.Count());
+            Log.Debug("{hash} failed to parse event, total {total_bytes} in bufffer", this.ConnectionHash, this.slidingBuffer.Count());
             break;
           }
         }

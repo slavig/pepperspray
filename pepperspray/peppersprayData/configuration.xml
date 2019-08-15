@@ -60,6 +60,22 @@
 			-->
 			<sender addr="test@test.com" />
 		</mail>
+
+		<news>
+			<!--
+				News entries. Supported attributes: "title" (required), 
+				"image" (image url, optional), "url" (url to open on click, optional).
+				Text will be trimmed, game supports following attributes: <br />, <b>, <i>.
+			-->
+			<entry title="Test title 1.">
+Test line <b>1</b>.
+<br />Test line <b>2</b>.
+			</entry>
+			<entry title="Test title 2.">
+Test line <b>1</b>.
+<br />Test line <b>2</b>.
+			</entry>
+		</news>
 	</rest-api-server>
 
 	<login-server>

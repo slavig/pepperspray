@@ -11,7 +11,7 @@ namespace pepperspray.SharedServices
   {
     internal string ServerName = "";
 
-    private Regex nameRegex = new Regex("^\\w{3,32}$");
+    private Regex nameRegex = new Regex("^[A-Za-z0-9_\\-]{3,32}$");
     private static List<string> reservedNames = new List<string>
     {
       "Admin", "Server", "Support", "pepperspray"

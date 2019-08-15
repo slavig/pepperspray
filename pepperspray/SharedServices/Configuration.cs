@@ -20,6 +20,13 @@ namespace pepperspray.SharedServices
       internal string Password;
     }
 
+    public class Announcement
+    {
+      public string Title;
+      public string Text;
+      public string ImageURL, LinkURL;
+    }
+
     internal IPAddress ChatServerAddress;
     internal int ChatServerPort;
 
@@ -38,6 +45,8 @@ namespace pepperspray.SharedServices
     internal int PlayerInactivityTimeout;
 
     internal MailConfiguration Mail;
+
+    internal List<Announcement> Announcements = new List<Announcement>();
 
     private string path;
 
@@ -106,6 +115,24 @@ namespace pepperspray.SharedServices
             Password = credentialsNode.Attributes["password"].InnerText,
             Address = senderNode.Attributes["addr"].InnerText,
           };
+        }
+
+        {
+          var newsNode = doc.SelectSingleNode("configuration/rest-api-server/news");
+          if (newsNode != null)
+          {
+            foreach (var nodeElement in newsNode.ChildNodes)
+            {
+              var node = nodeElement as XmlNode;
+              this.Announcements.Add(new Announcement
+              {
+                Title = node.Attributes["title"].InnerText,
+                Text = node.InnerXml.Trim(),
+                ImageURL = node.Attributes["image"] != null ? node.Attributes["image"].InnerText : "",
+                LinkURL = node.Attributes["url"] != null ? node.Attributes["url"].InnerText : ""
+              });
+            }
+          }
         }
       }
 

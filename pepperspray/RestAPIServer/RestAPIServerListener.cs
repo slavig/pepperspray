@@ -56,7 +56,19 @@ namespace pepperspray.RestAPIServer
 
     internal HttpResponse News(HttpRequest req)
     {
-      return req.TextResponse(File.ReadAllText(RestAPIServerListener.newsPath));
+      var builder = new StringBuilder();
+      foreach (var announcement in this.config.Announcements)
+      {
+        builder.AppendFormat(
+          "{0}|{1}|{2}|{3}|",
+          announcement.Title,
+          announcement.Text.Replace("\n", "").Replace("<br />", "<br>").Replace("<br/>", "<br>"),
+          announcement.ImageURL,
+          announcement.LinkURL
+          );
+      }
+
+      return req.TextResponse(builder.ToString());
     }
 
     internal HttpResponse Radio(HttpRequest req)

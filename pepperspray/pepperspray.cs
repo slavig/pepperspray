@@ -52,7 +52,7 @@ namespace pepperspray
         config.PlayerInactivityTimeout = 10 * 60;
       }
 
-      Log.Information("pepperspray v0.7");
+      Log.Information("pepperspray v0.8");
       var coreServer = DI.Auto<ChatServerListener>();
       var externalServer = DI.Auto<RestAPIServerListener>();
       var loginServer = DI.Auto<LoginServerListener>();
