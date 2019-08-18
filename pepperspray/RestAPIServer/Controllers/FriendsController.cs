@@ -15,7 +15,7 @@ namespace pepperspray.RestAPIServer.Controllers
 {
   internal class FriendsController
   {
-    private CharacterService characterService = DI.Auto<CharacterService>();
+    private FriendsService friendsService = DI.Get<FriendsService>();
 
     internal FriendsController(Server s)
     {
@@ -38,12 +38,12 @@ namespace pepperspray.RestAPIServer.Controllers
         var charId = Convert.ToUInt32(components[0]);
         var friendId = Convert.ToUInt32(components[1]);
 
-        this.characterService.AcceptFriendRequest(req.GetBearerToken(), charId, friendId);
+        this.friendsService.AcceptFriendRequest(req.GetBearerToken(), charId, friendId);
         return req.TextResponse("ok");
       } 
       catch (Exception e)
       {
-        Log.Debug("Client {endpoint} failed to accept friend: {exception}", req.GetEndpoint(), e);
+        Log.Warning("Client {endpoint} failed to accept friend: {exception}", req.GetEndpoint(), e);
 
         if (e is FormatException
           || e is ArgumentException
@@ -64,12 +64,12 @@ namespace pepperspray.RestAPIServer.Controllers
         var charId = Convert.ToUInt32(req.GetFormParameter("uid"));
         var friendId = Convert.ToUInt32(req.GetFormParameter("fid"));
 
-        this.characterService.DeleteFriend(req.GetBearerToken(), charId, friendId);
+        this.friendsService.DeleteFriend(req.GetBearerToken(), charId, friendId);
         return req.TextResponse("ok");
       } 
       catch (Exception e)
       {
-        Log.Debug("Client {endpoint} failed to delete friend: {exception}", req.GetEndpoint(), e);
+        Log.Warning("Client {endpoint} failed to delete friend: {exception}", req.GetEndpoint(), e);
 
         if (e is FormatException
           || e is ArgumentException
@@ -89,11 +89,11 @@ namespace pepperspray.RestAPIServer.Controllers
       try
       {
         var charId = Convert.ToUInt32(req.GetFormParameter("id"));
-        return req.TextResponse(this.characterService.GetFriends(req.GetBearerToken(), charId));
+        return req.TextResponse(this.friendsService.GetFriends(req.GetBearerToken(), charId));
       } 
       catch (Exception e)
       {
-        Log.Debug("Client {endpoint} failed to load friends: {exception}", req.GetEndpoint(), e);
+        Log.Warning("Client {endpoint} failed to load friends: {exception}", req.GetEndpoint(), e);
 
         if (e is FormatException
           || e is ArgumentException

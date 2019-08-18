@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -165,12 +165,27 @@
     <Reference Include="WatsonWebserver, Version=2.1.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Watson.2.1.5\lib\netstandard2.0\WatsonWebserver.dll</HintPath>
     </Reference>
+    <Reference Include="Spike.Runtime">
+      <HintPath>..\..\..\..\..\..\usr\local\Spike.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="ThreeDXChat.Networking">
+      <HintPath>..\..\..\..\..\..\usr\local\ThreeDXChat.Networking.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\..\..\..\usr\local\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="HttpMultipartParser">
+      <HintPath>..\packages\HttpMultipartParser.2.2.4\lib\net46\HttpMultipartParser.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChatServer\ChatServerListener.cs" />
     <Compile Include="ChatServer\Protocol\Requests\GetOnline.cs" />
+    <Compile Include="ChatServer\Services\AppearanceRequestService.cs" />
     <Compile Include="ChatServer\Shell\AdminConfigReload.cs" />
+    <Compile Include="ChatServer\Shell\AdminMoney.cs" />
     <Compile Include="ChatServer\Shell\AdminRoomPriority.cs" />
+    <Compile Include="ChatServer\Shell\Pay.cs" />
     <Compile Include="CIO\CIO.cs" />
     <Compile Include="CIO\CIOSocket.cs" />
     <Compile Include="CIO\CombinedPromise.cs" />
@@ -200,10 +215,16 @@
     <Compile Include="CIO\SQLite.cs" />
     <Compile Include="RestAPIServer\Controllers\CharacterController.cs" />
     <Compile Include="RestAPIServer\Controllers\FriendsController.cs" />
+    <Compile Include="RestAPIServer\Controllers\GiftController.cs" />
     <Compile Include="RestAPIServer\Controllers\LoginController.cs" />
+    <Compile Include="RestAPIServer\Controllers\OfflineMessageController.cs" />
+    <Compile Include="RestAPIServer\Controllers\PhotoController.cs" />
     <Compile Include="RestAPIServer\Controllers\WorldController.cs" />
     <Compile Include="RestAPIServer\RestAPIServerListener.cs" />
+    <Compile Include="SharedServices\GiftsService.cs" />
     <Compile Include="RestAPIServer\Services\MailService.cs" />
+    <Compile Include="RestAPIServer\Storage\PhotoStorage.cs" />
+    <Compile Include="SharedServices\FriendsService.cs" />
     <Compile Include="SharedServices\Models\Client.cs" />
     <Compile Include="LoginServer\LoginServerListener.cs" />
     <Compile Include="SharedServices\LoginService.cs" />
@@ -218,7 +239,12 @@
     <Compile Include="SharedServices\CharacterService.cs" />
     <Compile Include="SharedServices\Configuration.cs" />
     <Compile Include="SharedServices\Database.cs" />
+    <Compile Include="SharedServices\Models\FriendLiaison.cs" />
+    <Compile Include="SharedServices\Models\Gift.cs" />
+    <Compile Include="SharedServices\Models\OfflineMessage.cs" />
+    <Compile Include="SharedServices\Models\PhotoSlot.cs" />
     <Compile Include="SharedServices\Models\User.cs" />
+    <Compile Include="RestAPIServer\Services\PhotoService.cs" />
     <Compile Include="Utils\Debug.cs" />
     <Compile Include="pepperspray.cs" />
     <Compile Include="CIO\Promise\EnumerableExt.cs" />
@@ -247,6 +273,7 @@
     <Compile Include="Utils\ErrorException.cs" />
     <Compile Include="Utils\Hashing.cs" />
     <Compile Include="SharedServices\NameValidator.cs" />
+    <Compile Include="SharedServices\OfflineMessageService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

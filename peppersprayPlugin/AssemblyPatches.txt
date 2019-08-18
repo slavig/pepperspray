@@ -15,6 +15,11 @@
     });
 ```
 
+#### uploader:29
+```
+    this.UploadFile(openFileDialog.FileName, peppersprayPlugin.Locator.Config.RestAPIAddress + "upload2.php");
+```
+
 #### WorldLoader/UploadToServer (replace line)
 ```
 	WWW upload = new WWW(peppersprayPlugin.Locator.Config.RestAPIAddress + "uploadworld2.php", postForm);
@@ -30,6 +35,7 @@
 ```
     using (WWW www = new WWW(peppersprayPlugin.Locator.Config.RestAPIAddress + "radio.php", form))
 ```
+
 #### restApi:48 (replace)
 ```
     private static string url = peppersprayPlugin.Locator.Config.RestAPIAddress;

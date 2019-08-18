@@ -20,7 +20,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
     private int numberOfPlayers;
     private UserRoom.AccessType accessType;
 
-    private UserRoomService userRoomService = DI.Auto<UserRoomService>();
+    private UserRoomService userRoomService = DI.Get<UserRoomService>();
 
     internal static RoomOpen Parse(Message ev)
     {

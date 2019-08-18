@@ -99,7 +99,9 @@ namespace pepperspray.CIO
         {
           this.SingleResolve(processedItem);
         }
-      }).Catch(ex => this.Reject(ex));
+      })
+      .SingleCatch(ex => this.Reject(ex))
+      .Catch(ex => this.Reject(ex));
     }
   }
 

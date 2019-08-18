@@ -11,13 +11,15 @@ using pepperspray.Utils;
 
 namespace pepperspray.RestAPIServer.Services
 {
-  internal class MailService
+  internal class MailService: IDIService
   {
-    private Configuration config = DI.Get<Configuration>();
+    private Configuration config;
     private SmtpClient client;
 
-    public MailService()
+    public void Inject()
     {
+      this.config = DI.Get<Configuration>();
+
       this.client = new SmtpClient(this.config.Mail.ServerAddress, this.config.Mail.ServerPort);
       this.client.Credentials = new NetworkCredential(this.config.Mail.Username, this.config.Mail.Password);
       this.client.EnableSsl = true;

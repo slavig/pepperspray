@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -17,12 +18,24 @@ namespace pepperspray.RestAPIServer.Services
 
     internal static HttpResponse TextResponse(this HttpRequest req, string text)
     {
-      return new HttpResponse(req, 200, null, "text/plain", text);
+      return new HttpResponse(req, 200, null, "text/plain; charset=utf-8", text);
     }
 
     internal static HttpResponse JsonResponse(this HttpRequest req, object data)
     {
-      return new HttpResponse(req, 200, null, "text/json", JsonConvert.SerializeObject(data));
+      return new HttpResponse(req, 200, null, "application/json", JsonConvert.SerializeObject(data));
+    }
+
+    internal static HttpResponse RedirectionResponse(this HttpRequest req, string targetUrl)
+    {
+      return new HttpResponse(req, 301, new Dictionary<string, string> { { "Location", targetUrl } });
+    }
+
+    internal static string GetMultipartBoundary(this HttpRequest req)
+    {
+      var contentType = req.ContentType;
+      var boundaryPrefix = "multipart/form-data; boundary=\"";
+      return contentType.Substring(boundaryPrefix.Count(), contentType.Count() - boundaryPrefix.Count() - 1);
     }
 
     internal static string GetEndpoint(this HttpRequest req)
@@ -32,6 +45,11 @@ namespace pepperspray.RestAPIServer.Services
 
     internal static string GetFormParameter(this HttpRequest req, string key)
     {
+      if (req.Data == null)
+      {
+        throw new ArgumentException();
+      }
+
       var str = Encoding.UTF8.GetString(req.Data);
       foreach (string keypair in str.Split('&'))
       {

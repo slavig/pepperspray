@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ using System.Xml;
 
 namespace pepperspray.SharedServices
 {
-  internal class Configuration
+  internal class Configuration: IDIService
   {
     internal class MailConfiguration
     {
@@ -27,6 +28,23 @@ namespace pepperspray.SharedServices
       public string ImageURL, LinkURL;
     }
 
+    public class RedirectionConfiguration
+    {
+      public bool Enabled;
+      public string Host;
+    }
+
+    public class WorldsConfiguration
+    {
+      public uint RamCacheCapacity;
+    }
+
+    public class CurrencyConfiguration
+    {
+      public bool Enabled;
+      public uint Padding;
+    }
+
     internal IPAddress ChatServerAddress;
     internal int ChatServerPort;
 
@@ -40,17 +58,30 @@ namespace pepperspray.SharedServices
     internal int CrossOriginPort;
 
     internal Dictionary<string, string> Radiostations = new Dictionary<string, string>();
-    internal string TokenSalt;
-    internal uint WorldCacheCapacity;
-    internal int PlayerInactivityTimeout;
-
     internal MailConfiguration Mail;
-
     internal List<Announcement> Announcements = new List<Announcement>();
+    internal RedirectionConfiguration StaticsRedirection;
+    internal WorldsConfiguration Worlds;
+    internal CurrencyConfiguration Currency;
+
+    internal string TokenSalt;
+    internal int PlayerInactivityTimeout;
+    internal uint PlayerPhotoSlots;
+    internal uint PhotoSizeLimit;
+    internal uint LoginAttemptThrottle;
 
     private string path;
 
-    internal Configuration(string path)
+    public void Inject()
+    {
+    }
+
+    public Configuration()
+    {
+      Debug.Assert(false, "Unsupported constructor.");
+    }
+
+    public Configuration(string path)
     { 
       this.path = path;
       this.LoadConfiguration();
@@ -87,8 +118,31 @@ namespace pepperspray.SharedServices
           this.CrossOriginPort = 0;
         }
 
-        var worldCacheNode = doc.SelectSingleNode("configuration/rest-api-server/world-cache");
-        this.WorldCacheCapacity = Convert.ToUInt32(worldCacheNode.Attributes["capacity"].InnerText);
+        var loginAttemptThrottleNode = doc.SelectSingleNode("configuration/rest-api-server/login-attempt-throttle");
+        this.LoginAttemptThrottle = Convert.ToUInt32(loginAttemptThrottleNode.Attributes["seconds"].InnerText);
+
+        {
+          var currencyNode = doc.SelectSingleNode("configuration/rest-api-server/currency");
+          this.Currency = new CurrencyConfiguration
+          {
+            Enabled = currencyNode.Attributes["enabled"].InnerText.Equals("true"),
+            Padding = Convert.ToUInt32(currencyNode.Attributes["padding"].InnerText)
+          };
+        }
+
+        {
+          var worldCacheNode = doc.SelectSingleNode("configuration/rest-api-server/worlds");
+          this.Worlds = new WorldsConfiguration
+          {
+            RamCacheCapacity = Convert.ToUInt32(worldCacheNode.Attributes["ram-cache-capacity"].InnerText),
+          };
+        }
+
+        {
+          var photosNode = doc.SelectSingleNode("configuration/rest-api-server/photos");
+          this.PlayerPhotoSlots = Convert.ToUInt32(photosNode.Attributes["slot-count"].InnerText);
+          this.PhotoSizeLimit = Convert.ToUInt32(photosNode.Attributes["size-limit"].InnerText);
+        }
 
         var radiostationsNodes = doc.SelectSingleNode("configuration/rest-api-server/radiostations");
         foreach (var nodeElement in radiostationsNodes.ChildNodes)
@@ -134,6 +188,15 @@ namespace pepperspray.SharedServices
             }
           }
         }
+
+        {
+          var redirectionNode = doc.SelectSingleNode("configuration/rest-api-server/statics-redirection");
+          this.StaticsRedirection = new RedirectionConfiguration
+          {
+            Enabled = redirectionNode.Attributes["enabled"].InnerText.Equals("true"),
+            Host = redirectionNode.Attributes["host"].InnerText
+          };
+        }
       }
 
       {
@@ -150,7 +213,7 @@ namespace pepperspray.SharedServices
     {
       if (value.Equals("auto"))
       {
-        IPHostEntry ipHostInfo = Dns.Resolve(Dns.GetHostName());
+        IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
         return ipHostInfo.AddressList[0];
       } else
       {

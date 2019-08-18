@@ -27,8 +27,15 @@ namespace pepperspray.ChatServer.Shell
 
     internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
     {
-      this.config.LoadConfiguration();
-      return dispatcher.Output(sender, server, "Configuration file reloaded.");
+      try
+      {
+        this.config.LoadConfiguration();
+        return dispatcher.Output(sender, server, "Configuration file reloaded.");
+      }
+      catch (Exception e)
+      {
+        return dispatcher.Error(sender, server, "Failed to reload configuration: " + e);
+      }
     }
   }
 }

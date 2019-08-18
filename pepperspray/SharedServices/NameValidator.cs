@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace pepperspray.SharedServices
 {
-  internal class NameValidator
+  internal class NameValidator: IDIService
   {
     internal string ServerName = "";
 
@@ -16,6 +16,11 @@ namespace pepperspray.SharedServices
     {
       "Admin", "Server", "Support", "pepperspray"
     };
+
+    public void Inject()
+    {
+
+    }
 
     internal bool Validate(string name)
     {

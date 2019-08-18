@@ -17,7 +17,7 @@ namespace pepperspray.RestAPIServer.Controllers
 {
   internal class CharacterController
   {
-    private CharacterService characterService = DI.Auto<CharacterService>();
+    private CharacterService characterService = DI.Get<CharacterService>();
 
     internal CharacterController(Server s)
     {
@@ -115,7 +115,7 @@ namespace pepperspray.RestAPIServer.Controllers
       }
       catch (Exception e)
       {
-        Log.Debug("Client {endpoint} failed to change char: {exception}", req.GetEndpoint(), e);
+        Log.Warning("Client {endpoint} failed to change char: {exception}", req.GetEndpoint(), e);
         if (e is FormatException || e is ArgumentException || e is CharacterService.NotAuthorizedException)
         {
           return req.FailureResponse();
@@ -140,7 +140,7 @@ namespace pepperspray.RestAPIServer.Controllers
       }
       catch (Exception e)
       {
-        Log.Debug("Client {endpoint} failed to save char: {exception}", req.GetEndpoint(), e);
+        Log.Warning("Client {endpoint} failed to save char: {exception}", req.GetEndpoint(), e);
         if (e is FormatException || e is ArgumentException || e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException)
         {
           return req.FailureResponse();
@@ -165,7 +165,7 @@ namespace pepperspray.RestAPIServer.Controllers
       }
       catch (Exception e)
       {
-        Log.Debug("Client {endpoint} failed to delete char: {exception}", req.GetEndpoint(), e);
+        Log.Warning("Client {endpoint} failed to delete char: {exception}", req.GetEndpoint(), e);
         if (e is FormatException || e is ArgumentException || e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException)
         {
           return req.FailureResponse();
@@ -186,7 +186,7 @@ namespace pepperspray.RestAPIServer.Controllers
         return req.TextResponse(this.characterService.GetCharacterProfile(uid));
       }
       catch (Exception e) {
-        Log.Debug("Client {endpoint} failed to get char profile: {exception}", req.GetEndpoint(), e);
+        Log.Warning("Client {endpoint} failed to get char profile: {exception}", req.GetEndpoint(), e);
         if (e is FormatException || e is ArgumentException || e is CharacterService.NotFoundException)
         {
           return req.FailureResponse();
@@ -209,10 +209,10 @@ namespace pepperspray.RestAPIServer.Controllers
         this.characterService.UpdateCharacterProfile(token, uid, data);
         return req.TextResponse("ok");
       }
-      catch (ArgumentException e)
+      catch (Exception e)
       {
-        Log.Debug("Client {endpoint} failed to save char profile: {exception}", req.GetEndpoint(), e);
-        if (e is ArgumentException || e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException)
+        Log.Warning("Client {endpoint} failed to save char profile: {exception}", req.GetEndpoint(), e);
+        if (e is ArgumentException || e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException || e is FormatException)
         {
           return req.FailureResponse();
         }

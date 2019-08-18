@@ -14,10 +14,16 @@ using pepperspray.SharedServices;
 
 namespace pepperspray.ChatServer.Services
 {
-  internal class GroupService
+  internal class GroupService: IDIService
   {
-    private ChatManager server = DI.Get<ChatManager>();
-    private Random random = DI.Auto<Random>();
+    private ChatManager server;
+    private Random random;
+
+    public void Inject()
+    {
+      this.server = DI.Get<ChatManager>();
+      this.random = new Random();
+    }
 
     internal void PlayerLoggedIn(PlayerHandle sender)
     {

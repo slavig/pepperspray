@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Serilog;
@@ -13,17 +14,26 @@ using pepperspray.Utils;
 
 namespace pepperspray.SharedServices
 {
-  internal class LoginService
+  internal class LoginService: IDIService
   {
     internal class InvalidPasswordException : Exception {}
     internal class NotFoundException : Exception {}
     internal class InvalidTokenException : Exception {}
 
-    private Configuration config = DI.Get<Configuration>();
-    private Database db = DI.Auto<Database>();
-    private MailService mailService = DI.Auto<MailService>();
-    private Random random = DI.Auto<Random>();
-    private LoginServer.LoginServerListener socialServer = DI.Auto<LoginServer.LoginServerListener>();
+    private Configuration config;
+    private Database db;
+    private MailService mailService;
+    private Random random;
+    private LoginServerListener socialServer;
+
+    public void Inject()
+    {
+      this.config = DI.Get<Configuration>();
+      this.db = DI.Get<Database>();
+      this.mailService = DI.Get<MailService>();
+      this.random = new Random();
+      this.socialServer = DI.Get<LoginServerListener>();
+    }
 
     internal User Login(string endpoint, string username, string passwordHash)
     {
@@ -49,7 +59,6 @@ namespace pepperspray.SharedServices
         }
         else
         {
-          Log.Debug("Login failed: password doesn't match");
           throw new InvalidPasswordException();
         }
       }
@@ -120,14 +129,14 @@ namespace pepperspray.SharedServices
       }
     }
 
-    internal bool SignUp(string endpoint, string username, string passwordHash)
+    internal User SignUp(string endpoint, string username, string passwordHash)
     {
       lock (this.db)
       {
         try
         {
           this.db.UserFind(username);
-          return false;
+          return null;
         }
         catch (Database.NotFoundException) { }
       }
@@ -150,7 +159,7 @@ namespace pepperspray.SharedServices
         this.db.UserInsert(user);
       }
 
-      return true;
+      return user;
     }
 
     internal void DeleteAccount(string endpoint, string username, string passwordHash)

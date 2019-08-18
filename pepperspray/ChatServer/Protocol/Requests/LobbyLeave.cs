@@ -15,7 +15,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
 {
   internal class LobbyLeave: ARequest
   {
-    private LobbyService lobbyService = DI.Auto<LobbyService>();
+    private LobbyService lobbyService = DI.Get<LobbyService>();
 
     internal static LobbyLeave Parse(Message ev)
     {

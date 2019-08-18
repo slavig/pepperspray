@@ -15,7 +15,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
 {
   internal class GroupLeave: ARequest
   {
-    private GroupService groupService = DI.Auto<GroupService>();
+    private GroupService groupService = DI.Get<GroupService>();
 
     internal static GroupLeave Parse(Message ev)
     {

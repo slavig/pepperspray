@@ -76,6 +76,18 @@ namespace pepperspray.RestAPIServer.Storage
       }
     }
 
+    internal string WorldName(string uid)
+    {
+      if (uid.Equals("2"))
+      {
+        return "default.world";
+      }
+      else
+      {
+        return Utils.Hashing.Md5(uid) + ".world";
+      }
+    }
+
     private void touchWorldCacheKey(string key)
     {
       if (this.worldCacheKeys.Contains(key))
@@ -100,17 +112,7 @@ namespace pepperspray.RestAPIServer.Storage
 
     private string worldPath(string uid)
     {
-      string identifier = null;
-      if (uid.Equals("2"))
-      {
-        identifier = "default";
-      }
-      else
-      {
-        identifier = Utils.Hashing.Md5(uid);
-      }
-
-      return Path.Combine(RestAPIServerListener.worldDirectoryPath, identifier + ".world");
+      return Path.Combine(RestAPIServerListener.worldDirectoryPath, this.WorldName(uid));
     }
   }
 }

@@ -8,10 +8,11 @@ using Serilog;
 using RSG;
 using pepperspray.ChatServer.Game;
 using pepperspray.CIO;
+using pepperspray.SharedServices;
 
 namespace pepperspray.ChatServer.Services
 {
-  internal class ActionsAuthenticator
+  internal class ActionsAuthenticator: IDIService
   {
     private class PoseAgreement
     {
@@ -70,6 +71,11 @@ namespace pepperspray.ChatServer.Services
       { "ApplyCoupleDance", new AuthenticationTemplate {ArgumentIndex  = 0} },
       { "ApplyStopCoupleDance", new AuthenticationTemplate {ArgumentIndex  = 0} },
     };
+
+    public void Inject()
+    {
+
+    }
 
     internal bool ShouldProcess(PlayerHandle sender, PlayerHandle recepient, string message)
     {

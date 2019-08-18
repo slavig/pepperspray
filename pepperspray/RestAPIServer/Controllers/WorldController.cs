@@ -16,8 +16,10 @@ namespace pepperspray.RestAPIServer.Controllers
 {
   internal class WorldController
   {
+    private Configuration config = DI.Get<Configuration>();
+    private CharacterService characterService = DI.Get<CharacterService>();
+
     private WorldStorage storage;
-    private CharacterService characterService = DI.Auto<CharacterService>();
 
     internal WorldController(Server s, WorldStorage storage)
     {
@@ -32,12 +34,19 @@ namespace pepperspray.RestAPIServer.Controllers
       try
       {
         var uid = req.GetFormParameter("uid");
-        byte[] worldData = this.storage.GetWorldData(uid);
-        return new HttpResponse(req, 200, null, "text/plain", worldData);
+        if (this.config.StaticsRedirection.Enabled)
+        {
+          return req.RedirectionResponse(this.config.StaticsRedirection.Host + "/worlds/" + this.storage.WorldName(uid));
+        }
+        else
+        {
+          byte[] worldData = this.storage.GetWorldData(uid);
+          return new HttpResponse(req, 200, null, "text/plain", worldData);
+        }
       }
       catch (Exception e)
       {
-        Log.Debug("Client {endpoint} failed to get world: {exception}", req.GetEndpoint(), e);
+        Log.Warning("Client {endpoint} failed to get world: {exception}", req.GetEndpoint(), e);
 
         if (e is ArgumentException
           || e is FormatException)
@@ -56,7 +65,7 @@ namespace pepperspray.RestAPIServer.Controllers
       try
       {
         var header = req.ContentType;
-        var parser = new MultipartFormDataParser(new MemoryStream(req.Data), this.getMultipartBoundary(header), Encoding.UTF8);
+        var parser = new MultipartFormDataParser(new MemoryStream(req.Data), req.GetMultipartBoundary(), Encoding.UTF8);
         var uid = parser.GetParameterValue("uid");
         var token = parser.GetParameterValue("token");
         this.characterService.FindAndAuthorize(token, Convert.ToUInt32(uid));
@@ -75,7 +84,7 @@ namespace pepperspray.RestAPIServer.Controllers
       } 
       catch (Exception e)
       {
-        Log.Debug("Client {endpoint} failed to upload world: {exception}", req.GetEndpoint(), e);
+        Log.Warning("Client {endpoint} failed to upload world: {exception}", req.GetEndpoint(), e);
         if (e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException)
         {
           return req.FailureResponse();
@@ -85,12 +94,6 @@ namespace pepperspray.RestAPIServer.Controllers
           throw e;
         }
       }
-    }
-
-    private string getMultipartBoundary(string contentType)
-    {
-      var boundaryPrefix = "multipart/form-data; boundary=\"";
-      return contentType.Substring(boundaryPrefix.Count(), contentType.Count() - boundaryPrefix.Count() - 1);
     }
   }
 }

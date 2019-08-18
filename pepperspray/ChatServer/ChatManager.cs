@@ -18,7 +18,7 @@ using pepperspray.SharedServices;
 namespace pepperspray.ChatServer
 {
 
-  internal class ChatManager
+  internal class ChatManager: IDIService
   {
     internal World World;
     internal string Name = "pepperspray";
@@ -31,21 +31,18 @@ namespace pepperspray.ChatServer
     private EventDispatcher dispatcher;
     private CharacterService characterService;
 
-    public ChatManager()
+    public void Inject()
     {
-      DI.Register(this);
-
       this.config = DI.Get<Configuration>();
-      this.nameValidator = DI.Auto<NameValidator>();
-      this.userRoomService = DI.Auto<UserRoomService>();
-      this.actionsAuthenticator = DI.Auto<ActionsAuthenticator>();
-      this.groupService = DI.Auto<GroupService>();
-      this.dispatcher = DI.Auto<EventDispatcher>();
-      this.characterService = DI.Auto<CharacterService>();
-
-      this.World = new World();
+      this.nameValidator = DI.Get<NameValidator>();
+      this.userRoomService = DI.Get<UserRoomService>();
+      this.actionsAuthenticator = DI.Get<ActionsAuthenticator>();
+      this.groupService = DI.Get<GroupService>();
+      this.dispatcher = DI.Get<EventDispatcher>();
+      this.characterService = DI.Get<CharacterService>();
       this.nameValidator.ServerName = this.Name;
 
+      this.World = new World();
       CIOReactor.Spawn("playerTimeoutWatchdog", () =>
       {
         while (true)
@@ -54,7 +51,7 @@ namespace pepperspray.ChatServer
 
           lock (this)
           {
-            Log.Debug("Checking players timeouts");
+            Log.Verbose("Checking players timeouts");
 
             try
             {
@@ -104,7 +101,7 @@ namespace pepperspray.ChatServer
 
     internal IPromise<Nothing> KickPlayer(PlayerHandle handle, string reason = "")
     {
-      Log.Debug("Kicking player {player}/{hash}/{endpoint} due to {reason}",
+      Log.Information("Kicking player {player}/{hash}/{endpoint} due to {reason}",
         handle.Name,
         handle.Stream.ConnectionHash,
         handle.Stream.ConnectionEndpoint,
@@ -168,7 +165,7 @@ namespace pepperspray.ChatServer
 
       if (delta.Seconds > this.config.PlayerInactivityTimeout)
       {
-        Log.Debug("Disconnecting player {player}/{hash}/{endpoint} due to time out (last heard of {delta} ago)",
+        Log.Information("Disconnecting player {player}/{hash}/{endpoint} due to time out (last heard of {delta} ago)",
           handle.Name,
           handle.Stream.ConnectionHash,
           handle.Stream.ConnectionEndpoint,

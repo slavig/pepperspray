@@ -15,7 +15,7 @@ namespace pepperspray.ChatServer.Shell
 {
   internal class Players: AShellCommand
   {
-    private LobbyService lobbyService = DI.Auto<LobbyService>();
+    private LobbyService lobbyService = DI.Get<LobbyService>();
     
     internal override bool WouldDispatch(string tag)
     {

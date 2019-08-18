@@ -16,8 +16,8 @@ namespace pepperspray.ChatServer.Protocol.Requests
   internal class Login : ARequest
   {
     private Configuration config = DI.Get<Configuration>();
-    private CharacterService characterService = DI.Auto<CharacterService>();
-    private LoginService loginService = DI.Auto<LoginService>();
+    private CharacterService characterService = DI.Get<CharacterService>();
+    private LoginService loginService = DI.Get<LoginService>();
 
     private string name, sex, token;
     private uint id;
@@ -97,7 +97,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
       {
         exception = e;
       }
-      catch (Exception e)
+      catch (Exception)
       {
         exception = new ErrorException("internal", "Internal server error.");
       }

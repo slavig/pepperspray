@@ -14,10 +14,16 @@ using pepperspray.SharedServices;
 
 namespace pepperspray.ChatServer.Services
 {
-  internal class LobbyService
+  internal class LobbyService: IDIService
   {
-    private ChatManager server = DI.Get<ChatManager>();
-    private UserRoomService userRoomService = DI.Auto<UserRoomService>();
+    private ChatManager server;
+    private UserRoomService userRoomService;
+
+    public void Inject()
+    {
+      this.server = DI.Get<ChatManager>();
+      this.userRoomService = DI.Get<UserRoomService>();
+    }
 
     internal bool PlayerCanJoinLobby(PlayerHandle player, Lobby lobby)
     {

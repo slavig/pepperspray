@@ -26,7 +26,6 @@ namespace pepperspray.CIO
     {
       private Thread t;
       private bool restart;
-      private uint restartCount;
 
       internal CIOThread(string name, bool restart, Action action)
       {

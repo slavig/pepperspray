@@ -17,7 +17,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
   {
     private string lobbyIdentifier;
     private Lobby lobby;
-    private LobbyService lobbyService = DI.Auto<LobbyService>();
+    private LobbyService lobbyService = DI.Get<LobbyService>();
 
     internal static LobbyJoin Parse(Message ev)
     {

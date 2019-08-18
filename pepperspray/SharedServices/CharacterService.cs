@@ -12,7 +12,7 @@ using pepperspray.Utils;
 
 namespace pepperspray.SharedServices
 {
-  internal class CharacterService
+  internal class CharacterService: IDIService
   {
     internal class NameTakenException: Exception { }
     internal class InvalidNameException: Exception { }
@@ -21,12 +21,20 @@ namespace pepperspray.SharedServices
     internal class NotAuthorizedException: Exception { }
 
     internal static string characterPresetsDirectoryPath = Path.Combine("peppersprayData", "presets");
-
-    private NameValidator nameValidator = DI.Auto<NameValidator>();
-    private Database db = DI.Auto<Database>();
-    private LoginServerListener loginServer = DI.Auto<LoginServerListener>();
-
     private Dictionary<uint, Character> loggedCharacters = new Dictionary<uint, Character>();
+
+    private Configuration config;
+    private NameValidator nameValidator;
+    private Database db;
+    private LoginServerListener loginServer;
+
+    public void Inject()
+    {
+      this.config = DI.Get<Configuration>();
+      this.nameValidator = DI.Get<NameValidator>();
+      this.db = DI.Get<Database>();
+      this.loginServer = DI.Get<LoginServerListener>();
+    }
 
     internal Character LoginCharacter(User user, uint id, string name, string sex)
     {
@@ -105,14 +113,14 @@ namespace pepperspray.SharedServices
         Name = name,
         Sex = sex,
         Appearance = this.GetDefaultAppearance(sex),
+        AvatarSlot = "0",
         ProfileJSON = JsonConvert.SerializeObject(new Dictionary<string, object>
         {
           { "age", 18 },
           { "interest", "?" },
           { "location", "Unknown" },
           { "about", "Empty" },
-        }),
-        FriendsJSON = "[]"
+        })
       };
 
       lock(this.db)
@@ -197,7 +205,17 @@ namespace pepperspray.SharedServices
           character = this.Find(id);
         }
 
-        return character.GetProfileJSON();
+        return JsonConvert.SerializeObject(new Dictionary<string, object> {
+          { "id", character.Id },
+          { "name", character.Name },
+          { "sex", character.Sex },
+          { "profile", character.ProfileJSON },
+          { "gifts", this.getGiftCount(character.Id) },
+          { "married", new Dictionary<string, object> { { "id", 0 }, { "name", null }, {"sex", null } } },
+          { "ava", character.AvatarSlot != null ? character.AvatarSlot : "0" },
+          { "photos", this.config.PlayerPhotoSlots },
+          { "photoSlots", this.getPhotos(character.Id) }
+        });
       }
       catch (Database.NotFoundException)
       {
@@ -223,118 +241,6 @@ namespace pepperspray.SharedServices
       catch (Database.NotFoundException)
       {
         Log.Warning("Client {token} failed to update character profile - not found");
-        throw new NotFoundException();
-      }
-    }
-
-    internal void AcceptFriendRequest(string token, uint id, uint friendId)
-    {
-      Log.Debug("Client {token} accepting friend request of {id}", token, friendId);
-      try
-      {
-        Character friendCharacter = null;
-        Character character = null;
-
-        lock(this.db)
-        {
-          friendCharacter = this.Find(friendId);
-          character = this.FindAndAuthorize(token, id);
-        }
-
-        character.AddFriend(friendCharacter);
-        friendCharacter.AddFriend(character);
-
-        lock (this.db)
-        {
-          this.db.CharacterUpdate(character);
-          this.db.CharacterUpdate(friendCharacter);
-        }
-
-        this.loginServer.Emit(friendId, "friend", new Dictionary<string, string>
-        {
-          { "for", friendCharacter.Id.ToString() },
-          { "id", character.Id.ToString() },
-          { "name", character.Name },
-          { "sex", character.Sex },
-        });
-      }
-      catch (LoginService.NotFoundException)
-      {
-        throw new NotFoundException();
-      }
-      catch (Database.NotFoundException)
-      {
-        throw new NotFoundException();
-      }
-    }
-
-    internal void DeleteFriend(string token, uint id, uint friendId)
-    {
-      Log.Debug("Client {token} of user id {id} deleting friend {friendId}", token, id, friendId);
-      try
-      {
-        Character character = null;
-        Character friendCharacter = null;
-
-        lock (this.db)
-        {
-          character = this.FindAndAuthorize(token, id);
-        }
-
-        character.RemoveFriend(friendId);
-
-        try
-        {
-          lock (this.db)
-          {
-            friendCharacter = this.Find(friendId);
-          }
-
-          friendCharacter.RemoveFriend(character.Id);
-          this.db.CharacterUpdate(friendCharacter);
-        } 
-        catch (Database.NotFoundException) { }
-
-        lock (this.db)
-        {
-          this.db.CharacterUpdate(character);
-        }
-
-        try
-        {
-          if (friendCharacter != null)
-          {
-            this.loginServer.Emit(friendId, "unfriend", new Dictionary<string, string>
-            {
-              { "for", friendCharacter.Id.ToString() },
-              { "id", character.Id.ToString() },
-            });
-          }
-        }
-        catch (LoginServerListener.NotFoundException) { }
-      }
-      catch (Database.NotFoundException)
-      {
-        throw new NotFoundException();
-      }
-    }
-
-    internal string GetFriends(string token, uint id)
-    {
-      Log.Debug("Client {token} requesting friends of user id {id} ", token, id);
-      try
-      {
-        Character character = null;
-
-        lock(this.db)
-        {
-          character = this.FindAndAuthorize(token, id);
-        }
-
-        return character.FriendsJSON;
-      }
-      catch (Database.NotFoundException)
-      {
         throw new NotFoundException();
       }
     }
@@ -376,19 +282,50 @@ namespace pepperspray.SharedServices
     internal Character Find(uint id)
     {
       Character character;
-      if (!this.loggedCharacters.TryGetValue(id, out character))
+      lock (this)
       {
-        character = this.db.CharacterFindById(id);
+        if (!this.loggedCharacters.TryGetValue(id, out character))
+        {
+          lock (this.db)
+          {
+            character = this.db.CharacterFindById(id);
+          }
+        }
       }
 
       return character;
+    }
+
+    internal Character Find(string name)
+    {
+      lock(this)
+      {
+        var matching = this.loggedCharacters.Where(c => c.Value.Name.Equals(name));
+
+        if (matching.Count() == 0)
+        {
+          lock(this.db)
+          {
+            return this.db.CharacterFindByName(name);
+          }
+        }
+        else
+        {
+          return matching.First().Value;
+        }
+      }
     }
 
     internal Character FindAndAuthorize(string token, uint id)
     {
       try
       {
-        var user = this.db.UserFindByToken(token);
+        User user = null;
+        lock (this.db)
+        {
+          user = this.db.UserFindByToken(token);
+        }
+
         var character = this.Find(id);
 
         if (character.UserId != user.Id)
@@ -401,6 +338,31 @@ namespace pepperspray.SharedServices
       catch (Database.NotFoundException)
       {
         throw new NotAuthorizedException();
+      }
+    }
+
+    private Dictionary<string, string> getPhotos(uint id)
+    {
+      var result = new Dictionary<string, string>();
+      IEnumerable<PhotoSlot> slots = null;
+      lock (this.db)
+      {
+        slots = this.db.PhotoSlotFindByCharacterId(id);
+      }
+
+      foreach (var slot in slots)
+      {
+        result[slot.Identifier] = slot.Hash;
+      }
+
+      return result;
+    }
+
+    private uint getGiftCount(uint id)
+    {
+      lock(this.db)
+      {
+        return this.db.GiftsCount(id);
       }
     }
   }

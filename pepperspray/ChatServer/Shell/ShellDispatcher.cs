@@ -9,10 +9,11 @@ using Serilog;
 using pepperspray.CIO;
 using pepperspray.ChatServer.Game;
 using pepperspray.ChatServer.Protocol;
+using pepperspray.SharedServices;
 
 namespace pepperspray.ChatServer.Shell
 {
-  internal class ShellDispatcher
+  internal class ShellDispatcher: IDIService
   {
     private AShellCommand[] registeredCommands = new AShellCommand[]
     {
@@ -21,10 +22,17 @@ namespace pepperspray.ChatServer.Shell
       new AdminBroadcast(),
       new AdminConfigReload(),
       new AdminRoomPriority(),
+      new AdminMoney(),
+      new Pay(),
       new Players(),
       new PrivateMessage(),
       new Help(),
     };
+
+    public void Inject()
+    {
+
+    }
 
     internal bool ShouldDispatch(string message)
     {

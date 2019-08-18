@@ -25,9 +25,9 @@ namespace pepperspray.Utils
         .Enrich.With(new CallerEnricher())
         .Enrich.With(new ThreadIdEnricher())
          .MinimumLevel.Verbose()
-         .WriteTo.Async(a => a.RollingFile(
+         .WriteTo.RollingFile(
            Path.Combine("peppersprayData", "logs", "pepperspray-{Date}.log"), 
-           outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}/{ThreadId}#{Class}] {Message:lj}{NewLine}{Exception}"))
+           outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}/{ThreadId}#{Class}] {Message:lj}{NewLine}{Exception}")
          .WriteTo.Console(
            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
            restrictedToMinimumLevel: level)

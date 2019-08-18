@@ -18,7 +18,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
     private string identifier;
     private UserRoom userRoom;
 
-    private UserRoomService userRoomService = DI.Auto<UserRoomService>();
+    private UserRoomService userRoomService = DI.Get<UserRoomService>();
 
     internal static RoomClose Parse(Message ev)
     {

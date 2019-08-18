@@ -14,7 +14,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
 {
   internal class RoomList: ARequest
   {
-    private UserRoomService userRoomService = DI.Auto<UserRoomService>();
+    private UserRoomService userRoomService = DI.Get<UserRoomService>();
 
     internal static RoomList Parse(Message ev)
     {

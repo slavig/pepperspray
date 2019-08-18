@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using pepperspray.ChatServer.Game;
+using pepperspray.SharedServices;
 using pepperspray.Utils;
 
 namespace pepperspray.ChatServer.Protocol
@@ -176,6 +177,11 @@ namespace pepperspray.ChatServer.Protocol
         { "id", "0" },
         { "token", "0" },
       });
+    }
+
+    internal static Message CharacterAppearance(PlayerHandle player)
+    {
+      return Responses.Message(player, "~action2/charData|" + player.Character.Appearance);
     }
   }
 }

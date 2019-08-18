@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using System.Text;
 
 using Serilog;
 using RSG;
@@ -15,19 +14,23 @@ using pepperspray.Utils;
 
 namespace pepperspray.LoginServer
 {
-  internal class LoginServerListener
+  internal class LoginServerListener: IDIService
   {
     internal class NotFoundException : Exception { }
 
-    private Configuration config = DI.Get<Configuration>();
-    private LoginService loginService = null;
+    private Configuration config;
+    private LoginService loginService;
 
     private Dictionary<string, Client> loggedClients = new Dictionary<string, Client>();
 
+    public void Inject()
+    {
+      this.loginService = DI.Get<LoginService>();
+      this.config = DI.Get<Configuration>();
+    }
+
     internal IPromise<Nothing> Listen()
     {
-      this.loginService = DI.Auto<LoginService>();
-
       var address = this.config.LoginServerAddress;
       var port = this.config.LoginServerPort;
       Log.Information("Binding login server to {ip}:{port}", address, port);
@@ -80,6 +83,12 @@ namespace pepperspray.LoginServer
                 var username = ev.ElementAt(1).ToString();
                 var passwordHash = ev.ElementAt(2).ToString();
                 var protocolVersion = ev.ElementAt(3).ToString();
+                if (protocolVersion != "3")
+                {
+                  client.Emit("login response", "answer=error");
+                  return Nothing.Resolved();
+                }
+
                 try
                 {
                   var user = this.loginService.Login(client.Endpoint, username, passwordHash);
@@ -97,6 +106,11 @@ namespace pepperspray.LoginServer
                 }
                 catch (LoginService.NotFoundException)
                 {
+                  if (System.Diagnostics.Debugger.IsAttached)
+                  {
+                    this.loginService.SignUp(client.Endpoint, username, passwordHash);
+                  }
+
                   client.Emit("login response", this.loginService.GetLoginFailedResponseText());
                 }
                 break;

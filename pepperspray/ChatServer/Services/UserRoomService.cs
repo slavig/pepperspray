@@ -13,9 +13,16 @@ using pepperspray.SharedServices;
 
 namespace pepperspray.ChatServer.Services
 {
-  internal class UserRoomService
+  internal class UserRoomService: IDIService
   {
-    private ChatManager server = DI.Get<ChatManager>();
+    private ChatManager server;
+    private FriendsService friendsService;
+
+    public void Inject()
+    {
+      this.server = DI.Get<ChatManager>();
+      this.friendsService = DI.Get<FriendsService>();
+    }
 
     internal bool PlayerCanJoinRoom(PlayerHandle player, UserRoom room)
     {
@@ -24,7 +31,7 @@ namespace pepperspray.ChatServer.Services
         case UserRoom.AccessType.ForAll:
           return true;
         case UserRoom.AccessType.ForFriends:
-          return player == room.User || room.User.Character.GetFriendIDs().Contains(player.Character.Id);
+          return player == room.User || this.friendsService.GetFriendIDs(room.User.Id).Contains(player.Character.Id);
         case UserRoom.AccessType.ForGroup:
           return player.CurrentGroup == room.User.CurrentGroup;
         default:

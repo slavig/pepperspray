@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pepperspray", "pepperspray\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "peppersprayPlugin", "peppersprayPlugin\peppersprayPlugin.csproj", "{2452B28A-0566-4B34-BCC2-EB5DAF84E0D6}"
 EndProject
-Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "pepperspraySocketIOProxy", "pepperspraySocketIOProxy\pepperspraySocketIOProxy.njsproj", "{9D5CB043-8C58-460F-AC4C-431E74EA07CE}"
+Project("{9344BDBB-3E7F-41FC-A0DD-8665D75EE146}") = "pepperspraySocketIOProxy", "pepperspraySocketIOProxy\pepperspraySocketIOProxy.njsproj", "{37E6038D-0739-43EA-A00D-EC030F6D3BF3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,15 +23,26 @@ Global
 		{2452B28A-0566-4B34-BCC2-EB5DAF84E0D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2452B28A-0566-4B34-BCC2-EB5DAF84E0D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2452B28A-0566-4B34-BCC2-EB5DAF84E0D6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9D5CB043-8C58-460F-AC4C-431E74EA07CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9D5CB043-8C58-460F-AC4C-431E74EA07CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9D5CB043-8C58-460F-AC4C-431E74EA07CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9D5CB043-8C58-460F-AC4C-431E74EA07CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37E6038D-0739-43EA-A00D-EC030F6D3BF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37E6038D-0739-43EA-A00D-EC030F6D3BF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37E6038D-0739-43EA-A00D-EC030F6D3BF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37E6038D-0739-43EA-A00D-EC030F6D3BF3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {60332F66-B90F-4835-AC5E-CD96AD2522A8}
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		Policies = $0
+		$0.DotNetNamingPolicy = $1
+		$1.DirectoryNamespaceAssociation = PrefixedHierarchical
+		$0.TextStylePolicy = $2
+		$2.FileWidth = 80
+		$2.TabWidth = 2
+		$2.TabsToSpaces = True
+		$2.IndentWidth = 2
+		$2.scope = text/plain
 	EndGlobalSection
 EndGlobal

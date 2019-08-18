@@ -14,9 +14,14 @@ using pepperspray.SharedServices;
 
 namespace pepperspray.ChatServer
 {
-  internal class EventDispatcher
+  internal class EventDispatcher: IDIService
   {
-    private ChatManager server = DI.Get<ChatManager>();
+    private ChatManager server;
+
+    public void Inject()
+    {
+      this.server = DI.Get<ChatManager>();
+    }
 
     internal IPromise<Nothing> Dispatch(PlayerHandle client, Message eventMsg)
     {

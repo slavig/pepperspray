@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Serilog;
@@ -16,7 +17,8 @@ namespace pepperspray.RestAPIServer.Controllers
   internal class LoginController
   {
     private Configuration config = DI.Get<Configuration>();
-    private LoginService loginService = DI.Auto<LoginService>();
+    private LoginService loginService = DI.Get<LoginService>();
+    private Dictionary<string, DateTime> loginAttempts = new Dictionary<string, DateTime>();
 
     internal LoginController(Server s)
     {
@@ -38,6 +40,8 @@ namespace pepperspray.RestAPIServer.Controllers
     {
       try
       {
+        this.throttleLoginAttempt(req.SourceIp);
+
         var str = Encoding.UTF8.GetString(req.Data);
         var parameters = JsonConvert.DeserializeObject<IDictionary<string, string>>(str);
 
@@ -122,7 +126,7 @@ namespace pepperspray.RestAPIServer.Controllers
       var username = parameters["username"];
       var passwordHash = parameters["passwordHash"];
 
-      return req.TextResponse(this.loginService.SignUp(req.GetEndpoint(), username, passwordHash) ? "ok" : "fail");
+      return req.TextResponse(this.loginService.SignUp(req.GetEndpoint(), username, passwordHash) != null ? "ok" : "fail");
     }
 
     internal HttpResponse DeleteAccount(HttpRequest req)
@@ -140,7 +144,7 @@ namespace pepperspray.RestAPIServer.Controllers
       } 
       catch (Exception e)
       {
-        Log.Debug("Client {endpoint} failed to delete account: {exception}", req.GetEndpoint(), e);
+        Log.Warning("Client {endpoint} failed to delete account: {exception}", req.GetEndpoint(), e);
         if (e is LoginService.NotFoundException || e is LoginService.InvalidPasswordException)
         {
           return req.TextResponse("fail");
@@ -165,6 +169,27 @@ namespace pepperspray.RestAPIServer.Controllers
     private string crossOriginAllowedAddress()
     {
       return "http://" + this.config.CrossOriginAddress + (this.config.CrossOriginPort != 0 ? ":" + this.config.CrossOriginPort.ToString() : "");
+    }
+
+    private void throttleLoginAttempt(string sourceIp)
+    {
+      var previousAttempt = DateTime.MinValue;
+      lock (this)
+      {
+        this.loginAttempts.TryGetValue(sourceIp, out previousAttempt);
+      }
+
+      var delta = DateTime.Now - previousAttempt;
+      if (delta.Seconds < this.config.LoginAttemptThrottle)
+      {
+        Log.Information("Login attempt throttling - ip {ip} attempted login {seconds} s. before", sourceIp, delta.Seconds);
+        Thread.Sleep(TimeSpan.FromSeconds(this.config.LoginAttemptThrottle - delta.Seconds));
+      }
+
+      lock(this)
+      {
+        this.loginAttempts[sourceIp] = DateTime.Now;
+      }
     }
   }
 }

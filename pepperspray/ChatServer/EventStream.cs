@@ -99,21 +99,20 @@ namespace pepperspray.ChatServer
 
           if (newCount > EventStream.SlidingBufferLimit)
           {
-            Log.Error("EventStream {hash} exceeded buffer limit: {total_bytes} total bytes", this.ConnectionHash, newCount);
+            Log.Warning("EventStream {hash} exceeded buffer limit: {total_bytes} total bytes", this.ConnectionHash, newCount);
             promise.Reject(new Exception("Sliding buffer limit exceeded."));
             break;
           }
 
           if (seekTo == 0)
           {
-            Log.Debug("{hash} failed to parse event, total {total_bytes} in bufffer", this.ConnectionHash, this.slidingBuffer.Count());
+            Log.Verbose("{hash} failed to parse event, total {total_bytes} in bufffer", this.ConnectionHash, this.slidingBuffer.Count());
             break;
           }
         }
-      }).Catch(exception =>
-      {
-        promise.Reject(exception);
-      });
+      })
+      .SingleCatch(exception => promise.Reject(exception))
+      .Catch(exception => promise.Reject(exception));
 
       return promise;
     }

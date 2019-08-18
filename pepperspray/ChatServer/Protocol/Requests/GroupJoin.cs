@@ -15,7 +15,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
 {
   internal class GroupJoin: ARequest
   {
-    private GroupService groupService = DI.Auto<GroupService>();
+    private GroupService groupService = DI.Get<GroupService>();
 
     private int identifier;
     private Group group;

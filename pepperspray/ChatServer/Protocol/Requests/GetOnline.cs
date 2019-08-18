@@ -14,7 +14,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
 {
   internal class GetOnline: ARequest
   {
-    private CharacterService characterService = DI.Auto<CharacterService>();
+    private FriendsService friendsService = DI.Get<FriendsService>();
 
     internal static GetOnline Parse(Message ev)
     {
@@ -23,7 +23,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
     internal override IPromise<Nothing> Process(PlayerHandle sender, ChatManager server)
     {
-      var users = sender.Character.GetFriendIDs().Where(ch => server.World.FindPlayerById(ch) != null);
+      var users = this.friendsService.GetFriendIDs(sender.Id).Where(ch => server.World.FindPlayerById(ch) != null);
       return sender.Stream.Write(Responses.OnlineUsers(users));
     }
   }

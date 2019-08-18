@@ -19,8 +19,10 @@ namespace pepperspray.ChatServer.Protocol.Requests
   {
     protected string contents;
 
-    protected ShellDispatcher shellDispatcher = DI.Auto<ShellDispatcher>();
-    protected ActionsAuthenticator actionsAuthenticator = DI.Auto<ActionsAuthenticator>();
+    protected ShellDispatcher shellDispatcher = DI.Get<ShellDispatcher>();
+    protected ActionsAuthenticator actionsAuthenticator = DI.Get<ActionsAuthenticator>();
+    protected AppearanceRequestService appearanceRequestService = DI.Get<AppearanceRequestService>();
+    protected OfflineMessageService offlineMessageService = DI.Get<OfflineMessageService>();
 
     internal abstract IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, ChatManager server);
 
@@ -44,6 +46,10 @@ namespace pepperspray.ChatServer.Protocol.Requests
       {
         return this.shellDispatcher.Dispatch(sender, server, text);
       }
+      else if (this.appearanceRequestService.ShouldDispatch(text))
+      {
+        return this.appearanceRequestService.Dispatch(sender, this.Recepients(sender, server), server, text);
+      }
       else
       {
         var commands = this.Recepients(sender, server)
@@ -57,10 +63,10 @@ namespace pepperspray.ChatServer.Protocol.Requests
     {
       string[] messagePrefixes = new string[]
       {
-      "~worldchat/",
-      "~chat/",
-      "~private/",
-      "~groupchat/",
+        "~worldchat/",
+        "~chat/",
+        "~private/",
+        "~groupchat/",
       };
 
       foreach (string prefix in messagePrefixes)
@@ -145,7 +151,8 @@ namespace pepperspray.ChatServer.Protocol.Requests
       }
       else if (this.contents.StartsWith("~private/"))
       {
-        return sender.Stream.Write(Responses.ServerPrivateChatMessage(this.recepientName, "Player is offline."));
+        this.offlineMessageService.QueueMessage(sender.Character.Id, this.recepientName, Send.StripCommand(this.contents));
+        return Nothing.Resolved();
       } 
       else
       {

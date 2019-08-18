@@ -51,7 +51,7 @@ namespace pepperspray.ChatServer.Shell
         }
 
         builder.AppendFormat(" {0} (at {1}),", player.Name, player.CurrentLobby != null ? player.CurrentLobby.Identifier : "editor");
-        if (builder.Length > 250)
+        if (builder.Length > 200)
         {
           output.Add(dispatcher.Output(sender, server, builder.ToString()));
           builder.Clear();

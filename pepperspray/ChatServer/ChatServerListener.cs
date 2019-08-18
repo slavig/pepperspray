@@ -15,10 +15,16 @@ using pepperspray.SharedServices;
 
 namespace pepperspray.ChatServer
 {
-  internal class ChatServerListener
+  internal class ChatServerListener: IDIService
   {
-    private Configuration config = DI.Get<Configuration>();
-    private ChatManager coreServer = DI.Auto<ChatServer.ChatManager>();
+    private Configuration config;
+    private ChatManager coreServer;
+
+    public void Inject()
+    {
+      this.config = DI.Get<Configuration>();
+      this.coreServer = DI.Get<ChatManager>();
+    }
 
     internal IPromise<Nothing> Listen()
     {
@@ -28,7 +34,7 @@ namespace pepperspray.ChatServer
         .Map(connection => this.coreServer.ConnectPlayer(connection))
         .Map(player => player.Stream.Stream()
           .Map(ev => this.coreServer.ProcessCommand(player, ev))
-          .Catch(ex => { this.coreServer.PlayerLoggedOff(player); player.Stream.Terminate(); }))
+          .Catch(ex => { player.Terminate(new ErrorException(ex.Message, "Server error.")); }))
           .Then(a => Nothing.Resolved());
     }
   }
