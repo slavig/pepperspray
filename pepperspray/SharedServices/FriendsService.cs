@@ -41,6 +41,9 @@ namespace pepperspray.SharedServices
             InitiatorId = character.Id,
             ReceiverId = friendCharacter.Id
           };
+
+          friendCharacter.AppendLiaison(liaison);
+          character.AppendLiaison(liaison);
           this.db.LiaisonInsert(liaison);
         }
 
@@ -68,11 +71,18 @@ namespace pepperspray.SharedServices
       try
       {
         Character character = this.characterService.FindAndAuthorize(token, id);
-        this.db.LiaisonDeleteByParticipants(character.Id, friendId);
+
+        lock (this.db)
+        {
+          this.db.LiaisonDeleteByParticipants(character.Id, friendId);
+        }
+
+        character.RemoveLiaison(friendId);
 
         try
         {
           Character friendCharacter = this.characterService.Find(friendId);
+          friendCharacter.RemoveLiaison(character.Id);
           this.loginServer.Emit(friendId, "unfriend", new Dictionary<string, string>
             {
               { "for", friendCharacter.Id.ToString() },
@@ -87,17 +97,19 @@ namespace pepperspray.SharedServices
       }
     }
 
-    internal IEnumerable<uint> GetFriendIDs(uint id)
+    internal IEnumerable<uint> GetFriendIDs(Character character)
     {
-      Character character = this.characterService.Find(id);
-      IEnumerable<FriendLiaison> liaisons = null;
+      IEnumerable<FriendLiaison> liaisons = character.Liaisons;
 
-      lock (this.db)
+      if (liaisons == null)
       {
-        liaisons = this.db.LiaisonFindByCharacter(character);
+        lock (this.db)
+        {
+          liaisons = this.db.LiaisonFindByCharacter(character);
+        }
       }
 
-      return liaisons.Select(a => a.InitiatorId == id ? a.ReceiverId : a.InitiatorId);
+      return liaisons.Select(a => a.InitiatorId == character.Id ? a.ReceiverId : a.InitiatorId);
     }
 
     internal string GetFriends(string token, uint id)

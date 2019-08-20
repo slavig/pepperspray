@@ -47,14 +47,14 @@ namespace pepperspray.SharedServices
         {
           sender = this.characterService.Find(gift.SenderId);
         }
-        catch (NotFoundException)
+        catch (CharacterService.NotFoundException)
         {
           continue;
         }
 
         result.Add(new Dictionary<string, object>
         {
-          { "id", String.Format("gift_{0}", gift.Id) },
+          { "id", String.Format("{0}{1}", this.giftIdPrefix(), gift.Id) },
           { "from", new Dictionary<string, object>
             {
               { "id", sender.Id },
@@ -126,12 +126,13 @@ namespace pepperspray.SharedServices
       }
     }
 
-    internal void DeleteGift(string token, uint characterId, uint giftId)
+    internal void DeleteGift(string token, uint characterId, string giftIdentifier)
     {
-      Log.Debug("Client {token} of {sender} deleting gift {id}", token, characterId, giftId);
+      Log.Debug("Client {token} of {sender} deleting gift {id}", token, characterId, giftIdentifier);
 
       try
       {
+        var giftId = Convert.ToUInt32(giftIdentifier.Substring(this.giftIdPrefix().Length));
         var character = this.characterService.FindAndAuthorize(token, characterId);
         Gift gift = null;
 
@@ -152,7 +153,7 @@ namespace pepperspray.SharedServices
       }
       catch (Database.NotFoundException)
       {
-        Log.Warning("Client {token} from {sender}: failed to send gift - {id} not found", token, characterId, giftId);
+        Log.Warning("Client {token} from {sender}: failed to send gift - {id} not found", token, characterId, giftIdentifier);
         throw new NotFoundException();
       }
     }
@@ -187,6 +188,11 @@ namespace pepperspray.SharedServices
         this.db.UserUpdate(sender);
         this.db.UserUpdate(recepient);
       }
+    }
+
+    private string giftIdPrefix()
+    {
+      return "gift_";
     }
   }
 }

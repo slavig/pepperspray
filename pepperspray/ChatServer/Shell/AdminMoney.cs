@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using RSG;
 using pepperspray.CIO;
 using pepperspray.ChatServer.Game;
+using pepperspray.ChatServer.Protocol;
 using pepperspray.SharedServices;
 
 namespace pepperspray.ChatServer.Shell
@@ -33,10 +34,33 @@ namespace pepperspray.ChatServer.Shell
         var playerName = arguments.ElementAt(0).Trim();
         var amount = Convert.ToInt32(arguments.ElementAt(1).Trim());
 
-        PlayerHandle player;
+        PlayerHandle[] players;
+
         lock (server)
         {
-          player = server.World.FindPlayer(arguments.First().Trim());
+          if (playerName.Equals("\\world"))
+          {
+            players = server.World.Players.ToArray();
+          }
+          else if (playerName.Equals("\\lobby"))
+          {
+            if (sender.CurrentLobby == null)
+            {
+              return dispatcher.Error(sender, server, "You are not in lobby.");
+            }
+
+            players = sender.CurrentLobby.Players.ToArray();
+          }
+          else
+          {
+            var player = server.World.FindPlayer(arguments.First().Trim());
+            if (player == null)
+            {
+              return dispatcher.Error(sender, server, "Failed to find player.");
+            }
+
+            players = new PlayerHandle[] { player };
+          }
         }
 
         if (this.config.Currency.Enabled == false)
@@ -44,13 +68,14 @@ namespace pepperspray.ChatServer.Shell
           return dispatcher.Error(sender, server, "Currency is not enabled");
         }
 
-        if (player == null)
+        foreach (var player in players)
         {
-          return dispatcher.Error(sender, server, "Failed to find player");
+          this.giftService.ChangeCurrency(player.User, amount);
         }
 
-        this.giftService.ChangeCurrency(player.User, amount);
-        return dispatcher.Output(sender, server, "Changed, player now has {0}.", player.User.Currency);
+        var message = String.Format("You have been gifted {0} from admin.", amount);
+        return new CombinedPromise<Nothing>(players.Select(p => p.Stream.Write(Responses.ServerMessage(server, message))))
+          .Then(a => dispatcher.Output(sender, server, "Done"));
       }
       catch (Exception e)
       {

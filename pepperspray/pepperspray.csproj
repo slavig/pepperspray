@@ -177,6 +177,9 @@
     <Reference Include="HttpMultipartParser">
       <HintPath>..\packages\HttpMultipartParser.2.2.4\lib\net46\HttpMultipartParser.dll</HintPath>
     </Reference>
+    <Reference Include="BitArmory.ReCaptcha">
+      <HintPath>..\packages\BitArmory.ReCaptcha.5.0.0\lib\net45\BitArmory.ReCaptcha.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChatServer\ChatServerListener.cs" />
@@ -196,7 +199,7 @@
     <Compile Include="ChatServer\Protocol\Requests\FriendRequest.cs" />
     <Compile Include="ChatServer\Protocol\Requests\GroupJoin.cs" />
     <Compile Include="ChatServer\Protocol\Requests\GroupLeave.cs" />
-    <Compile Include="ChatServer\Services\ActionsAuthenticator.cs" />
+    <Compile Include="SharedServices\ChatActionsAuthenticator.cs" />
     <Compile Include="ChatServer\Protocol\Message.cs" />
     <Compile Include="ChatServer\Protocol\Requests\RoomClose.cs" />
     <Compile Include="ChatServer\Protocol\Requests\RoomList.cs" />

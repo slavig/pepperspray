@@ -17,6 +17,9 @@ namespace pepperspray.SharedServices
     [Indexed]
     public uint UserId { get; set; }
 
+    [Indexed]
+    public uint SpouseId { get; set; }
+
     public string AvatarSlot { get; set; }
 
     public DateTime LastLogin { get; set; }
@@ -27,6 +30,31 @@ namespace pepperspray.SharedServices
 
     public string ProfileJSON { get; set; }
 
+    internal List<FriendLiaison> Liaisons;
+
+    internal void AppendLiaison(FriendLiaison liaison)
+    {
+      if (this.Liaisons == null)
+      {
+        return;
+      }
+      else
+      {
+        this.Liaisons.Add(liaison);
+      }
+    }
+
+    internal void RemoveLiaison(uint id)
+    {
+      if (this.Liaisons == null)
+      {
+        return;
+      }
+      else
+      {
+        this.Liaisons.RemoveAll(a => (a.InitiatorId == id) || (a.ReceiverId == id));
+      }
+    }
   }
 }
 

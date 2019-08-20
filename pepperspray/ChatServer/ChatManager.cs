@@ -27,7 +27,7 @@ namespace pepperspray.ChatServer
     private Configuration config;
     private UserRoomService userRoomService;
     private GroupService groupService;
-    private ActionsAuthenticator actionsAuthenticator;
+    private ChatActionsAuthenticator actionsAuthenticator;
     private EventDispatcher dispatcher;
     private CharacterService characterService;
 
@@ -36,7 +36,7 @@ namespace pepperspray.ChatServer
       this.config = DI.Get<Configuration>();
       this.nameValidator = DI.Get<NameValidator>();
       this.userRoomService = DI.Get<UserRoomService>();
-      this.actionsAuthenticator = DI.Get<ActionsAuthenticator>();
+      this.actionsAuthenticator = DI.Get<ChatActionsAuthenticator>();
       this.groupService = DI.Get<GroupService>();
       this.dispatcher = DI.Get<EventDispatcher>();
       this.characterService = DI.Get<CharacterService>();
@@ -85,11 +85,6 @@ namespace pepperspray.ChatServer
 
     internal Nothing ProcessCommand(PlayerHandle handle, Message msg)
     {
-      Log.Debug("<= {player}@{lobby} {event_description}", 
-        handle.Name, 
-        handle.CurrentLobby != null ? handle.CurrentLobby.Identifier : null, 
-        msg.DebugDescription());
-
       var promise = this.dispatcher.Dispatch(handle, msg);
       if (promise != null)
       {

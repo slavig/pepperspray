@@ -43,7 +43,7 @@ namespace pepperspray.RestAPIServer.Controllers
       } 
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} failed to accept friend: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
 
         if (e is FormatException
           || e is ArgumentException
@@ -69,7 +69,7 @@ namespace pepperspray.RestAPIServer.Controllers
       } 
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} failed to delete friend: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
 
         if (e is FormatException
           || e is ArgumentException
@@ -93,7 +93,7 @@ namespace pepperspray.RestAPIServer.Controllers
       } 
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} failed to load friends: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
 
         if (e is FormatException
           || e is ArgumentException

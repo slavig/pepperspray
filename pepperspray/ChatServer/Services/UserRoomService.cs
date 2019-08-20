@@ -31,7 +31,7 @@ namespace pepperspray.ChatServer.Services
         case UserRoom.AccessType.ForAll:
           return true;
         case UserRoom.AccessType.ForFriends:
-          return player == room.User || this.friendsService.GetFriendIDs(room.User.Id).Contains(player.Character.Id);
+          return player == room.User || this.friendsService.GetFriendIDs(room.User.Character).Contains(player.Character.Id);
         case UserRoom.AccessType.ForGroup:
           return player.CurrentGroup == room.User.CurrentGroup;
         default:

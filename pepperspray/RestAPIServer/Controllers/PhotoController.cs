@@ -68,6 +68,13 @@ namespace pepperspray.RestAPIServer.Controllers
         var slot = parser.GetParameterValue("slot");
         this.characterService.FindAndAuthorize(token, Convert.ToUInt32(uid));
 
+        var slotId = Convert.ToUInt32(slot);
+        if (slotId > this.config.PlayerPhotoSlots)
+        {
+          Log.Warning("Client {endpoint} failed to upload photo: slot out of range ({slot})!", req.GetEndpoint(), slot);
+          return req.TextResponse("limit=");
+        }
+
         if (parser.Files.Count() < 1)
         {
           Log.Warning("Client {ip}:{port} failed to provide file for Photo upload", req.SourceIp, req.SourcePort);
@@ -90,7 +97,7 @@ namespace pepperspray.RestAPIServer.Controllers
       }
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} failed to upload photo: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e, false);
         if (e is PhotoStorage.OversizeException)
         {
           return req.TextResponse("limit=" + this.storage.SizeLimit);
@@ -123,7 +130,7 @@ namespace pepperspray.RestAPIServer.Controllers
       }
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} failed to delete photo: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
         if (e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException || e is FormatException)
         {
           return req.FailureResponse();
@@ -149,7 +156,7 @@ namespace pepperspray.RestAPIServer.Controllers
       }
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} failed to set avatar: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
         if (e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException || e is FormatException)
         {
           return req.FailureResponse();

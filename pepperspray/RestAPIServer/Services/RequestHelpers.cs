@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Serilog;
 using Newtonsoft.Json;
 using WatsonWebserver;
 using SpikeHttp = Spike.Network.Http;
@@ -11,6 +12,11 @@ namespace pepperspray.RestAPIServer.Services
 {
   internal static class Request
   {
+    internal static void HandleException(HttpRequest req, Exception e, bool printData = true)
+    {
+      Log.Warning("Client {endpoint} failed to requests {url} ({params}) - {exception}", req.GetEndpoint(), req.RawUrlWithQuery, printData ? req.GetFormParametersString() : null, e);
+    }
+
     internal static HttpResponse FailureResponse(this HttpRequest req)
     {
       return new HttpResponse(req, 400, null);
@@ -43,14 +49,19 @@ namespace pepperspray.RestAPIServer.Services
       return String.Format("{0}:{1}", req.SourceIp, req.SourcePort);
     }
 
-    internal static string GetFormParameter(this HttpRequest req, string key)
+    internal static string GetFormParametersString(this HttpRequest req)
     {
       if (req.Data == null)
       {
         throw new ArgumentException();
       }
 
-      var str = Encoding.UTF8.GetString(req.Data);
+      return Encoding.UTF8.GetString(req.Data);
+    }
+
+    internal static string GetFormParameter(this HttpRequest req, string key)
+    {
+      var str = req.GetFormParametersString();
       foreach (string keypair in str.Split('&'))
       {
         string[] kv = keypair.Split('=');

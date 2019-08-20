@@ -34,8 +34,11 @@ namespace pepperspray.RestAPIServer.Controllers
       try
       {
         var uid = req.GetFormParameter("uid");
-        if (this.config.StaticsRedirection.Enabled)
+        if (/* this.config.StaticsRedirection.Enabled */ false)
         {
+          /*
+           * Client doesn't work yet with redirected worlds.
+           **/
           return req.RedirectionResponse(this.config.StaticsRedirection.Host + "/worlds/" + this.storage.WorldName(uid));
         }
         else
@@ -46,7 +49,7 @@ namespace pepperspray.RestAPIServer.Controllers
       }
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} failed to get world: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
 
         if (e is ArgumentException
           || e is FormatException)
@@ -84,7 +87,7 @@ namespace pepperspray.RestAPIServer.Controllers
       } 
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} failed to upload world: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e, false);
         if (e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException)
         {
           return req.FailureResponse();

@@ -35,7 +35,7 @@ namespace pepperspray.RestAPIServer.Controllers
       }
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} - failed to get gifts: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
 
         if (e is CharacterService.NotFoundException || e is FormatException)
         {
@@ -67,7 +67,7 @@ namespace pepperspray.RestAPIServer.Controllers
       }
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} - failed to send gift: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
 
         if (e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException || e is FormatException)
         {
@@ -86,14 +86,14 @@ namespace pepperspray.RestAPIServer.Controllers
       {
         var token = req.GetBearerToken();
         var id = Convert.ToUInt32(req.GetFormParameter("uid"));
-        var gid = Convert.ToUInt32(req.GetFormParameter("gid"));
+        var gid = req.GetFormParameter("gid");
 
         this.giftService.DeleteGift(token, id, gid);
         return req.TextResponse("ok");
       } 
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} - failed to delete gift: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
 
         if (e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException || e is FormatException)
         {

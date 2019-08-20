@@ -20,7 +20,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
     protected string contents;
 
     protected ShellDispatcher shellDispatcher = DI.Get<ShellDispatcher>();
-    protected ActionsAuthenticator actionsAuthenticator = DI.Get<ActionsAuthenticator>();
+    protected ChatActionsAuthenticator actionsAuthenticator = DI.Get<ChatActionsAuthenticator>();
     protected AppearanceRequestService appearanceRequestService = DI.Get<AppearanceRequestService>();
     protected OfflineMessageService offlineMessageService = DI.Get<OfflineMessageService>();
 
@@ -188,7 +188,10 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
     internal override IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, ChatManager server)
     {
-      return sender.CurrentGroup.Players.Except(new PlayerHandle[] { sender });
+      lock(server)
+      {
+        return sender.CurrentGroup.Players.Except(new PlayerHandle[] { sender }).ToList();
+      }
     }
   }
 
@@ -219,7 +222,10 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
     internal override IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, ChatManager server)
     {
-      return sender.CurrentLobby.Players.Except(new PlayerHandle[] { sender });
+      lock(server)
+      {
+        return sender.CurrentLobby.Players.Except(new PlayerHandle[] { sender }).ToList();
+      }
     }
   }
 

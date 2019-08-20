@@ -35,7 +35,7 @@ namespace pepperspray.RestAPIServer
     {
       var ip = this.config.RestAPIServerAddress.ToString();
       var port = this.config.RestAPIServerPort;
-      Log.Information("Binding external server to {ip}:{port}", ip, port);
+      Log.Information("Binding {server} server to {ip}:{port}", "RestAPI", ip, port);
 
       this.server = new Server(ip, port, false, DefaultRoute);
 
@@ -65,11 +65,12 @@ namespace pepperspray.RestAPIServer
       foreach (var announcement in this.config.Announcements)
       {
         builder.AppendFormat(
-          "{0}|{1}|{2}|{3}|",
+          "{0}|{1}|{2}|{3}|{4}",
           announcement.Title,
           announcement.Text.Replace("\n", "").Replace("<br />", "<br>").Replace("<br/>", "<br>"),
-          announcement.ImageURL,
-          announcement.LinkURL
+          announcement.ImageURL ?? "",
+          announcement.LinkURL ?? "",
+          announcement == this.config.Announcements.Last() ? "" : "\n"
           );
       }
 
@@ -109,7 +110,7 @@ namespace pepperspray.RestAPIServer
       }
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} failed to get money: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
         if (e is LoginService.InvalidTokenException)
         {
           return req.FailureResponse();

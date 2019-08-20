@@ -10,9 +10,9 @@ using pepperspray.ChatServer.Game;
 using pepperspray.CIO;
 using pepperspray.SharedServices;
 
-namespace pepperspray.ChatServer.Services
+namespace pepperspray.SharedServices
 {
-  internal class ActionsAuthenticator: IDIService
+  internal class ChatActionsAuthenticator: IDIService
   {
     private class PoseAgreement
     {
@@ -25,11 +25,29 @@ namespace pepperspray.ChatServer.Services
       }
     }
 
+    private class MarryAgreement
+    {
+      internal string Initiator;
+      internal string Recepient;
+
+      internal bool IsBetween(string player1, string player2)
+      {
+        if (this.Initiator == null || this.Recepient == null)
+        {
+          return false;
+        }
+
+        return (this.Initiator.Equals(player1) && this.Recepient.Equals(player2)) || (this.Initiator.Equals(player2) && this.Recepient.Equals(player1));
+      }
+    }
+
     private class Command
     {
       internal enum CommandType
       {
         action,
+        action2,
+        ask,
         none
       }
 
@@ -58,7 +76,8 @@ namespace pepperspray.ChatServer.Services
       }
     }
 
-    private List<PoseAgreement> activeAgreements = new List<PoseAgreement>();
+    private List<PoseAgreement> activePoseAgreements = new List<PoseAgreement>();
+    private List<MarryAgreement> activeMarryAgreements = new List<MarryAgreement>();
     private Dictionary<string, AuthenticationTemplate> authTemplates = new Dictionary<string, AuthenticationTemplate>
     {
       { "walk", new AuthenticationTemplate {ArgumentIndex  = 3} },
@@ -70,6 +89,7 @@ namespace pepperspray.ChatServer.Services
       { "acceptDance", new AuthenticationTemplate {ArgumentIndex  = 0} },
       { "ApplyCoupleDance", new AuthenticationTemplate {ArgumentIndex  = 0} },
       { "ApplyStopCoupleDance", new AuthenticationTemplate {ArgumentIndex  = 0} },
+      { "marry", new AuthenticationTemplate {ArgumentIndex = 0 } }
     };
 
     public void Inject()
@@ -95,7 +115,7 @@ namespace pepperspray.ChatServer.Services
             return false;
           }
 
-          var agreement = this.findAgreement(recepient.Name);
+          var agreement = this.findPoseAgreement(recepient.Name);
           if (agreement != null)
           {
             Log.Debug("Agreement of {initiator} - added {name}", recepient.Name, sender.Name);
@@ -109,13 +129,32 @@ namespace pepperspray.ChatServer.Services
         else if (command.Name.Equals("askForPose"))
         {
           Log.Debug("Agreement containing {player} removed, moving to next agreement", sender.Name);
-          this.removeAgreement(sender.Name);
-          this.findOrCreateAgreement(sender.Name);
+          this.removePoseAgreement(sender.Name);
+          this.findOrCreatePoseAgreement(sender.Name);
         }
         else if (command.Name.Equals("stopSexPS"))
         {
           Log.Debug("Agreement containing {player} removed due to pose stop request", sender.Name);
-          this.removeAgreement(sender.Name);
+          this.removePoseAgreement(sender.Name);
+        }
+        else if (command.Name.Equals("marry"))
+        {
+          Log.Debug("Marry agreement of {initiator} - added", sender.Name);
+          this.findOrCreateMarryAgreement(sender.Name);
+        }
+        else if (command.Name.Equals("marry_agree"))
+        {
+          var agreement = this.findMarryAgreement(recepient.Name);
+          if (agreement != null)
+          {
+            Log.Debug("Marry agreement of {initiator} - agreed upon from {sender}", recepient.Name, sender.Name);
+            agreement.Recepient = sender.Name;
+          }
+          else
+          {
+            Log.Debug("Player {recepient} is unable to agree to marry proposal of {initiator} - couldn't find agreement", sender.Name, recepient.Name);
+            return false;
+          }
         }
 
         return true;
@@ -132,7 +171,7 @@ namespace pepperspray.ChatServer.Services
       switch (command.Name)
       {
         case "useSexPose":
-          var agreement = this.findAgreement(sender.Name);
+          var agreement = this.findPoseAgreement(sender.Name);
           if (agreement == null)
           {
             return false;
@@ -186,34 +225,55 @@ namespace pepperspray.ChatServer.Services
 
     internal IPromise<Nothing> PlayerLoggedOff(PlayerHandle player)
     {
-      Log.Debug("Removing agreements containing {name} - logged off", player.Name);
-      this.removeAgreement(player.Name);
+      if (player.Name != null)
+      {
+        Log.Debug("Removing agreements containing {name} - logged off", player.Name);
+        this.removePoseAgreement(player.Name);
+        this.removeMarryAgreement(player.Name);
+      }
 
       return Nothing.Resolved();
     }
 
-    private PoseAgreement findOrCreateAgreement(string initiatorName)
+    internal bool AuthenticateAndFullfillMarryAgreement(string participant1, string participant2)
+    {
+      lock(this)
+      {
+        foreach (var agreement in this.activeMarryAgreements.ToArray())
+        {
+          if (agreement.IsBetween(participant1, participant2))
+          {
+            this.activeMarryAgreements.Remove(agreement);
+            return true;
+          }
+        }
+      }
+
+      return false;
+    }
+
+    private PoseAgreement findOrCreatePoseAgreement(string initiatorName)
     {
       lock (this)
       {
-        var agreement = this.findAgreement(initiatorName);
+        var agreement = this.findPoseAgreement(initiatorName);
         if (agreement != null)
         {
           return agreement;
         }
 
         agreement = new PoseAgreement { Initiator = initiatorName };
-        this.activeAgreements.Add(agreement);
+        this.activePoseAgreements.Add(agreement);
 
         return agreement;
       }
     }
 
-    private PoseAgreement findAgreement(string initiatorName)
+    private PoseAgreement findPoseAgreement(string initiatorName)
     {
       lock(this)
       {
-        foreach (var agreement in this.activeAgreements)
+        foreach (var agreement in this.activePoseAgreements)
         {
           if (agreement.Contains(initiatorName))
           {
@@ -225,15 +285,65 @@ namespace pepperspray.ChatServer.Services
       return null;
     }
 
-    private void removeAgreement(string playerName)
+    private void removePoseAgreement(string playerName)
     {
       lock(this)
       {
-        foreach (var agreement in this.activeAgreements.ToArray())
+        foreach (var agreement in this.activePoseAgreements.ToArray())
         {
           if (agreement.Contains(playerName))
           {
-            this.activeAgreements.Remove(agreement);
+            this.activePoseAgreements.Remove(agreement);
+          }
+        }
+      }
+    }
+
+    private MarryAgreement findOrCreateMarryAgreement(string initiatorName)
+    {
+      lock(this)
+      {
+        var agreement = this.findMarryAgreement(initiatorName);
+
+        if (agreement == null)
+        {
+          agreement = new MarryAgreement
+          {
+            Initiator = initiatorName
+          };
+
+          this.activeMarryAgreements.Add(agreement);
+        }
+
+        return agreement;
+      }
+    }
+
+    private MarryAgreement findMarryAgreement(string initiatorName)
+    {
+      lock(this)
+      {
+        foreach (var argreement in this.activeMarryAgreements)
+        {
+          if (argreement.Initiator.Equals(initiatorName))
+          {
+            return argreement;
+          }
+        }
+      }
+
+      return null;
+    }
+
+    private void removeMarryAgreement(string participantName)
+    {
+      lock(this)
+      {
+        foreach (var agreement in this.activeMarryAgreements.ToArray())
+        {
+          if (agreement.Initiator.Equals(participantName) || (agreement.Recepient != null && agreement.Recepient.Equals(participantName)))
+          {
+            this.activeMarryAgreements.Remove(agreement);
           }
         }
       }
@@ -249,6 +359,30 @@ namespace pepperspray.ChatServer.Services
         return new Command
         {
           Type = Command.CommandType.action,
+          Name = args[0],
+          Arguments = args.Skip(1).ToArray()
+        };
+      }
+      else if (message.StartsWith("~ask/"))
+      {
+        var action = message.Substring("~ask/".Length);
+        var args = action.Split('|');
+
+        return new Command
+        {
+          Type = Command.CommandType.ask,
+          Name = args[0],
+          Arguments = args.Skip(1).ToArray()
+        };
+      }
+      else if (message.StartsWith("~action2/"))
+      {
+        var action = message.Substring("~action2/".Length);
+        var args = action.Split('|');
+
+        return new Command
+        {
+          Type = Command.CommandType.action2,
           Name = args[0],
           Arguments = args.Skip(1).ToArray()
         };

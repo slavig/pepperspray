@@ -19,6 +19,7 @@ namespace pepperspray.SharedServices
     internal class InvalidPasswordException : Exception {}
     internal class NotFoundException : Exception {}
     internal class InvalidTokenException : Exception {}
+    internal class UnsupportedProtocolVersionException: Exception {}
 
     private Configuration config;
     private Database db;
@@ -33,6 +34,26 @@ namespace pepperspray.SharedServices
       this.mailService = DI.Get<MailService>();
       this.random = new Random();
       this.socialServer = DI.Get<LoginServerListener>();
+    }
+
+    internal void CheckProtocolVersion(string versionString)
+    {
+      if (versionString.Equals(this.config.WebfrontProtocolVersion))
+      {
+        return;
+      }
+
+      try
+      {
+        var version = Convert.ToUInt32(versionString);
+        if (version >= this.config.MinimumProtocolVersion)
+        {
+          return;
+        }
+      }
+      catch (FormatException) { }
+
+      throw new UnsupportedProtocolVersionException();
     }
 
     internal User Login(string endpoint, string username, string passwordHash)
@@ -66,20 +87,20 @@ namespace pepperspray.SharedServices
       {
         throw new NotFoundException();
       }
+      catch (Exception e)
+      {
+        Log.Warning("Client {endpoint} failed to login: {exception}", endpoint, e);
+        throw e;
+      }
     }
 
-    internal void ChangePassword(string endpoint, string username, string passwordHash, string newPasswordHash)
+    internal void ChangePassword(string endpoint, string token, string passwordHash, string newPasswordHash)
     {
-      Log.Information("Client {endpoint} changing password with {username}:{passwordHash} to {newPasswordHash}", endpoint, username, passwordHash, newPasswordHash);
+      Log.Information("Client {endpoint} changing password with {token}:{passwordHash} to {newPasswordHash}", endpoint, token, passwordHash, newPasswordHash);
 
       try
       {
-        User user = null;
-        lock (this.db)
-        {
-          user = this.db.UserFind(username);
-        }
-
+        User user = this.AuthorizeUser(token);
         if (user.PasswordHash.Equals(passwordHash))
         {
           lock(this.db)
@@ -162,17 +183,13 @@ namespace pepperspray.SharedServices
       return user;
     }
 
-    internal void DeleteAccount(string endpoint, string username, string passwordHash)
+    internal void DeleteAccount(string endpoint, string token, string passwordHash)
     {
-      Log.Information("Client {endpoint} deleting account with {username}:{passwordHash}", endpoint, username, passwordHash);
+      Log.Information("Client {endpoint} deleting account with {username}:{passwordHash}", endpoint, token, passwordHash);
 
       try
       {
-        User user = null;
-        lock (this.db)
-        {
-          user = this.db.UserFind(username);
-        }
+        User user = this.AuthorizeUser(token);
 
         if (user.PasswordHash.Equals(passwordHash))
         {
@@ -256,6 +273,11 @@ namespace pepperspray.SharedServices
     internal string GetLoginFailedResponseText()
     {
       return "answer=fail";
+    }
+
+    internal string GetUnsupportedProtocolVersionResponseText()
+    {
+      return "answer=expired";
     }
 
     private void generateToken(User user)

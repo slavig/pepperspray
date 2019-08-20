@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Net;
 using System.Threading.Tasks;
 
 using RSG;
@@ -34,7 +35,11 @@ namespace pepperspray.ChatServer
         .Map(connection => this.coreServer.ConnectPlayer(connection))
         .Map(player => player.Stream.Stream()
           .Map(ev => this.coreServer.ProcessCommand(player, ev))
-          .Catch(ex => { player.Terminate(new ErrorException(ex.Message, "Server error.")); }))
+          .Catch(ex =>
+          {
+            Log.Warning("Terminating connection of {name}/{token} due to unhandled exception: {exception}", player.Name, player.Token, ex);
+            player.Stream.Terminate();
+          }))
           .Then(a => Nothing.Resolved());
     }
   }

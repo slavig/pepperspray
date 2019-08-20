@@ -52,7 +52,7 @@ namespace pepperspray.ChatServer
     {
       try
       {
-        Log.Debug("Terminating connection");
+        Log.Debug("Terminating connection {hash}/{endpoint}", this.ConnectionHash, this.ConnectionEndpoint);
         this.socket.Shutdown();
       }
       catch (Exception) {}
@@ -62,8 +62,6 @@ namespace pepperspray.ChatServer
 
     internal IPromise<Nothing> Write(Message outEvent)
     {
-      Log.Verbose("=> {sender} {message}", this.ConnectionHash, outEvent.DebugDescription());
-
       return this.socket.Write(Parser.SerializeMessage(outEvent));
     }
 

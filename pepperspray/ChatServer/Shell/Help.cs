@@ -22,12 +22,11 @@ namespace pepperspray.ChatServer.Shell
 
     internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
     {
-      sender.Stream.Write(Responses.Message(sender, "~action/setPlayerPosition|Ezekiel_2517|8.841823|0.00793457|5.93932|"));
-      sender.Stream.Write(Responses.Message(sender, "~action2/send_position_complete|"));
-      
       return dispatcher.Output(sender, server, "Following commands are available: ")
-        .Then(a => dispatcher.Output(sender, server, "/players - show how many players are at locations"))
-        .Then(a => dispatcher.Output(sender, server, "/pm PLAYER - open private message tab if player is online."));
+        .Then(a => dispatcher.Output(sender, server, "/players - show how many players are at locations."))
+        .Then(a => dispatcher.Output(sender, server, "/pm PLAYER - open private message tab if player is online."))
+        .Then(a => dispatcher.Output(sender, server, "/pay PLAYER AMOUNT - transfer currency to other player."))
+      ;
     }
   }
 }

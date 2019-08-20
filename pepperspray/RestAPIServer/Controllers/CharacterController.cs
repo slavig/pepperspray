@@ -29,6 +29,8 @@ namespace pepperspray.RestAPIServer.Controllers
 
       s.StaticRoutes.Add(HttpMethod.POST, "/getprofile", this.GetProfile);
       s.StaticRoutes.Add(HttpMethod.POST, "/saveprofile", this.SaveProfile);
+      s.StaticRoutes.Add(HttpMethod.POST, "/wedding", this.Wedding);
+      s.StaticRoutes.Add(HttpMethod.POST, "/divorce", this.Divorce);
 
       s.StaticRoutes.Add(HttpMethod.POST, "/getdefaultchar", this.GetDefaultChar);
       s.StaticRoutes.Add(HttpMethod.POST, "/getbotchar", this.GetBotChar);
@@ -115,7 +117,7 @@ namespace pepperspray.RestAPIServer.Controllers
       }
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} failed to change char: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
         if (e is FormatException || e is ArgumentException || e is CharacterService.NotAuthorizedException)
         {
           return req.FailureResponse();
@@ -140,7 +142,7 @@ namespace pepperspray.RestAPIServer.Controllers
       }
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} failed to save char: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
         if (e is FormatException || e is ArgumentException || e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException)
         {
           return req.FailureResponse();
@@ -165,7 +167,7 @@ namespace pepperspray.RestAPIServer.Controllers
       }
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} failed to delete char: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
         if (e is FormatException || e is ArgumentException || e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException)
         {
           return req.FailureResponse();
@@ -186,7 +188,7 @@ namespace pepperspray.RestAPIServer.Controllers
         return req.TextResponse(this.characterService.GetCharacterProfile(uid));
       }
       catch (Exception e) {
-        Log.Warning("Client {endpoint} failed to get char profile: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
         if (e is FormatException || e is ArgumentException || e is CharacterService.NotFoundException)
         {
           return req.FailureResponse();
@@ -211,7 +213,56 @@ namespace pepperspray.RestAPIServer.Controllers
       }
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} failed to save char profile: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
+        if (e is ArgumentException || e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException || e is FormatException)
+        {
+          return req.FailureResponse();
+        }
+        else
+        {
+          throw e;
+        }
+      }
+    }
+
+    internal HttpResponse Wedding(HttpRequest req)
+    {
+      try
+      {
+        var id = Convert.ToUInt32(req.GetFormParameter("uid"));
+        var wid = Convert.ToUInt32(req.GetFormParameter("wid"));
+        var token = req.GetBearerToken();
+
+        this.characterService.SetCharacterSpouse(token, id, wid);
+        return req.TextResponse("ok");
+      }
+      catch (Exception e)
+      {
+        Request.HandleException(req, e);
+        if (e is ArgumentException || e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException || e is FormatException)
+        {
+          return req.FailureResponse();
+        }
+        else
+        {
+          throw e;
+        }
+      }
+    }
+
+    internal HttpResponse Divorce(HttpRequest req)
+    {
+      try
+      {
+        var id = Convert.ToUInt32(req.GetFormParameter("uid"));
+        var token = req.GetBearerToken();
+
+        this.characterService.UnsetCharacterSpouse(token, id);
+        return req.TextResponse("ok");
+      }
+      catch (Exception e)
+      {
+        Request.HandleException(req, e);
         if (e is ArgumentException || e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException || e is FormatException)
         {
           return req.FailureResponse();

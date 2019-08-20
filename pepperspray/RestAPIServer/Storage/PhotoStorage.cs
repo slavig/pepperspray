@@ -43,12 +43,15 @@ namespace pepperspray.RestAPIServer.Storage
 
       var hash = this.randomHash();
 
-      var image = this.resizeImage(Image.FromStream(dataStream), 1024, 1024);
+      var originalImage = Image.FromStream(dataStream);
+
+      var image = this.resizeImage(originalImage.Clone() as Image, 1024, 1024);
       image.Save(this.filePath(hash), ImageFormat.Jpeg);
 
-      var thumbnail = this.resizeImage(image, 250, 250);
+      var thumbnail = this.resizeImage(originalImage, 250, 250);
       thumbnail.Save(this.filePath(hash, true), ImageFormat.Jpeg);
 
+      originalImage.Dispose();
       image.Dispose();
       thumbnail.Dispose();
 

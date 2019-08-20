@@ -43,7 +43,7 @@ namespace pepperspray.RestAPIServer.Controllers
       }
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} - failed to check for offline mssages: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
 
         if (e is CharacterService.NotFoundException || e is FormatException || e is LoginService.InvalidTokenException)
         {
@@ -91,7 +91,7 @@ namespace pepperspray.RestAPIServer.Controllers
       }
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} - failed to get offline mssages: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
 
         if (e is CharacterService.NotFoundException || e is FormatException || e is CharacterService.NotAuthorizedException)
         {

@@ -19,17 +19,51 @@
 		<addr ip="auto" port="8080" />
 
 		<!--
-			Number of cached words in RAM. Consumes memory, 
-			exact number depends on the worlds in question.
-		-->
-		<world-cache capacity="20" />
-
-		<!--
 			Cross-origin headers configuration, REST API will allow
 			requests from this ip:port combination only 
 			(should be configured to point at peppersprayWeb).
 		-->
 		<cross-origin allow-ip="auto" port="8082" />
+
+		<!--
+			Recaptcha configuration. Some actions on the peppersprayWeb will
+			use reCaptcha in order to validate requests. 
+
+			* `invisible` is a reCaptcha v2 (Invisible)
+			* `visible` is a reCaptcha v2 (Checkbox or Not a robot)
+		-->
+		<recaptcha enabled="false" invisible-secret="SECRET" visible-secret="SECRET" />
+
+		<!--
+			If statics redirection is enabled photo & world downloads will
+			be redirected to specified host (since pepperspray itself is not that
+			great at serving statics).
+		-->
+		<statics-redirection enabled="false" host="http://127.0.0.1" />
+
+		<!--
+			In order to prevent bruteforce attacks on login server socket each unsuccessfull 
+			attempt will be held back by amount of seconds.
+		-->
+		<login-attempt-throttle seconds="3" />
+
+		<!--
+			Number of cached words in RAM. Consumes memory, 
+			exact number depends on the worlds in question.
+		-->
+		<worlds ram-cache-capacity="20" />
+
+		<!--
+			With currency system enabled some of the actions will spend user Currency,
+			padding will determine the "zero" value in order to trick the client into
+			thinking that there's more currency (value should match client configuration value).
+		-->
+		<currency enabled="false" padding="100000" />
+
+		<!--
+			Amount of photo slots available for players and maximum photo size (in bytes).
+		-->
+		<photos	slot-count="6" size-limit="4194304" />
 
 		<!--
 			Radiostations for standard locations.

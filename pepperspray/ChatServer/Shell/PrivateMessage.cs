@@ -31,9 +31,10 @@ namespace pepperspray.ChatServer.Shell
         if (player != null)
         {
           return sender.Stream.Write(Responses.PrivateChatMessage(player, "Player is online, you can message him."));
-        } else
+        } 
+        else
         {
-          return dispatcher.Output(sender, server, "Player is offline.");
+          return dispatcher.Error(sender, server, "Player is offline.");
         }
       }
     }

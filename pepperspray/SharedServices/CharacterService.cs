@@ -27,6 +27,7 @@ namespace pepperspray.SharedServices
     private NameValidator nameValidator;
     private Database db;
     private LoginServerListener loginServer;
+    private ChatActionsAuthenticator actionsAuthenticator;
 
     public void Inject()
     {
@@ -34,33 +35,27 @@ namespace pepperspray.SharedServices
       this.nameValidator = DI.Get<NameValidator>();
       this.db = DI.Get<Database>();
       this.loginServer = DI.Get<LoginServerListener>();
+      this.actionsAuthenticator = DI.Get<ChatActionsAuthenticator>();
     }
 
     internal Character LoginCharacter(User user, uint id, string name, string sex)
     {
-      try
+      lock(this.db)
       {
-        lock(this.db)
+        var character = this.FindAndAuthorize(user.Token, id);
+        if (!character.Name.Equals(name) || !character.Sex.Equals(sex))
         {
-          var character = this.FindAndAuthorize(user.Token, id);
-          if (!character.Name.Equals(name) || !character.Sex.Equals(sex))
-          {
-            throw new InvalidNameException();
-          }
-
-          character.LastLogin = DateTime.Now;
-          this.db.CharacterUpdate(character);
-          lock(this)
-          {
-            this.loggedCharacters[id] = character;
-          }
-
-          return character;
+          throw new InvalidNameException();
         }
-      } 
-      catch (Database.NotFoundException)
-      {
-        throw new NotFoundException();
+
+        character.LastLogin = DateTime.Now;
+        this.db.CharacterUpdate(character);
+        lock(this)
+        {
+          this.loggedCharacters[id] = character;
+        }
+
+        return character;
       }
     }
 
@@ -135,21 +130,13 @@ namespace pepperspray.SharedServices
     {
       Log.Debug("Client {token} updating character {uid} - new {name}/{sex}", token, id, newName, newSex);
 
-      try
+      lock(this.db)
       {
-        lock(this.db)
-        {
-          var character = this.FindAndAuthorize(token, id);
-          character.Name = newName;
-          character.Sex = newSex;
+        var character = this.FindAndAuthorize(token, id);
+        character.Name = newName;
+        character.Sex = newSex;
 
-          this.db.CharacterUpdate(character);
-        }
-      }
-      catch (Database.NotFoundException)
-      {
-        Log.Warning("Client {token} failed to update character - not found");
-        throw new NotFoundException();
+        this.db.CharacterUpdate(character);
       }
     }
 
@@ -157,20 +144,75 @@ namespace pepperspray.SharedServices
     {
       Log.Debug("Client {token} updating character appearance of {uid}", token, id);
 
+      lock(this.db)
+      {
+        var character = this.FindAndAuthorize(token, id);
+        character.Appearance = data;
+
+        this.db.CharacterUpdate(character);
+      }
+    }
+
+    internal void SetCharacterSpouse(string token, uint id, uint spouseId)
+    {
+      Log.Debug("Client {token} updating character {id} spouse to {spouseId}", token, id, spouseId);
+
+      var character = this.FindAndAuthorize(token, id);
+      var spouse = this.Find(spouseId);
+
+      if (spouse.SpouseId != 0)
+      {
+        Log.Warning("Client {token} from {id} were unable to update spouse of {spouseId} - married to another character!", token, id, spouseId);
+        throw new NotAuthorizedException();
+      }
+
+      if (!this.actionsAuthenticator.AuthenticateAndFullfillMarryAgreement(character.Name, spouse.Name))
+      {
+        Log.Warning("Client {token} from {id} failed to set character spouse of {spouseId} - not authenticated!", token, id, spouseId);
+        throw new NotAuthorizedException();
+      }
+
+      spouse.SpouseId = character.Id;
+      character.SpouseId = spouseId;
+
+      lock (this.db)
+      {
+        this.db.CharacterUpdate(character);
+        this.db.CharacterUpdate(spouse);
+      }
+    }
+
+    internal void UnsetCharacterSpouse(string token, uint id)
+    {
+      Log.Debug("Client {token} removing character {id} spouse", token, id);
+
+      var character = this.FindAndAuthorize(token, id);
+
       try
       {
-        lock(this.db)
+        var spouse = this.Find(character.SpouseId);
+        if (spouse.SpouseId == character.Id)
         {
-          var character = this.FindAndAuthorize(token, id);
-          character.Appearance = data;
-
-          this.db.CharacterUpdate(character);
+          spouse.SpouseId = 0;
+          lock (this.db)
+          {
+            this.db.CharacterUpdate(spouse);
+          }
+        }
+        else
+        {
+          Log.Warning("Client {token} of {id} failed to unset spouse {spouseId} - not married!", token, id, spouse.Id);
         }
       }
-      catch (Database.NotFoundException)
+      catch (NotFoundException)
       {
-        Log.Warning("Client {token} failed to update character appearance - not found");
-        throw new NotFoundException();
+        Log.Warning("Client {token} of {id} - failed to unset spouse - spouse not found!", token, id);
+      }
+
+      character.SpouseId = 0;
+      lock(this.db)
+      {
+        this.db.CharacterUpdate(character);
       }
     }
 
@@ -178,18 +220,10 @@ namespace pepperspray.SharedServices
     {
       Log.Debug("Client {token} deleting character {uid}", token, id);
 
-      try
+      lock(this.db)
       {
-        lock(this.db)
-        {
-          var character = this.FindAndAuthorize(token, id);
-          this.db.CharacterDeleteById(character.Id);
-        }
-      }
-      catch (Database.NotFoundException)
-      {
-        Log.Warning("Client {token} failed to delete character - not found");
-        throw new NotFoundException();
+        var character = this.FindAndAuthorize(token, id);
+        this.db.CharacterDeleteById(character.Id);
       }
     }
 
@@ -197,51 +231,47 @@ namespace pepperspray.SharedServices
     {
       Log.Debug("Client requesting chracter profile of {uid}", id);
 
-      try
+      Character character = null;
+      Character spouse = null;
+      lock (this.db)
       {
-        Character character = null;
-        lock (this.db)
-        {
-          character = this.Find(id);
-        }
+        character = this.Find(id);
 
-        return JsonConvert.SerializeObject(new Dictionary<string, object> {
-          { "id", character.Id },
-          { "name", character.Name },
-          { "sex", character.Sex },
-          { "profile", character.ProfileJSON },
-          { "gifts", this.getGiftCount(character.Id) },
-          { "married", new Dictionary<string, object> { { "id", 0 }, { "name", null }, {"sex", null } } },
-          { "ava", character.AvatarSlot != null ? character.AvatarSlot : "0" },
-          { "photos", this.config.PlayerPhotoSlots },
-          { "photoSlots", this.getPhotos(character.Id) }
-        });
+        if (character.SpouseId != 0)
+        {
+          try
+          {
+            spouse = this.Find(character.SpouseId);
+          }
+          catch (NotFoundException) { }
+        }
       }
-      catch (Database.NotFoundException)
-      {
-        Log.Warning("Client failed to get character profile - not found");
-        throw new NotFoundException();
-      }
+
+      return JsonConvert.SerializeObject(new Dictionary<string, object> {
+        { "id", character.Id },
+        { "name", character.Name },
+        { "sex", character.Sex },
+        { "profile", character.ProfileJSON },
+        { "gifts", this.getGiftCount(character.Id) },
+        { "married", spouse == null 
+          ? new Dictionary<string, object> { { "id", 0 } } 
+          : new Dictionary<string, object> { { "id", spouse.Id }, { "name", spouse.Name }, {"sex", spouse.Sex } } },
+        { "ava", character.AvatarSlot ?? "0" },
+        { "photos", this.config.PlayerPhotoSlots },
+        { "photoSlots", this.getPhotos(character.Id) }
+      });
     }
 
     internal void UpdateCharacterProfile(string token, uint id, string json)
     {
       Log.Debug("Client {token} updating character profile of {uid}", token, id);
 
-      try
+      lock (this.db)
       {
-        lock (this.db)
-        {
-          var character = this.FindAndAuthorize(token, id);
-          character.ProfileJSON = json;
+        var character = this.FindAndAuthorize(token, id);
+        character.ProfileJSON = json;
 
-          this.db.CharacterUpdate(character);
-        }
-      }
-      catch (Database.NotFoundException)
-      {
-        Log.Warning("Client {token} failed to update character profile - not found");
-        throw new NotFoundException();
+        this.db.CharacterUpdate(character);
       }
     }
 
@@ -286,9 +316,16 @@ namespace pepperspray.SharedServices
       {
         if (!this.loggedCharacters.TryGetValue(id, out character))
         {
-          lock (this.db)
+          try
           {
-            character = this.db.CharacterFindById(id);
+            lock (this.db)
+            {
+              character = this.db.CharacterFindById(id);
+            }
+          }
+          catch (Database.NotFoundException)
+          {
+            throw new NotFoundException();
           }
         }
       }
@@ -304,9 +341,16 @@ namespace pepperspray.SharedServices
 
         if (matching.Count() == 0)
         {
-          lock(this.db)
+          try
           {
-            return this.db.CharacterFindByName(name);
+            lock (this.db)
+            {
+              return this.db.CharacterFindByName(name);
+            }
+          }
+          catch (Database.NotFoundException)
+          {
+            throw new NotFoundException();
           }
         }
         else
@@ -337,7 +381,7 @@ namespace pepperspray.SharedServices
       }
       catch (Database.NotFoundException)
       {
-        throw new NotAuthorizedException();
+        throw new NotFoundException();
       }
     }
 

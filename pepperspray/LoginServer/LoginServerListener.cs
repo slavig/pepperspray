@@ -33,7 +33,6 @@ namespace pepperspray.LoginServer
     {
       var address = this.config.LoginServerAddress;
       var port = this.config.LoginServerPort;
-      Log.Information("Binding login server to {ip}:{port}", address, port);
 
       var task = new CIO.CIOListener("LoginServer")
         .Bind(address, port)
@@ -83,16 +82,12 @@ namespace pepperspray.LoginServer
                 var username = ev.ElementAt(1).ToString();
                 var passwordHash = ev.ElementAt(2).ToString();
                 var protocolVersion = ev.ElementAt(3).ToString();
-                if (protocolVersion != "3")
-                {
-                  client.Emit("login response", "answer=error");
-                  return Nothing.Resolved();
-                }
 
                 try
                 {
-                  var user = this.loginService.Login(client.Endpoint, username, passwordHash);
+                  this.loginService.CheckProtocolVersion(protocolVersion);
 
+                  var user = this.loginService.Login(client.Endpoint, username, passwordHash);
                   lock(this)
                   {
                     this.loggedClients[user.Token] = client;
@@ -112,6 +107,10 @@ namespace pepperspray.LoginServer
                   }
 
                   client.Emit("login response", this.loginService.GetLoginFailedResponseText());
+                }
+                catch (LoginService.UnsupportedProtocolVersionException)
+                {
+                  client.Emit("login response", this.loginService.GetUnsupportedProtocolVersionResponseText());
                 }
                 break;
             }

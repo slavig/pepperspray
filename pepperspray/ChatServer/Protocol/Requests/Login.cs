@@ -97,8 +97,9 @@ namespace pepperspray.ChatServer.Protocol.Requests
       {
         exception = e;
       }
-      catch (Exception)
+      catch (Exception e)
       {
+        Log.Warning("Failed to login character {name}/{token}: {exception}", this.name, this.token, e);
         exception = new ErrorException("internal", "Internal server error.");
       }
 

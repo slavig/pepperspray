@@ -45,6 +45,13 @@ namespace pepperspray.SharedServices
       public uint Padding;
     }
 
+    public class RecaptchaConfiguration
+    {
+      public bool Enabled;
+      public string VisibleSecret;
+      public string InvisibleSecret;
+    }
+
     internal IPAddress ChatServerAddress;
     internal int ChatServerPort;
 
@@ -63,12 +70,16 @@ namespace pepperspray.SharedServices
     internal RedirectionConfiguration StaticsRedirection;
     internal WorldsConfiguration Worlds;
     internal CurrencyConfiguration Currency;
+    internal RecaptchaConfiguration Recaptcha;
 
     internal string TokenSalt;
     internal int PlayerInactivityTimeout;
     internal uint PlayerPhotoSlots;
     internal uint PhotoSizeLimit;
     internal uint LoginAttemptThrottle;
+
+    internal string WebfrontProtocolVersion = "web";
+    internal uint MinimumProtocolVersion = 3;
 
     private string path;
 
@@ -175,6 +186,8 @@ namespace pepperspray.SharedServices
           var newsNode = doc.SelectSingleNode("configuration/rest-api-server/news");
           if (newsNode != null)
           {
+            this.Announcements = new List<Announcement>();
+
             foreach (var nodeElement in newsNode.ChildNodes)
             {
               var node = nodeElement as XmlNode;
@@ -195,6 +208,16 @@ namespace pepperspray.SharedServices
           {
             Enabled = redirectionNode.Attributes["enabled"].InnerText.Equals("true"),
             Host = redirectionNode.Attributes["host"].InnerText
+          };
+        }
+
+        {
+          var recaptchaNode = doc.SelectSingleNode("configuration/rest-api-server/recaptcha");
+          this.Recaptcha = new RecaptchaConfiguration
+          {
+            Enabled = recaptchaNode.Attributes["enabled"].InnerText.Equals("true"),
+            VisibleSecret = recaptchaNode.Attributes["visible-secret"].InnerText,
+            InvisibleSecret = recaptchaNode.Attributes["invisible-secret"].InnerText
           };
         }
       }

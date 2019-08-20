@@ -117,7 +117,7 @@ namespace pepperspray.SharedServices
 
     internal IEnumerable<PhotoSlot> PhotoSlotFindByCharacterId(uint id)
     {
-      return this.connection.Table<PhotoSlot>().Where(c => c.CharacterId == id);
+      return this.connection.Table<PhotoSlot>().Where(c => c.CharacterId == id).OrderBy(p => p.Identifier);
     }
 
     internal PhotoSlot PhotoSlotFind(uint id, string slot)

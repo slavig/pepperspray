@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Serilog;
 using Newtonsoft.Json;
 using WatsonWebserver;
+using BitArmory.ReCaptcha;
 using pepperspray.Utils;
 using pepperspray.RestAPIServer.Services;
 using pepperspray.SharedServices;
@@ -16,9 +17,12 @@ namespace pepperspray.RestAPIServer.Controllers
 {
   internal class LoginController
   {
+    internal class CaptchaValidationFailedException: Exception {}
+
     private Configuration config = DI.Get<Configuration>();
     private LoginService loginService = DI.Get<LoginService>();
     private Dictionary<string, DateTime> loginAttempts = new Dictionary<string, DateTime>();
+    private ReCaptchaService recapchaService = new ReCaptchaService();
 
     internal LoginController(Server s)
     {
@@ -40,13 +44,14 @@ namespace pepperspray.RestAPIServer.Controllers
     {
       try
       {
-        this.throttleLoginAttempt(req.SourceIp);
+        // this.throttleLoginAttempt(req.SourceIp);
 
         var str = Encoding.UTF8.GetString(req.Data);
         var parameters = JsonConvert.DeserializeObject<IDictionary<string, string>>(str);
 
         var name = parameters["username"];
         var passwordHash = parameters["passwordHash"];
+        this.validateInvisibleRecaptcha(req, parameters["captchaToken"]).Wait();
 
         var user = this.loginService.Login(req.GetEndpoint(), name, passwordHash);
         return req.TextResponse(this.loginService.GetLoginResponseText(user));
@@ -58,12 +63,17 @@ namespace pepperspray.RestAPIServer.Controllers
       catch (LoginService.NotFoundException)
       {
         return req.TextResponse("not_found");
-      } 
+      }
+      catch (AggregateException)
+      {
+        return req.TextResponse("captcha");
+      }
       catch (KeyNotFoundException)
       {
         return req.FailureResponse();
       }
     }
+
 
     internal HttpResponse ChangePassword(HttpRequest req)
     {
@@ -72,11 +82,11 @@ namespace pepperspray.RestAPIServer.Controllers
         var str = Encoding.UTF8.GetString(req.Data);
         var parameters = JsonConvert.DeserializeObject<IDictionary<string, string>>(str);
 
-        var name = parameters["username"];
+        var token = parameters["token"];
         var passwordHash = parameters["passwordHash"];
         var newPasswordHash = parameters["newPasswordHash"];
 
-        this.loginService.ChangePassword(req.GetEndpoint(), name, passwordHash, newPasswordHash);
+        this.loginService.ChangePassword(req.GetEndpoint(), token, passwordHash, newPasswordHash);
         return req.TextResponse("ok");
       }
       catch (LoginService.InvalidPasswordException)
@@ -101,6 +111,8 @@ namespace pepperspray.RestAPIServer.Controllers
         var parameters = JsonConvert.DeserializeObject<IDictionary<string, string>>(str);
 
         var name = parameters["username"];
+        this.validateRecaptcha(req, parameters["captchaToken"]).Wait();
+
         this.loginService.ForgotPassword(req.GetEndpoint(), name);
         return req.TextResponse("ok");
       }
@@ -112,6 +124,10 @@ namespace pepperspray.RestAPIServer.Controllers
       {
         return req.TextResponse("not_found");
       } 
+      catch (AggregateException)
+      {
+        return req.TextResponse("captcha");
+      }
       catch (KeyNotFoundException)
       {
         return req.FailureResponse();
@@ -126,7 +142,24 @@ namespace pepperspray.RestAPIServer.Controllers
       var username = parameters["username"];
       var passwordHash = parameters["passwordHash"];
 
-      return req.TextResponse(this.loginService.SignUp(req.GetEndpoint(), username, passwordHash) != null ? "ok" : "fail");
+      try
+      {
+        this.validateRecaptcha(req, parameters["captchaToken"]).Wait();
+      } 
+      catch (AggregateException)
+      {
+        return req.TextResponse("captcha");
+      }
+
+      try
+      {
+        return req.TextResponse(this.loginService.SignUp(req.GetEndpoint(), username, passwordHash) != null ? "ok" : "fail");
+      }
+      catch (Exception e)
+      {
+        Request.HandleException(req, e);
+        throw e;
+      }
     }
 
     internal HttpResponse DeleteAccount(HttpRequest req)
@@ -134,17 +167,17 @@ namespace pepperspray.RestAPIServer.Controllers
       var str = Encoding.UTF8.GetString(req.Data);
       var parameters = JsonConvert.DeserializeObject<IDictionary<string, string>>(str);
 
-      var username = parameters["username"];
+      var token = parameters["token"];
       var passwordHash = parameters["passwordHash"];
 
       try
       {
-        this.loginService.DeleteAccount(req.GetEndpoint(), username, passwordHash);
+        this.loginService.DeleteAccount(req.GetEndpoint(), token, passwordHash);
         return req.TextResponse("ok");
       } 
       catch (Exception e)
       {
-        Log.Warning("Client {endpoint} failed to delete account: {exception}", req.GetEndpoint(), e);
+        Request.HandleException(req, e);
         if (e is LoginService.NotFoundException || e is LoginService.InvalidPasswordException)
         {
           return req.TextResponse("fail");
@@ -189,6 +222,46 @@ namespace pepperspray.RestAPIServer.Controllers
       lock(this)
       {
         this.loginAttempts[sourceIp] = DateTime.Now;
+      }
+    }
+
+    private async Task<bool> validateInvisibleRecaptcha(HttpRequest req, string token)
+    {
+      if (this.config.Recaptcha.Enabled)
+      {
+        var result = await this.recapchaService.Verify3Async(token, req.SourceIp, this.config.Recaptcha.InvisibleSecret);
+        if (result.IsSuccess)
+        {
+          return true;
+        }
+        else
+        {
+          Log.Warning("Client {endpoint} failed to provide valid captcha: {success}, {score}", result.IsSuccess, result.Score);
+          throw new CaptchaValidationFailedException();
+        }
+      } else
+      {
+        return true;
+      }
+    }
+
+    private async Task<bool> validateRecaptcha(HttpRequest req, string token)
+    {
+      if (this.config.Recaptcha.Enabled)
+      {
+        if (await this.recapchaService.Verify2Async(token, req.SourceIp, this.config.Recaptcha.VisibleSecret))
+        {
+          return true;
+        }
+        else
+        {
+          Log.Warning("Client {endpoint} failed to provide valid captcha");
+          throw new CaptchaValidationFailedException();
+        }
+      } 
+      else
+      {
+        return true;
       }
     }
   }
