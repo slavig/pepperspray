@@ -95,12 +95,12 @@
 			<sender addr="test@test.com" />
 		</mail>
 
+		<!--
+			News entries. Supported attributes: "title" (required), 
+			"image" (image url, optional), "url" (url to open on click, optional).
+			Text will be trimmed, game supports following attributes: <br />, <b>, <i>.
+		-->
 		<news>
-			<!--
-				News entries. Supported attributes: "title" (required), 
-				"image" (image url, optional), "url" (url to open on click, optional).
-				Text will be trimmed, game supports following attributes: <br />, <b>, <i>.
-			-->
 			<entry title="Test title 1.">
 Test line <b>1</b>.
 <br />Test line <b>2</b>.
@@ -123,4 +123,11 @@ Test line <b>1</b>.
 		Hash salt used to construct access tokens.
 	-->
 	<token salt="pepperspraySalt" />
+
+	<!--
+		Banned addresses list. For now IP should be an exact match.
+	-->
+	<banned-addresses>
+		<client ip="EXACT_IP" />
+	</banned-addresses>
 </configuration>

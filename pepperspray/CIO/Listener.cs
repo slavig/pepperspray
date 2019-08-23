@@ -41,31 +41,38 @@ namespace pepperspray.CIO
       var promise = new MultiPromise<CIOSocket>();
       CIOReactor.Spawn(this.name + "_incomingConnections", true, () =>
       {
-        try
+        Log.Information("{server} listening for connections", this.name);
+        var sync = new ManualResetEvent(false);
+        while (true)
         {
-          Log.Information("{server} listening for connections", this.name);
-          var sync = new ManualResetEvent(false);
-          while (true)
+          try
           {
             sync.Reset();
 
             this.listener.BeginAccept(new AsyncCallback(result =>
             {
-              var socket = this.listener.EndAccept(result);
-              var wrappedSocket = new CIOSocket(this.name, socket);
+              try
+              {
+                var socket = this.listener.EndAccept(result);
+                var wrappedSocket = new CIOSocket(this.name, socket);
 
-              Log.Debug("{server} accepted connection {hash} from {ip}", this.name, wrappedSocket.GetHashCode(), wrappedSocket.Endpoint);
-              promise.SingleResolve(wrappedSocket);
+                Log.Debug("{server} accepted connection {hash} from {ip}", this.name, wrappedSocket.GetHashCode(), wrappedSocket.Endpoint);
+                promise.SingleResolve(wrappedSocket);
+              }
+              catch (Exception e)
+              {
+                Log.Error("{server} end accept caught: {exception}", this.name, e);
+              }
+
               sync.Set();
             }), null);
 
             sync.WaitOne();
           }
-        }
-        catch (Exception e)
-        {
-          Log.Error("{server} rejecting Incoming() promise, listener caught exception: {exception}", this.name, e);
-          promise.Reject(e);
+          catch (Exception e)
+          {
+            Log.Error("{server} begin accept caught exception: {exception}", this.name, e);
+          }
         }
       });
 

@@ -73,7 +73,7 @@ namespace pepperspray.ChatServer.Shell
           this.giftService.ChangeCurrency(player.User, amount);
         }
 
-        var message = String.Format("You have been gifted {0} from admin.", amount);
+        var message = String.Format("You have been gifted {0} coins from admin.", amount);
         return new CombinedPromise<Nothing>(players.Select(p => p.Stream.Write(Responses.ServerMessage(server, message))))
           .Then(a => dispatcher.Output(sender, server, "Done"));
       }

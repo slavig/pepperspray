@@ -38,6 +38,7 @@ namespace pepperspray.ChatServer
           .Catch(ex =>
           {
             Log.Warning("Terminating connection of {name}/{token} due to unhandled exception: {exception}", player.Name, player.Token, ex);
+            this.coreServer.PlayerLoggedOff(player);
             player.Stream.Terminate();
           }))
           .Then(a => Nothing.Resolved());

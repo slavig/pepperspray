@@ -85,6 +85,11 @@ namespace pepperspray.ChatServer
 
     internal Nothing ProcessCommand(PlayerHandle handle, Message msg)
     {
+      Log.Verbose("<= {player}@{lobby} {event_description}",
+              handle.Name,
+              handle.CurrentLobby != null ? handle.CurrentLobby.Identifier : null,
+              msg.DebugDescription());
+
       var promise = this.dispatcher.Dispatch(handle, msg);
       if (promise != null)
       {

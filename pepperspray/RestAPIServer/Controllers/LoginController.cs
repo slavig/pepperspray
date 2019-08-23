@@ -64,13 +64,24 @@ namespace pepperspray.RestAPIServer.Controllers
       {
         return req.TextResponse("not_found");
       }
+      catch (LoginService.EndpointBannedException)
+      {
+        return req.TextResponse("banned");
+      }
       catch (AggregateException)
       {
         return req.TextResponse("captcha");
       }
-      catch (KeyNotFoundException)
+      catch (Exception e)
       {
-        return req.FailureResponse();
+        if (e is KeyNotFoundException || e is FormatException)
+        {
+          return req.FailureResponse();
+        } 
+        else
+        {
+          throw e;
+        }
       }
     }
 
@@ -154,6 +165,10 @@ namespace pepperspray.RestAPIServer.Controllers
       try
       {
         return req.TextResponse(this.loginService.SignUp(req.GetEndpoint(), username, passwordHash) != null ? "ok" : "fail");
+      }
+      catch (LoginService.EndpointBannedException)
+      {
+        return req.TextResponse("banned");
       }
       catch (Exception e)
       {

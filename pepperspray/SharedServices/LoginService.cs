@@ -20,6 +20,7 @@ namespace pepperspray.SharedServices
     internal class NotFoundException : Exception {}
     internal class InvalidTokenException : Exception {}
     internal class UnsupportedProtocolVersionException: Exception {}
+    internal class EndpointBannedException : Exception {}
 
     private Configuration config;
     private Database db;
@@ -59,6 +60,7 @@ namespace pepperspray.SharedServices
     internal User Login(string endpoint, string username, string passwordHash)
     {
       Log.Information("Client {endpoint} logging in with {username}:{passwordHash}", endpoint, username, passwordHash);
+      this.checkEndpointIfBanned(endpoint);
 
       try
       {
@@ -175,6 +177,8 @@ namespace pepperspray.SharedServices
         passwordHash
       );
 
+      this.checkEndpointIfBanned(endpoint);
+
       lock (this.db)
       {
         this.db.UserInsert(user);
@@ -278,6 +282,30 @@ namespace pepperspray.SharedServices
     internal string GetUnsupportedProtocolVersionResponseText()
     {
       return "answer=expired";
+    }
+
+    internal string GetBannedResponseText()
+    {
+      return "answer=banned";
+    }
+
+    private void checkEndpointIfBanned(string endpoint)
+    {
+      if (this.config.BannedAddresses == null)
+      {
+        return;
+      }
+
+      var addr = endpoint.Substring(endpoint.LastIndexOf(':'));
+
+      foreach (var bannedAddress in this.config.BannedAddresses)
+      {
+        if (addr.Equals(addr))
+        {
+          Log.Information("Client {endpoint} denied action: address match with banned {ip}", endpoint, bannedAddress);
+          throw new EndpointBannedException();
+        }
+      }
     }
 
     private void generateToken(User user)
