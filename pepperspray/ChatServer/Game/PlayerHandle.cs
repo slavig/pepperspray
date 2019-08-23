@@ -48,9 +48,9 @@ namespace pepperspray.ChatServer.Game
 
     internal IPromise<Nothing> Terminate(ErrorException exception)
     {
-      return this.ErrorAlert(exception)
-        .Then(a => new WaitPromise(TimeSpan.FromSeconds(10)))
-        .Then(a => a.Then(b => this.Stream.Terminate()));
+      this.ErrorAlert(exception);
+
+      return WaitPromise.FromTimeSpan(TimeSpan.FromSeconds(10)).Then(a => this.Stream.Terminate());
     }
 
     internal IPromise<Nothing> ErrorAlert(ErrorException exception)

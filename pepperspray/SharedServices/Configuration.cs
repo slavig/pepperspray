@@ -64,13 +64,14 @@ namespace pepperspray.SharedServices
     internal IPAddress CrossOriginAddress;
     internal int CrossOriginPort;
 
-    internal Dictionary<string, string> Radiostations = new Dictionary<string, string>();
+    internal Dictionary<string, string> Radiostations;
     internal MailConfiguration Mail;
-    internal List<Announcement> Announcements = new List<Announcement>();
+    internal List<Announcement> Announcements;
     internal RedirectionConfiguration StaticsRedirection;
     internal WorldsConfiguration Worlds;
     internal CurrencyConfiguration Currency;
     internal RecaptchaConfiguration Recaptcha;
+    internal List<string> BannedAddresses;
 
     internal string TokenSalt;
     internal int PlayerInactivityTimeout;
@@ -79,7 +80,7 @@ namespace pepperspray.SharedServices
     internal uint LoginAttemptThrottle;
 
     internal string WebfrontProtocolVersion = "web";
-    internal uint MinimumProtocolVersion = 3;
+    internal uint MinimumProtocolVersion = 4;
 
     private string path;
 
@@ -156,13 +157,17 @@ namespace pepperspray.SharedServices
         }
 
         var radiostationsNodes = doc.SelectSingleNode("configuration/rest-api-server/radiostations");
-        foreach (var nodeElement in radiostationsNodes.ChildNodes)
+        if (radiostationsNodes != null)
         {
-          var node = nodeElement as XmlNode;
-          var lobbyId = node.Attributes["id"].InnerText;
-          var url = node.Attributes["url"].InnerText;
+          this.Radiostations = new Dictionary<string, string>();
+          foreach (var nodeElement in radiostationsNodes.ChildNodes)
+          {
+            var node = nodeElement as XmlNode;
+            var lobbyId = node.Attributes["id"].InnerText;
+            var url = node.Attributes["url"].InnerText;
 
-          this.Radiostations[lobbyId] = url;
+            this.Radiostations[lobbyId] = url;
+          }
         }
 
         {
@@ -230,6 +235,18 @@ namespace pepperspray.SharedServices
 
       var tokenSaltNode = doc.SelectSingleNode("configuration/token");
       this.TokenSalt = tokenSaltNode.Attributes["salt"].InnerText;
+
+      var bannedAddresses = doc.SelectSingleNode("configuration/banned-addresses");
+      if (bannedAddresses != null)
+      {
+        this.BannedAddresses = new List<string>();
+
+        foreach (var nodeElement in bannedAddresses.ChildNodes)
+        {
+          var node = nodeElement as XmlNode;
+          this.BannedAddresses.Add(node.Attributes["ip"].InnerText);
+        }
+      }
     }
 
     private IPAddress parseAddress(string value)

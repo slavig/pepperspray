@@ -47,6 +47,7 @@ namespace pepperspray.RestAPIServer.Controllers
 
         if (e is FormatException
           || e is ArgumentException
+          || e is InvalidOperationException
           || e is CharacterService.NotAuthorizedException)
         {
           return req.FailureResponse();

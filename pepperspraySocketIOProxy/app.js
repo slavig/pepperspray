@@ -84,5 +84,5 @@ socketServer.on("connection", socket => {
 	});
 });
 
-logger.info("pepperspraySocketIOProxy v0.1");
+logger.info("pepperspraySocketIOProxy v1.0");
 httpServer.listen(3002, () => logger.info("listening on ", { address: ADDRESS, port: 3002 }));

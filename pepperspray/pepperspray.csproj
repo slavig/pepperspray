@@ -162,9 +162,6 @@
     <Reference Include="UnityEngine">
       <HintPath>E:\Stuff\3DXChat339_EZMod_Dirty\3DXChat_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
-    <Reference Include="WatsonWebserver, Version=2.1.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Watson.2.1.5\lib\netstandard2.0\WatsonWebserver.dll</HintPath>
-    </Reference>
     <Reference Include="Spike.Runtime">
       <HintPath>..\..\..\..\..\..\usr\local\Spike.Runtime.dll</HintPath>
     </Reference>
@@ -179,6 +176,9 @@
     </Reference>
     <Reference Include="BitArmory.ReCaptcha">
       <HintPath>..\packages\BitArmory.ReCaptcha.5.0.0\lib\net45\BitArmory.ReCaptcha.dll</HintPath>
+    </Reference>
+    <Reference Include="WatsonWebserver, Version=2.1.7.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Watson.2.1.7\lib\netstandard2.0\WatsonWebserver.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

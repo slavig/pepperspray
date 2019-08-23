@@ -85,9 +85,9 @@ namespace pepperspray.SharedServices
       return this.connection.Table<FriendLiaison>().Where(c => c.InitiatorId == character.Id || c.ReceiverId == character.Id);
     }
 
-    internal IEnumerable<FriendLiaison> LiaisonFindByParticipants(User user1, User user2)
+    internal IEnumerable<FriendLiaison> LiaisonFindByParticipants(Character char1, Character char2)
     {
-      return this.connection.Table<FriendLiaison>().Where(c => (c.InitiatorId == user1.Id && c.ReceiverId == user2.Id) || (c.InitiatorId == user2.Id && c.ReceiverId == user1.Id));
+      return this.connection.Table<FriendLiaison>().Where(c => (c.InitiatorId == char1.Id && c.ReceiverId == char2.Id) || (c.InitiatorId == char2.Id && c.ReceiverId == char1.Id));
     }
 
     internal void LiaisonDeleteByParticipants(uint ch1, uint ch2)

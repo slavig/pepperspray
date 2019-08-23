@@ -32,12 +32,15 @@ namespace pepperspray.CIO
 
   public class WaitPromise: Promise<Nothing>
   {
-    public WaitPromise(TimeSpan span)
+    public static IPromise<Nothing> FromTimeSpan(TimeSpan span)
     {
+      var promise = new Promise<Nothing>();
       var timer = new Timer(t =>
       {
-        this.Resolve(new Nothing());
+        promise.Resolve(new Nothing());
       }, null, (int)span.TotalMilliseconds, Timeout.Infinite);
+
+      return promise;
     }
   }
 }

@@ -28,7 +28,7 @@ namespace pepperspray.SharedServices
 
   internal void AcceptFriendRequest(string token, uint id, uint friendId)
     {
-      Log.Debug("Client {token} accepting friend request of {id}", token, friendId);
+      Log.Debug("Client {token} of {id} accepting friend request of {friendId}", token, id, friendId);
       try
       {
         Character friendCharacter = this.characterService.Find(friendId);
@@ -36,6 +36,15 @@ namespace pepperspray.SharedServices
 
         lock (this.db)
         {
+          lock (this.db)
+          {
+            if (this.db.LiaisonFindByParticipants(character, friendCharacter).Count() != 0)
+            {
+              Log.Warning("Client {token} can't accept friend request of {id} - already have liaison with {friendId}", token, id, friendId);
+              throw new InvalidOperationException();
+            }
+          }
+
           var liaison = new FriendLiaison
           {
             InitiatorId = character.Id,

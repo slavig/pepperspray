@@ -52,7 +52,8 @@ namespace pepperspray.LoginServer
                   throw new Exception("invalid request");
                 }
 
-                client.Endpoint = ev.ElementAt(1).ToString();
+                var addr = ev.ElementAt(1).ToString() + ":0";
+                client.Endpoint = addr.Substring("::ffff:".Length);
                 break;
 
               case "retokennect":
@@ -98,6 +99,10 @@ namespace pepperspray.LoginServer
                 catch (LoginService.InvalidPasswordException)
                 {
                   client.Emit("login response", this.loginService.GetLoginFailedResponseText());
+                }
+                catch (LoginService.EndpointBannedException)
+                {
+                  client.Emit("login response", this.loginService.GetBannedResponseText());
                 }
                 catch (LoginService.NotFoundException)
                 {
