@@ -43,6 +43,7 @@ namespace pepperspray.SharedServices
     {
       public bool Enabled;
       public uint Padding;
+      public uint BonusPerHourOnline;
     }
 
     public class RecaptchaConfiguration
@@ -80,7 +81,7 @@ namespace pepperspray.SharedServices
     internal uint LoginAttemptThrottle;
 
     internal string WebfrontProtocolVersion = "web";
-    internal uint MinimumProtocolVersion = 4;
+    internal uint MinimumProtocolVersion = 5;
 
     private string path;
 
@@ -138,7 +139,8 @@ namespace pepperspray.SharedServices
           this.Currency = new CurrencyConfiguration
           {
             Enabled = currencyNode.Attributes["enabled"].InnerText.Equals("true"),
-            Padding = Convert.ToUInt32(currencyNode.Attributes["padding"].InnerText)
+            Padding = Convert.ToUInt32(currencyNode.Attributes["padding"].InnerText),
+            BonusPerHourOnline = Convert.ToUInt32(currencyNode.Attributes["bonusPerHourOnline"].InnerText)
           };
         }
 
@@ -209,10 +211,13 @@ namespace pepperspray.SharedServices
 
         {
           var redirectionNode = doc.SelectSingleNode("configuration/rest-api-server/statics-redirection");
+          var ip = this.parseAddress(redirectionNode.Attributes["ip"].InnerText);
+          var port = Convert.ToUInt32(redirectionNode.Attributes["port"].InnerText);
+
           this.StaticsRedirection = new RedirectionConfiguration
           {
             Enabled = redirectionNode.Attributes["enabled"].InnerText.Equals("true"),
-            Host = redirectionNode.Attributes["host"].InnerText
+            Host = String.Format("http://{0}:{1}", ip, port)
           };
         }
 

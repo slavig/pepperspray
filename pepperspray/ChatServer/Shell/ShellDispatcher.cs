@@ -24,6 +24,7 @@ namespace pepperspray.ChatServer.Shell
       new AdminRoomPriority(),
       new AdminMoney(),
       new Pay(),
+      new Money(),
       new Players(),
       new PrivateMessage(),
       new Help(),

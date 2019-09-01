@@ -64,20 +64,13 @@ namespace pepperspray.SharedServices
 
       try
       {
-        User user = null;
-        lock (this.db)
-        {
-          user = this.db.UserFind(username);
-        }
+        User user = this.db.Read((c) => c.UserFind(username));
 
         if (user.PasswordHash.Equals(passwordHash))
         {
-          lock(this.db)
-          {
-            this.generateToken(user);
-            this.db.UserUpdate(user);
-          }
+          this.generateToken(user);
 
+          this.db.Write((c) => c.UserUpdate(user));
           return user;
         }
         else
@@ -105,11 +98,9 @@ namespace pepperspray.SharedServices
         User user = this.AuthorizeUser(token);
         if (user.PasswordHash.Equals(passwordHash))
         {
-          lock(this.db)
-          {
-            user.PasswordHash = newPasswordHash;
-            this.db.UserUpdate(user);
-          }
+          user.PasswordHash = newPasswordHash;
+
+          this.db.Write((c) => c.UserUpdate(user));
         }
         else
         {
@@ -129,20 +120,13 @@ namespace pepperspray.SharedServices
 
       try
       {
-        User user = null;
-        lock (this.db)
-        {
-          user = this.db.UserFind(username);
-        }
+        User user = this.db.Read((c) => c.UserFind(username));
 
         var newPassword = this.generateRandomPassword();
         var newPasswordHash = this.hashPassword(username, newPassword);
 
-        lock (this.db)
-        {
-          user.PasswordHash = newPasswordHash;
-          this.db.UserUpdate(user);
-        }
+        user.PasswordHash = newPasswordHash;
+        this.db.Write((c) => c.UserUpdate(user));
 
         this.mailService.SendMessage(username, "pepperspray - password changed", "New password: {0}", newPassword);
       }
@@ -158,7 +142,7 @@ namespace pepperspray.SharedServices
       {
         try
         {
-          this.db.UserFind(username);
+          this.db.Read((c) => c.UserFind(username));
           return null;
         }
         catch (Database.NotFoundException) { }
@@ -179,11 +163,7 @@ namespace pepperspray.SharedServices
 
       this.checkEndpointIfBanned(endpoint);
 
-      lock (this.db)
-      {
-        this.db.UserInsert(user);
-      }
-
+      this.db.Write((c) => c.UserInsert(user));
       return user;
     }
 
@@ -197,16 +177,16 @@ namespace pepperspray.SharedServices
 
         if (user.PasswordHash.Equals(passwordHash))
         {
-          lock(this.db)
+          this.db.Write((c) =>
           {
             // delete
-            foreach (var character in this.db.CharactersFindByUser(user))
+            foreach (var character in c.CharactersFindByUser(user))
             {
-              this.db.CharacterDelete(character);
+              c.CharacterDelete(character);
             }
 
-            this.db.UserDelete(user);
-          }
+            c.UserDelete(user);
+          });
         }
         else
         {
@@ -226,11 +206,8 @@ namespace pepperspray.SharedServices
 
       try
       {
-        lock(this.db)
-        {
-          return this.db.UserFindByToken(token);
-        }
-      } 
+        return this.db.Read((c) => c.UserFindByToken(token));
+      }
       catch (Database.NotFoundException)
       {
         throw new InvalidTokenException();
@@ -260,7 +237,7 @@ namespace pepperspray.SharedServices
         builder.AppendLine("token=" + user.Token);
 
         int i = 1;
-        foreach (var ch in this.db.CharactersFindByUser(user))
+        foreach (var ch in this.db.Read((c) => c.CharactersFindByUser(user)))
         {
           builder.AppendLine("id" + i + "=" + ch.Id);
           builder.AppendLine("name" + i + "=" + ch.Name);
@@ -281,6 +258,7 @@ namespace pepperspray.SharedServices
 
     internal string GetUnsupportedProtocolVersionResponseText()
     {
+
       return "answer=expired";
     }
 
@@ -296,11 +274,11 @@ namespace pepperspray.SharedServices
         return;
       }
 
-      var addr = endpoint.Substring(endpoint.LastIndexOf(':'));
+      var addr = endpoint.Substring(0, endpoint.LastIndexOf(':'));
 
       foreach (var bannedAddress in this.config.BannedAddresses)
       {
-        if (addr.Equals(addr))
+        if (addr.Equals(bannedAddress))
         {
           Log.Information("Client {endpoint} denied action: address match with banned {ip}", endpoint, bannedAddress);
           throw new EndpointBannedException();

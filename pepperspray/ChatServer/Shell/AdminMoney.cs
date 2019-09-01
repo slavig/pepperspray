@@ -70,7 +70,12 @@ namespace pepperspray.ChatServer.Shell
 
         foreach (var player in players)
         {
-          this.giftService.ChangeCurrency(player.User, amount);
+          try
+          {
+            this.giftService.ChangeCurrency(player.User, amount);
+          }
+          catch (GiftsService.NotEnoughCurrencyException) {
+          }
         }
 
         var message = String.Format("You have been gifted {0} coins from admin.", amount);

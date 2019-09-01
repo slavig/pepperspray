@@ -28,6 +28,7 @@ namespace pepperspray.SharedServices
     {
       try
       {
+        Log.Debug("Offline message queue: from {senderId} to {recepientName}", senderId, recepientName);
         var recepient = this.characterService.Find(recepientName);
         var message = new OfflineMessage
         {
@@ -36,10 +37,7 @@ namespace pepperspray.SharedServices
           Message = messageText
         };
 
-        lock (this.db)
-        {
-          this.db.OfflineMessageInsert(message);
-        }
+        this.db.Write((c) => c.OfflineMessageInsert(message));
       }
       catch (Database.NotFoundException) 
       {
@@ -51,12 +49,8 @@ namespace pepperspray.SharedServices
     {
       var character = this.characterService.FindAndAuthorize(token, recepientId);
 
-      List<OfflineMessage> messages;
-      lock (this.db)
-      {
-        messages = this.db.OfflineMessageFind(character.Id).ToList();
-        this.db.OfflineMessageDelete(character.Id);
-      }
+      List<OfflineMessage> messages = this.db.Read((c) => c.OfflineMessageFind(character.Id).ToList());
+      this.db.Write((c) => c.OfflineMessageDelete(character.Id));
 
       return messages;
     }
@@ -64,18 +58,14 @@ namespace pepperspray.SharedServices
     internal Dictionary<uint, bool> CheckMessages(string token)
     {
       var user = this.loginService.AuthorizeUser(token);
-      IEnumerable<Character> characters;
-      lock(this.db)
-      {
-        characters = this.db.CharactersFindByUser(user);
-      }
+      IEnumerable<Character> characters = this.db.Read((c) => c.CharactersFindByUser(user));
 
       var result = new Dictionary<uint, bool>();
       foreach (var character in characters)
       {
         lock(this.db)
         {
-          result[character.Id] = this.db.OfflineMessageFind(character.Id).Any();
+          result[character.Id] = this.db.Read((c) => c.OfflineMessageFind(character.Id).Any());
         }
       }
 

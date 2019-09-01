@@ -39,7 +39,7 @@
 			be redirected to specified host (since pepperspray itself is not that
 			great at serving statics).
 		-->
-		<statics-redirection enabled="false" host="http://127.0.0.1" />
+		<statics-redirection enabled="false" ip="127.0.0.1" port="80" />
 
 		<!--
 			In order to prevent bruteforce attacks on login server socket each unsuccessfull 

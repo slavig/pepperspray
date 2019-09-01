@@ -25,6 +25,7 @@ namespace pepperspray.ChatServer.Shell
       return dispatcher.Output(sender, server, "Following commands are available: ")
         .Then(a => dispatcher.Output(sender, server, "/players - show how many players are at locations."))
         .Then(a => dispatcher.Output(sender, server, "/pm PLAYER - open private message tab if player is online."))
+        .Then(a => dispatcher.Output(sender, server, "/money - get amount of coints you have right now."))
         .Then(a => dispatcher.Output(sender, server, "/pay PLAYER AMOUNT - transfer currency to other player."))
       ;
     }

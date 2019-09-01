@@ -69,13 +69,23 @@ namespace pepperspray.ChatServer.Protocol.Requests
         this.client = this.loginService.AuthorizeClient(token);
         this.character = this.characterService.LoginCharacter(user, this.id, this.name, this.sex);
 
-        var sameUserPlayer = server.World.FindPlayerByUser(user);
+        PlayerHandle sameUserPlayer;
+        lock (server)
+        {
+          sameUserPlayer = server.World.FindPlayerByUser(user);
+        }
+
         if (sameUserPlayer != null)
         {
           server.KickPlayer(sameUserPlayer, "Logged as another character.");
         }
 
-        var sameNamePlayer = server.World.FindPlayer(this.name);
+        PlayerHandle sameNamePlayer;
+        lock (server)
+        {
+          sameNamePlayer = server.World.FindPlayer(this.name);
+        }
+
         if (sameNamePlayer != null)
         {
           server.KickPlayer(sameNamePlayer, "Logged in another instance.");

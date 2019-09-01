@@ -34,27 +34,21 @@ namespace pepperspray.SharedServices
         Character friendCharacter = this.characterService.Find(friendId);
         Character character = this.characterService.FindAndAuthorize(token, id);
 
-        lock (this.db)
+        if (this.db.Read((c) => c.LiaisonFindByParticipants(character, friendCharacter)).Count() != 0)
         {
-          lock (this.db)
-          {
-            if (this.db.LiaisonFindByParticipants(character, friendCharacter).Count() != 0)
-            {
-              Log.Warning("Client {token} can't accept friend request of {id} - already have liaison with {friendId}", token, id, friendId);
-              throw new InvalidOperationException();
-            }
-          }
-
-          var liaison = new FriendLiaison
-          {
-            InitiatorId = character.Id,
-            ReceiverId = friendCharacter.Id
-          };
-
-          friendCharacter.AppendLiaison(liaison);
-          character.AppendLiaison(liaison);
-          this.db.LiaisonInsert(liaison);
+          Log.Warning("Client {token} can't accept friend request of {id} - already have liaison with {friendId}", token, id, friendId);
+          throw new InvalidOperationException();
         }
+
+        var liaison = new FriendLiaison
+        {
+          InitiatorId = character.Id,
+          ReceiverId = friendCharacter.Id
+        };
+
+        friendCharacter.AppendLiaison(liaison);
+        character.AppendLiaison(liaison);
+        this.db.Write((c) => c.LiaisonInsert(liaison));
 
         this.loginServer.Emit(friendId, "friend", new Dictionary<string, string>
         {
@@ -80,12 +74,7 @@ namespace pepperspray.SharedServices
       try
       {
         Character character = this.characterService.FindAndAuthorize(token, id);
-
-        lock (this.db)
-        {
-          this.db.LiaisonDeleteByParticipants(character.Id, friendId);
-        }
-
+        this.db.Write((c) => c.LiaisonDeleteByParticipants(character.Id, friendId));
         character.RemoveLiaison(friendId);
 
         try
@@ -112,10 +101,7 @@ namespace pepperspray.SharedServices
 
       if (liaisons == null)
       {
-        lock (this.db)
-        {
-          liaisons = this.db.LiaisonFindByCharacter(character);
-        }
+        liaisons = this.db.Read((c) => c.LiaisonFindByCharacter(character));
       }
 
       return liaisons.Select(a => a.InitiatorId == character.Id ? a.ReceiverId : a.InitiatorId);
@@ -129,11 +115,8 @@ namespace pepperspray.SharedServices
         Character character = null;
         IEnumerable<FriendLiaison> liaisons = null;
 
-        lock(this.db)
-        {
-          character = this.characterService.FindAndAuthorize(token, id);
-          liaisons = this.db.LiaisonFindByCharacter(character);
-        }
+        character = this.characterService.FindAndAuthorize(token, id);
+        liaisons = this.db.Read((c) => c.LiaisonFindByCharacter(character));
 
         var result = new List<Dictionary<string, string>>();
         foreach (var liaison in liaisons)
@@ -141,10 +124,7 @@ namespace pepperspray.SharedServices
           Character friend = null;
           try
           {
-            lock (this.db)
-            {
-              friend = this.characterService.Find(liaison.InitiatorId == character.Id ? liaison.ReceiverId : liaison.InitiatorId);
-            }
+            friend = this.characterService.Find(liaison.InitiatorId == character.Id ? liaison.ReceiverId : liaison.InitiatorId);
           }
           catch (CharacterService.NotFoundException)
           {
