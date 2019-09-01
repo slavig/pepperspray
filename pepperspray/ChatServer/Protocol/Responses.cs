@@ -165,7 +165,7 @@ namespace pepperspray.ChatServer.Protocol
     internal static Message ServerMessage(ChatManager server, string contents) {
       return new Message("msg", new Dictionary<string, object>
         {
-          { "name", server.Name },
+          { "name", server.Monogram },
           { "id", "0" },
           { "data", "~private/" + contents }
         }

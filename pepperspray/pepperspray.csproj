@@ -98,9 +98,6 @@
     <Reference Include="Serilog.Sinks.RollingFile, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.Sinks.RollingFile.3.3.0\lib\net45\Serilog.Sinks.RollingFile.dll</HintPath>
     </Reference>
-    <Reference Include="Spike.Runtime, Version=3.0.5759.23517, Culture=neutral, PublicKeyToken=bbbae3b375c299b6, processorArchitecture=MSIL">
-      <HintPath>..\packages\SpikeEngine.3.0.5759.23517\lib\Spike.Runtime.dll</HintPath>
-    </Reference>
     <Reference Include="SQLitePCLRaw.batteries_v2, Version=2.0.0.581, Culture=neutral, PublicKeyToken=8226ea5df37bcae9, processorArchitecture=MSIL">
       <HintPath>..\packages\SQLitePCLRaw.bundle_e_sqlite3.2.0.0\lib\net461\SQLitePCLRaw.batteries_v2.dll</HintPath>
     </Reference>
@@ -156,17 +153,15 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="ThreeDXChat.Networking">
-      <HintPath>E:\Stuff\3DXChat339_EZMod_Debug\3DXChat_Data\Managed\ThreeDXChat.Networking.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>E:\Stuff\3DXChat339_EZMod_Dirty\3DXChat_Data\Managed\UnityEngine.dll</HintPath>
-    </Reference>
     <Reference Include="Spike.Runtime">
       <HintPath>..\..\..\..\..\..\usr\local\Spike.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="ThreeDXChat.Networking">
       <HintPath>..\..\..\..\..\..\usr\local\ThreeDXChat.Networking.dll</HintPath>
+    </Reference>
+    <Reference Include="ThreeDXChat.Networking, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dlls\ThreeDXChat.Networking.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\..\..\usr\local\UnityEngine.dll</HintPath>
@@ -176,6 +171,10 @@
     </Reference>
     <Reference Include="BitArmory.ReCaptcha">
       <HintPath>..\packages\BitArmory.ReCaptcha.5.0.0\lib\net45\BitArmory.ReCaptcha.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dlls\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="WatsonWebserver, Version=2.1.7.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Watson.2.1.7\lib\netstandard2.0\WatsonWebserver.dll</HintPath>

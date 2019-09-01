@@ -22,6 +22,7 @@ namespace pepperspray.ChatServer
   {
     internal World World;
     internal string Name = "pepperspray";
+    internal string Monogram = "$";
 
     private NameValidator nameValidator;
     private Configuration config;
@@ -42,7 +43,7 @@ namespace pepperspray.ChatServer
       this.dispatcher = DI.Get<EventDispatcher>();
       this.characterService = DI.Get<CharacterService>();
       this.giftService = DI.Get<GiftsService>();
-      this.nameValidator.ServerName = this.Name;
+      this.nameValidator.ServerName = this.Monogram;
 
       this.World = new World();
       CIOReactor.Spawn("playerTimeoutWatchdog", () =>
@@ -87,6 +88,13 @@ namespace pepperspray.ChatServer
 
     internal Nothing ProcessCommand(PlayerHandle handle, Message msg)
     {
+#if DEBUG
+      Log.Debug("<= {player}@{lobby} {event_description}",
+          handle.Name,
+          handle.CurrentLobby != null ? handle.CurrentLobby.Identifier : null,
+          msg.DebugDescription());
+#endif
+
       var promise = this.dispatcher.Dispatch(handle, msg);
       if (promise != null)
       {

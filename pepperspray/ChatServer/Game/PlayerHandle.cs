@@ -40,6 +40,14 @@ namespace pepperspray.ChatServer.Game
       }
     }
 
+    internal string CurrentLobbyIdentifier
+    {
+      get
+      {
+        return this.CurrentLobby != null ? this.CurrentLobby.Identifier : "none";
+      }
+    }
+
     internal EventStream Stream;
 
     internal PlayerHandle(EventStream stream)

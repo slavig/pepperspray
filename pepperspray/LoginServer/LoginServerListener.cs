@@ -106,10 +106,9 @@ namespace pepperspray.LoginServer
                 }
                 catch (LoginService.NotFoundException)
                 {
-                  if (System.Diagnostics.Debugger.IsAttached)
-                  {
+#if DEBUG
                     this.loginService.SignUp(client.Endpoint, username, passwordHash);
-                  }
+#endif
 
                   client.Emit("login response", this.loginService.GetLoginFailedResponseText());
                 }

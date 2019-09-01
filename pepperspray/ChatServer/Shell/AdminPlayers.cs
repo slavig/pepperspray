@@ -40,9 +40,10 @@ namespace pepperspray.ChatServer.Shell
         players = server.World.Players.ToList();
       }
 
-      players.Sort((a, b) => a.CurrentLobbyName.CompareTo(b.CurrentLobbyName));
+      players.Sort((a, b) => a.CurrentLobbyIdentifier.CompareTo(b.CurrentLobbyIdentifier));
 
       builder.AppendFormat("(total {0})", players.Count());
+      string lastLobbyIdentifier = null;
       foreach (var player in players)
       {
         if (query != null && !player.Name.Contains(query))
@@ -50,7 +51,16 @@ namespace pepperspray.ChatServer.Shell
           continue;
         }
 
-        builder.AppendFormat(" {0} (at {1}),", player.Name, player.CurrentLobby != null ? player.CurrentLobby.Identifier : "editor");
+        if (player.CurrentLobbyIdentifier != lastLobbyIdentifier)
+        {
+          output.Add(dispatcher.Output(sender, server, builder.ToString()));
+          builder.Clear();
+
+          builder.AppendFormat("{0}: ", player.CurrentLobbyIdentifier);
+        }
+        lastLobbyIdentifier = player.CurrentLobbyIdentifier;
+
+        builder.AppendFormat(" {0},", player.Name);
         if (builder.Length > 200)
         {
           output.Add(dispatcher.Output(sender, server, builder.ToString()));

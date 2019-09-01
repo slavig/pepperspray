@@ -6,7 +6,7 @@ using System.Text;
 using Serilog;
 using Newtonsoft.Json;
 using WatsonWebserver;
-using SpikeHttp = Spike.Network.Http;
+using System.Net;
 
 namespace pepperspray.RestAPIServer.Services
 {
@@ -72,7 +72,7 @@ namespace pepperspray.RestAPIServer.Services
 
         if (kv[0].Equals(key))
         {
-          return SpikeHttp.HttpUtility.UrlDecode(kv[1]);
+          return WebUtility.UrlDecode(kv[1]);
         }
       }
 

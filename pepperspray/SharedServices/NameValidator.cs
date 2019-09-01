@@ -25,7 +25,10 @@ namespace pepperspray.SharedServices
     internal bool Validate(string name)
     {
       var trimmedName = name.Trim();
-      return !trimmedName.Equals(this.ServerName) && !NameValidator.reservedNames.Contains(trimmedName) && this.nameRegex.IsMatch(name);
+      return !trimmedName.Equals(this.ServerName) 
+        && !NameValidator.reservedNames.Contains(trimmedName) 
+        && !ChatActionsAuthenticator.GhostNames.Contains(trimmedName)
+        && this.nameRegex.IsMatch(name);
     }
   }
 }

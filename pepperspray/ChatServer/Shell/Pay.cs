@@ -43,9 +43,12 @@ namespace pepperspray.ChatServer.Shell
 
         this.giftsService.TransferCurrency(sender.User, recepient.User, amount);
 
+        var senderMessage = String.Format("Transferred {0} coins to {1}, you now have {2}.", amount, recepientName, this.giftsService.GetCurrency(sender.User));
+        var recepientMessage = String.Format("Player {0} send you {1} coins, you now have {2}.", sender.Name, amount, this.giftsService.GetCurrency(recepient.User));
+
         return dispatcher
-          .Output(sender, server, "Transferred {0} coins to {1}, you now have {2}.", amount, recepientName, sender.User.Currency)
-          .Then(a => recepient.Stream.Write(Responses.ServerMessage(server, String.Format("Player {0} send you {1} coins, you now have {2}.", sender.Name, amount, recepient.User.Currency))));
+          .Output(sender, server, senderMessage)
+          .Then(a => recepient.Stream.Write(Responses.ServerMessage(server, recepientMessage)));
       }
       catch (GiftsService.NotEnoughCurrencyException)
       {

@@ -117,7 +117,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
         return false;
       }
 
-      if (this.recepientName == server.Name)
+      if (this.recepientName == server.Monogram)
       {
         return true;
       }
@@ -145,7 +145,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
     internal override IPromise<Nothing> Process(PlayerHandle sender, ChatManager server)
     {
-      if (this.recepient != null || this.recepientName.Equals(server.Name))
+      if (this.recepient != null || this.recepientName.Equals(server.Monogram))
       {
         return base.Process(sender, server);
       }

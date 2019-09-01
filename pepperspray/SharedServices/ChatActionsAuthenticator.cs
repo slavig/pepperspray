@@ -67,6 +67,11 @@ namespace pepperspray.SharedServices
           return false;
         }
 
+        if (ChatActionsAuthenticator.GhostNames.Contains(command.Arguments.ElementAt(this.ArgumentIndex)))
+        {
+          return true;
+        }
+
         if (!command.Arguments.ElementAt(this.ArgumentIndex).Equals(sender.Name))
         {
           return false;
@@ -91,6 +96,8 @@ namespace pepperspray.SharedServices
       { "ApplyStopCoupleDance", new AuthenticationTemplate {ArgumentIndex  = 0} },
       { "marry", new AuthenticationTemplate {ArgumentIndex = 0 } }
     };
+
+    internal static string[] GhostNames = new string[] { "Female Ghost", "Male Ghost" };
 
     public void Inject()
     {
@@ -168,6 +175,13 @@ namespace pepperspray.SharedServices
 
     private bool Authenticate(PlayerHandle sender, Command command)
     {
+#if !DEBUG
+      if (sender.User.IsAdmin)
+      {
+        return true;
+      }
+#endif
+
       switch (command.Name)
       {
         case "useSexPose":

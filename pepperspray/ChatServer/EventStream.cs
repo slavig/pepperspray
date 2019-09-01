@@ -62,6 +62,10 @@ namespace pepperspray.ChatServer
 
     internal IPromise<Nothing> Write(Message outEvent)
     {
+#if DEBUG
+      Log.Verbose("=> {sender} {message}", this.ConnectionHash, outEvent.DebugDescription());
+#endif
+
       return this.socket.Write(Parser.SerializeMessage(outEvent));
     }
 
