@@ -28,6 +28,7 @@ namespace pepperspray.ChatServer.Game
     internal Character Character;
     internal Client Client;
 
+    internal DateTime LoggedAt = DateTime.Now;
     internal Group CurrentGroup;
     internal Lobby CurrentLobby;
 
@@ -48,6 +49,7 @@ namespace pepperspray.ChatServer.Game
 
     internal IPromise<Nothing> Terminate(ErrorException exception)
     {
+      this.IsLoggedIn = false;
       this.ErrorAlert(exception);
 
       return WaitPromise.FromTimeSpan(TimeSpan.FromSeconds(10)).Then(a => this.Stream.Terminate());

@@ -27,7 +27,8 @@ namespace pepperspray.Utils
          .MinimumLevel.Verbose()
          .WriteTo.RollingFile(
            Path.Combine("peppersprayData", "logs", "pepperspray-{Date}.log"), 
-           outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}/{ThreadId}#{Class}] {Message:lj}{NewLine}{Exception}")
+           outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}/{ThreadId}#{Class}] {Message:lj}{NewLine}{Exception}",
+           restrictedToMinimumLevel: LogEventLevel.Verbose)
          .WriteTo.Console(
            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
            restrictedToMinimumLevel: level)

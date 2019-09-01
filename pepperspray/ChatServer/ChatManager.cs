@@ -30,6 +30,7 @@ namespace pepperspray.ChatServer
     private ChatActionsAuthenticator actionsAuthenticator;
     private EventDispatcher dispatcher;
     private CharacterService characterService;
+    private GiftsService giftService;
 
     public void Inject()
     {
@@ -40,6 +41,7 @@ namespace pepperspray.ChatServer
       this.groupService = DI.Get<GroupService>();
       this.dispatcher = DI.Get<EventDispatcher>();
       this.characterService = DI.Get<CharacterService>();
+      this.giftService = DI.Get<GiftsService>();
       this.nameValidator.ServerName = this.Name;
 
       this.World = new World();
@@ -123,6 +125,7 @@ namespace pepperspray.ChatServer
       this.userRoomService.PlayerLoggedOff(player);
       this.actionsAuthenticator.PlayerLoggedOff(player);
       this.groupService.PlayerLoggedOff(player);
+      this.giftService.PlayerLoggedOff(player);
 
       if (player.Character != null)
       {

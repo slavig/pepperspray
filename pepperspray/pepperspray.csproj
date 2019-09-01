@@ -184,10 +184,12 @@
   <ItemGroup>
     <Compile Include="ChatServer\ChatServerListener.cs" />
     <Compile Include="ChatServer\Protocol\Requests\GetOnline.cs" />
+    <Compile Include="ChatServer\Protocol\Requests\Order.cs" />
     <Compile Include="ChatServer\Services\AppearanceRequestService.cs" />
     <Compile Include="ChatServer\Shell\AdminConfigReload.cs" />
     <Compile Include="ChatServer\Shell\AdminMoney.cs" />
     <Compile Include="ChatServer\Shell\AdminRoomPriority.cs" />
+    <Compile Include="ChatServer\Shell\Money.cs" />
     <Compile Include="ChatServer\Shell\Pay.cs" />
     <Compile Include="CIO\CIO.cs" />
     <Compile Include="CIO\CIOSocket.cs" />

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Serilog;
+using pepperspray.ChatServer.Game;
 using pepperspray.LoginServer;
 
 namespace pepperspray.SharedServices
@@ -34,11 +35,7 @@ namespace pepperspray.SharedServices
     internal List<Dictionary<string, object>> GetGifts(uint id, uint offset)
     {
       var result = new List<Dictionary<string, object>>();
-      IEnumerable<Gift> gifts = null;
-      lock(this.db)
-      {
-        gifts = this.db.GiftsFind(id, offset, this.PageCount);
-      }
+      IEnumerable<Gift> gifts = this.db.Read((c) => c.GiftsFind(id, offset, this.PageCount));
 
       foreach (var gift in gifts)
       {
@@ -89,10 +86,7 @@ namespace pepperspray.SharedServices
           }
 
           user.Currency -= 300;
-          lock(this.db)
-          {
-            this.db.UserUpdate(user);
-          }
+          this.db.Write((c) => c.UserUpdate(user));
         }
 
         var gift = new Gift
@@ -104,10 +98,7 @@ namespace pepperspray.SharedServices
           Date = DateTime.Now
         };
 
-        lock(this.db)
-        {
-          this.db.GiftInsert(gift);
-        }
+        this.db.Write((c) => c.GiftInsert(gift));
 
         try
         {
@@ -134,22 +125,14 @@ namespace pepperspray.SharedServices
       {
         var giftId = Convert.ToUInt32(giftIdentifier.Substring(this.giftIdPrefix().Length));
         var character = this.characterService.FindAndAuthorize(token, characterId);
-        Gift gift = null;
-
-        lock (this.db)
-        {
-          gift = this.db.GiftFindById(giftId);
-        }
+        Gift gift = this.db.Read((c) => c.GiftFindById(giftId));
 
         if (gift.RecepientId != character.Id)
         {
           throw new NotFoundException();
         }
 
-        lock(this.db)
-        {
-          this.db.GiftDelete(gift);
-        }
+        this.db.Write((c) => c.GiftDelete(gift));
       }
       catch (Database.NotFoundException)
       {
@@ -158,21 +141,27 @@ namespace pepperspray.SharedServices
       }
     }
 
-    internal void ChangeCurrency(User user, int amount)
+    internal void ChangeCurrency(User user_, int amount)
     {
-      Log.Information("Changing currency amount of user {username} by {amount}", user.Username, amount);
+      Log.Information("Changing currency amount of user {username} by {amount}", user_.Username, amount);
+
+      User user = this.db.Read((c) => c.UserFind(user_.Username));
 
       var current = (int)user.Currency;
-      user.Currency = (current + amount) > 0 ? (uint)(current + amount) : 0;
-
-      lock(this.db)
+      if (current + amount < 0)
       {
-        this.db.UserUpdate(user);
+        throw new NotEnoughCurrencyException();
       }
+
+      user.Currency = (uint)(current + amount);
+
+      this.db.Write((c) => c.UserUpdate(user));
     }
 
-    internal void TransferCurrency(User sender, User recepient, uint amount)
+    internal void TransferCurrency(User sender_, User recepient_, uint amount)
     {
+      User sender = this.db.Read((c) => c.UserFind(sender_.Username));
+      User recepient = this.db.Read((c) => c.UserFind(recepient_.Username));
       Log.Information("User {sender} transferring currency to {recepient} in amount of {amount}", sender.Username, recepient.Username, amount);
 
       if (sender.Currency < amount)
@@ -183,10 +172,43 @@ namespace pepperspray.SharedServices
       sender.Currency -= amount;
       recepient.Currency += amount;
 
-      lock (this.db)
+      this.db.Write((c) =>
       {
-        this.db.UserUpdate(sender);
-        this.db.UserUpdate(recepient);
+        c.UserUpdate(sender);
+        c.UserUpdate(recepient);
+      });
+    }
+
+    internal uint GetCurrency(User user_)
+    {
+      return this.db.Read((c) => c.UserFind(user_.Username)).Currency;
+    }
+
+    internal uint GrantOnlineBonus(User user_, TimeSpan timeSpan)
+    {
+      if (this.config.Currency.Enabled && this.config.Currency.BonusPerHourOnline != 0)
+      {
+        User user = this.db.Read((c) => c.UserFind(user_.Username));
+
+        var delta = (uint)Math.Floor(timeSpan.TotalHours * this.config.Currency.BonusPerHourOnline);
+
+        Log.Information("Granting online currency bonus of {delta} for {user}, has been online for {timeSpan}", delta, user.Username, timeSpan);
+        user.Currency += delta;
+        this.db.Write((c) => c.UserUpdate(user));
+
+        return delta;
+      }
+      else
+      {
+        throw new InvalidOperationException();
+      }
+    }
+
+    internal void PlayerLoggedOff(PlayerHandle handle)
+    {
+      if (this.config.Currency.Enabled && handle.User != null)
+      {
+        this.GrantOnlineBonus(handle.User, DateTime.Now - handle.LoggedAt);
       }
     }
 

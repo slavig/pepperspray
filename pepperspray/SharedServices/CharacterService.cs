@@ -40,23 +40,23 @@ namespace pepperspray.SharedServices
 
     internal Character LoginCharacter(User user, uint id, string name, string sex)
     {
-      lock(this.db)
+      Log.Debug("Logging in character {id}/{name}/{sex} of {user}", id, name, sex, user.Username);
+      var character = this.FindAndAuthorize(user.Token, id);
+      if (!character.Name.Equals(name) || !character.Sex.Equals(sex))
       {
-        var character = this.FindAndAuthorize(user.Token, id);
-        if (!character.Name.Equals(name) || !character.Sex.Equals(sex))
-        {
-          throw new InvalidNameException();
-        }
-
-        character.LastLogin = DateTime.Now;
-        this.db.CharacterUpdate(character);
-        lock(this)
-        {
-          this.loggedCharacters[id] = character;
-        }
-
-        return character;
+        Log.Verbose("LoginCharacter FindAndAuthorize invalid name");
+        throw new InvalidNameException();
       }
+
+      character.LastLogin = DateTime.Now;
+      this.db.Write((c) => c.CharacterUpdate(character));
+
+      lock (this)
+      {
+        this.loggedCharacters[id] = character;
+      }
+
+      return character;
     }
 
     internal void LogoutCharacter(Character character)
@@ -76,10 +76,7 @@ namespace pepperspray.SharedServices
 
       try
       {
-        lock(this.db)
-        {
-          this.db.CharacterFindByName(name);
-        }
+        this.db.Read((c) => c.CharacterFindByName(name));
         throw new NameTakenException();
       }
       catch (Database.NotFoundException) { }
@@ -92,10 +89,7 @@ namespace pepperspray.SharedServices
       User user = null;
       try
       {
-        lock (this.db)
-        {
-          user = this.db.UserFindByToken(token);
-        }
+        user = this.db.Read((c) => c.UserFindByToken(token));
       }
       catch (Database.NotFoundException)
       {
@@ -118,11 +112,7 @@ namespace pepperspray.SharedServices
         })
       };
 
-      lock(this.db)
-      {
-        this.db.CharacterInsert(character);
-      }
-
+      this.db.Write((c) => c.CharacterInsert(character));
       return character;
     }
 
@@ -130,26 +120,22 @@ namespace pepperspray.SharedServices
     {
       Log.Debug("Client {token} updating character {uid} - new {name}/{sex}", token, id, newName, newSex);
 
-      lock(this.db)
-      {
-        var character = this.FindAndAuthorize(token, id);
-        character.Name = newName;
-        character.Sex = newSex;
+      var character = this.FindAndAuthorize(token, id);
+      character.Name = newName;
+      character.Sex = newSex;
 
-        this.db.CharacterUpdate(character);
-      }
+      this.db.Write((c) => c.CharacterUpdate(character));
     }
 
     internal void UpdateCharacterAppearance(string token, uint id, string data)
     {
       Log.Debug("Client {token} updating character appearance of {uid}", token, id);
 
-      lock(this.db)
+      var character = this.FindAndAuthorize(token, id);
+      if (!character.Appearance.Equals(data))
       {
-        var character = this.FindAndAuthorize(token, id);
         character.Appearance = data;
-
-        this.db.CharacterUpdate(character);
+        this.db.Write((c) => c.CharacterUpdate(character));
       }
     }
 
@@ -175,11 +161,11 @@ namespace pepperspray.SharedServices
       spouse.SpouseId = character.Id;
       character.SpouseId = spouseId;
 
-      lock (this.db)
+      this.db.Write((c) =>
       {
-        this.db.CharacterUpdate(character);
-        this.db.CharacterUpdate(spouse);
-      }
+        c.CharacterUpdate(character);
+        c.CharacterUpdate(spouse);
+      });
     }
 
     internal void UnsetCharacterSpouse(string token, uint id)
@@ -194,10 +180,7 @@ namespace pepperspray.SharedServices
         if (spouse.SpouseId == character.Id)
         {
           spouse.SpouseId = 0;
-          lock (this.db)
-          {
-            this.db.CharacterUpdate(spouse);
-          }
+          this.db.Write((c) => c.CharacterUpdate(spouse));
         }
         else
         {
@@ -210,41 +193,31 @@ namespace pepperspray.SharedServices
       }
 
       character.SpouseId = 0;
-      lock(this.db)
-      {
-        this.db.CharacterUpdate(character);
-      }
+      this.db.Write((c) => c.CharacterUpdate(character));
     }
 
     internal void DeleteCharacter(string token, uint id, string name)
     {
       Log.Debug("Client {token} deleting character {uid}", token, id);
 
-      lock(this.db)
-      {
-        var character = this.FindAndAuthorize(token, id);
-        this.db.CharacterDeleteById(character.Id);
-      }
+      var character = this.FindAndAuthorize(token, id);
+      this.db.Write((c) => c.CharacterDeleteById(character.Id));
     }
 
     internal string GetCharacterProfile(uint id)
     {
       Log.Debug("Client requesting chracter profile of {uid}", id);
 
-      Character character = null;
+      Character character = this.Find(id);
       Character spouse = null;
-      lock (this.db)
-      {
-        character = this.Find(id);
 
-        if (character.SpouseId != 0)
+      if (character.SpouseId != 0)
+      {
+        try
         {
-          try
-          {
-            spouse = this.Find(character.SpouseId);
-          }
-          catch (NotFoundException) { }
+          spouse = this.Find(character.SpouseId);
         }
+        catch (NotFoundException) { }
       }
 
       return JsonConvert.SerializeObject(new Dictionary<string, object> {
@@ -266,13 +239,10 @@ namespace pepperspray.SharedServices
     {
       Log.Debug("Client {token} updating character profile of {uid}", token, id);
 
-      lock (this.db)
-      {
-        var character = this.FindAndAuthorize(token, id);
-        character.ProfileJSON = json;
+      var character = this.FindAndAuthorize(token, id);
+      character.ProfileJSON = json;
 
-        this.db.CharacterUpdate(character);
-      }
+      this.db.Write((c) => c.CharacterUpdate(character));
     }
 
     internal string GetDefaultAppearance(string sex)
@@ -318,10 +288,7 @@ namespace pepperspray.SharedServices
         {
           try
           {
-            lock (this.db)
-            {
-              character = this.db.CharacterFindById(id);
-            }
+            character = this.db.Read((c) => c.CharacterFindById(id));
           }
           catch (Database.NotFoundException)
           {
@@ -343,10 +310,7 @@ namespace pepperspray.SharedServices
         {
           try
           {
-            lock (this.db)
-            {
-              return this.db.CharacterFindByName(name);
-            }
+            return this.db.Read((c) => c.CharacterFindByName(name));
           }
           catch (Database.NotFoundException)
           {
@@ -364,12 +328,7 @@ namespace pepperspray.SharedServices
     {
       try
       {
-        User user = null;
-        lock (this.db)
-        {
-          user = this.db.UserFindByToken(token);
-        }
-
+        User user = this.db.Read((c) => c.UserFindByToken(token));
         var character = this.Find(id);
 
         if (character.UserId != user.Id)
@@ -388,11 +347,7 @@ namespace pepperspray.SharedServices
     private Dictionary<string, string> getPhotos(uint id)
     {
       var result = new Dictionary<string, string>();
-      IEnumerable<PhotoSlot> slots = null;
-      lock (this.db)
-      {
-        slots = this.db.PhotoSlotFindByCharacterId(id);
-      }
+      IEnumerable<PhotoSlot> slots = this.db.Read((c) => c.PhotoSlotFindByCharacterId(id));
 
       foreach (var slot in slots)
       {
@@ -404,10 +359,7 @@ namespace pepperspray.SharedServices
 
     private uint getGiftCount(uint id)
     {
-      lock(this.db)
-      {
-        return this.db.GiftsCount(id);
-      }
+      return this.db.Read((c) => c.GiftsCount(id));
     }
   }
 }

@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.IO;
 using System.Threading.Tasks;
 
 using SQLite;
+using System.Collections.Concurrent;
 
 namespace pepperspray.SharedServices
 {
@@ -13,7 +15,9 @@ namespace pepperspray.SharedServices
   {
     internal class NotFoundException : Exception { }
 
-    private SQLiteConnection connection = new SQLiteConnection(Path.Combine("peppersprayData", "database", "database.sqlite"));
+    private ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
+    private ConcurrentQueue<DatabaseConnection> pool = new ConcurrentQueue<DatabaseConnection>();
+    private DatabaseConnection mutatingConnection;
 
     public void Inject()
     {
@@ -22,12 +26,72 @@ namespace pepperspray.SharedServices
 
     public Database()
     {
-      this.connection.CreateTable<Character>();
-      this.connection.CreateTable<User>();
-      this.connection.CreateTable<PhotoSlot>();
-      this.connection.CreateTable<FriendLiaison>();
-      this.connection.CreateTable<Gift>();
-      this.connection.CreateTable<OfflineMessage>();
+      var connection = new SQLiteConnection(Path.Combine("peppersprayData", "database", "database.sqlite"));
+      connection.CreateTable<Character>();
+      connection.CreateTable<User>();
+      connection.CreateTable<PhotoSlot>();
+      connection.CreateTable<FriendLiaison>();
+      connection.CreateTable<Gift>();
+      connection.CreateTable<OfflineMessage>();
+
+      this.mutatingConnection = new DatabaseConnection(connection);
+    }
+
+    internal T Read<T>(Func<DatabaseConnection, T> action)
+    {
+      DatabaseConnection connection;
+      if (!this.pool.TryDequeue(out connection))
+      { 
+        connection = this.makeNewConnection();
+      }
+
+      T result;
+
+      try
+      {
+        this.rwLock.EnterReadLock();
+        result = action(connection);
+      }
+      finally
+      {
+        this.rwLock.ExitReadLock();
+      }
+
+      this.pool.Enqueue(connection);
+      return result;
+    }
+
+    internal void Write(Action<DatabaseConnection> action)
+    {
+      try
+      {
+        this.rwLock.EnterWriteLock();
+        action(this.mutatingConnection);
+      }
+      finally
+      {
+        this.rwLock.ExitWriteLock();
+      }
+    }
+
+    private DatabaseConnection makeNewConnection()
+    {
+      return new DatabaseConnection(this.makeSqliteConnection());
+    }
+
+    private SQLiteConnection makeSqliteConnection()
+    {
+      return new SQLiteConnection(Path.Combine("peppersprayData", "database", "database.sqlite"));
+    }
+  }
+
+  internal class DatabaseConnection
+  {
+    private SQLiteConnection connection;
+
+    internal DatabaseConnection(SQLiteConnection connection)
+    {
+      this.connection = connection;
     }
 
     internal void CharacterInsert(Character ch)

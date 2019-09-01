@@ -52,6 +52,8 @@ namespace pepperspray.ChatServer.Protocol
           return Requests.FriendRequest.Parse(ev);
         case "getonline":
           return Requests.GetOnline.Parse(ev);
+        case "order":
+          return Requests.Order.Parse(ev);
         default:
           return null;
       }

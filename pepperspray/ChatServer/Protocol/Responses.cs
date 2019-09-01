@@ -64,6 +64,11 @@ namespace pepperspray.ChatServer.Protocol
       return new Message("srv", "userroomclosed=" + room.Identifier);
     }
 
+    internal static Message OrderOk()
+    {
+      return new Message("srv", "order=ok=movetop_room");
+    }
+
     internal static Message JoinedRoom(Lobby lobby)
     {
       return new Message("srv", "joinedroom=" + lobby.Identifier + "=");

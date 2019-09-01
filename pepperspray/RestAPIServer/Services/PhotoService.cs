@@ -27,12 +27,10 @@ namespace pepperspray.SharedServices
       var character = this.characterService.FindAndAuthorize(token, id);
       try
       {
-        var photoSlot = this.db.PhotoSlotGet(character, slot);
+        var photoSlot = this.db.Read((c) => c.PhotoSlotGet(character, slot));
         photoSlot.Hash = hash;
-        lock(this.db)
-        {
-          this.db.PhotoSlotUpdate(photoSlot);
-        }
+
+        this.db.Write((c) => c.PhotoSlotUpdate(photoSlot));
       }
       catch (Database.NotFoundException)
       {
@@ -42,10 +40,8 @@ namespace pepperspray.SharedServices
           Identifier = slot,
           Hash = hash,
         };
-        lock(this.db)
-        {
-          this.db.PhotoSlotInsert(photoSlot);
-        }
+
+        this.db.Write((c) => c.PhotoSlotInsert(photoSlot));
       }
     }
 
@@ -54,24 +50,15 @@ namespace pepperspray.SharedServices
       if (character.AvatarSlot == slot.Identifier)
       {
         character.AvatarSlot = null;
-        lock(this.db)
-        {
-          this.db.CharacterUpdate(character);
-        }
+        this.db.Write((c) => c.CharacterUpdate(character));
       }
 
-      lock (this.db)
-      {
-        this.db.PhotoSlotDelete(slot);
-      }
+      this.db.Write((c) => c.PhotoSlotDelete(slot));
     }
-    
+
     internal PhotoSlot GetPhoto(uint id, string slot)
     {
-      lock(this.db)
-      {
-        return this.db.PhotoSlotFind(id, slot);
-      }
+        return this.db.Read((c) => c.PhotoSlotFind(id, slot));
     }
 
     internal void SetAvatar(string token, uint id, string slot)
@@ -79,10 +66,7 @@ namespace pepperspray.SharedServices
       var character = this.characterService.FindAndAuthorize(token, id);
       character.AvatarSlot = slot;
 
-      lock(this.db)
-      {
-        db.CharacterUpdate(character);
-      }
+      this.db.Write((c) => c.CharacterUpdate(character));
     }
   }
 }
