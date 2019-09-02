@@ -55,7 +55,9 @@ namespace pepperspray.SharedServices
     internal IPromise<Nothing> Emit(params object[] arguments)
     {
       var str = JsonConvert.SerializeObject(arguments);
-      Log.Debug("Emitting to {endpoint} of {characterName}: json {json}", this.Endpoint, this.LoggedCharacter != null ? this.LoggedCharacter.Name : null, str);
+#if DEBUG
+      Log.Verbose("Emitting to {endpoint} of {characterName}: json {json}", this.Endpoint, this.LoggedCharacter != null ? this.LoggedCharacter.Name : null, str);
+#endif
       var bytes = Encoding.UTF8.GetBytes(str);
       return this.connection.Write(bytes);
     }

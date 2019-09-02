@@ -36,6 +36,11 @@ namespace pepperspray.ChatServer.Shell
           return dispatcher.Error(sender, server, "Failed to find player {0}.", recepientName);
         }
 
+        if (recepient.User.Id == sender.User.Id)
+        {
+          return dispatcher.Error(sender, server, "Failed to send currency.");
+        }
+
         if (this.config.Currency.Enabled == false)
         {
           return dispatcher.Error(sender, server, "Currency is not enabled on this server!");

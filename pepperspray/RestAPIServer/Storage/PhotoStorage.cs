@@ -17,6 +17,9 @@ namespace pepperspray.RestAPIServer.Storage
   {
     internal class OversizeException : Exception { }
 
+    internal static int FullsizeWidth = 1024, FullsizeHeight = 1024;
+    internal static int ThumbnailWidth = 150, ThumbnailHeight = 150;
+
     private Configuration config;
     private Random random;
 
@@ -45,10 +48,10 @@ namespace pepperspray.RestAPIServer.Storage
 
       var originalImage = Image.FromStream(dataStream);
 
-      var image = this.resizeImage(originalImage.Clone() as Image, 1024, 1024);
+      var image = this.resizeImage(originalImage.Clone() as Image, PhotoStorage.FullsizeWidth, PhotoStorage.FullsizeWidth);
       image.Save(this.filePath(hash), ImageFormat.Jpeg);
 
-      var thumbnail = this.resizeImage(originalImage, 250, 250);
+      var thumbnail = this.resizeImage(originalImage, PhotoStorage.ThumbnailWidth, PhotoStorage.ThumbnailHeight);
       thumbnail.Save(this.filePath(hash, true), ImageFormat.Jpeg);
 
       originalImage.Dispose();
@@ -127,7 +130,6 @@ namespace pepperspray.RestAPIServer.Storage
 
       int destWidth = (int)(sourceWidth * nPercent);
       int destHeight = (int)(sourceHeight * nPercent);
-
 
       Bitmap bmPhoto = new Bitmap(newWidth, newHeight,
                     PixelFormat.Format24bppRgb);

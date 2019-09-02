@@ -160,6 +160,11 @@ namespace pepperspray.SharedServices
 
     internal void TransferCurrency(User sender_, User recepient_, uint amount)
     {
+      if (sender_.Id.Equals(recepient_.Id))
+      {
+        throw new ArgumentException();
+      }
+
       User sender = this.db.Read((c) => c.UserFind(sender_.Username));
       User recepient = this.db.Read((c) => c.UserFind(recepient_.Username));
       Log.Information("User {sender} transferring currency to {recepient} in amount of {amount}", sender.Username, recepient.Username, amount);
