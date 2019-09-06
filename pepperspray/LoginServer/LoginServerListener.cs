@@ -135,6 +135,14 @@ namespace pepperspray.LoginServer
       return task.Then(a => Nothing.Resolved());
     }
 
+    internal bool HasClient(string token)
+    {
+      lock (this)
+      {
+        return this.loggedClients.ContainsKey(token);
+      }
+    }
+
     internal Client FindClient(string token)
     {
       lock (this)
@@ -148,6 +156,18 @@ namespace pepperspray.LoginServer
         {
           throw new NotFoundException();
         }
+      }
+    }
+
+    internal void AssociateCharacter(string token, Character character)
+    {
+      try
+      {
+        var client = this.FindClient(token);
+        client.LoggedCharacter = character;
+      }
+      catch (NotFoundException)
+      { 
       }
     }
 

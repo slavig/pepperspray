@@ -7,12 +7,16 @@ using System.Threading.Tasks;
 using RSG;
 using pepperspray.CIO;
 using pepperspray.ChatServer.Game;
+using pepperspray.LoginServer;
+using pepperspray.SharedServices;
 using pepperspray.ChatServer.Protocol;
 
 namespace pepperspray.ChatServer.Shell
 {
   internal class AdminBroadcast: AShellCommand
   {
+    private LoginServerListener loginServer = DI.Get<LoginServerListener>();
+
     internal override bool RequireAdmin()
     {
       return true;
@@ -52,7 +56,7 @@ namespace pepperspray.ChatServer.Shell
         }
       }
 
-      return new CombinedPromise<Nothing>(players.Select(a => a.Client.Emit("alert", message)));
+      return new CombinedPromise<Nothing>(players.Select(a => this.loginServer.Emit(a.Token, "alert", message)));
     }
   }
 }

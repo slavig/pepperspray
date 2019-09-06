@@ -28,31 +28,26 @@ namespace pepperspray
 
     public static int Main(String[] args)
     {
-      var debugMode = System.Diagnostics.Debugger.IsAttached;
-      if (!debugMode)
-      {
+#if DEBUG
+        Utils.Logging.ConfigureLogger(LogEventLevel.Verbose);
+#else
         Utils.Logging.ConfigureLogger(LogEventLevel.Information);
         Utils.Logging.ConfigureExceptionHandler();
-      }
-      else
-      {
-        Utils.Logging.ConfigureLogger(LogEventLevel.Verbose);
-      }
+#endif
 
       var config = new Configuration(Path.Combine("peppersprayData", "configuration.xml"));
       DI.Register(config);
 
-      if (debugMode)
-      {
-        var localhostAddress = IPAddress.Parse("127.0.0.1");
-        config.ChatServerAddress = localhostAddress;
-        config.RestAPIServerAddress = localhostAddress;
-        config.LoginServerAddress = localhostAddress;
-        config.CrossOriginAddress = localhostAddress;
-        config.PlayerInactivityTimeout = 10 * 60;
-      }
+#if DEBUG
+      var localhostAddress = IPAddress.Parse("127.0.0.1");
+      config.ChatServerAddress = localhostAddress;
+      config.RestAPIServerAddress = localhostAddress;
+      config.LoginServerAddress = localhostAddress;
+      config.CrossOriginAddress = localhostAddress;
+      config.PlayerInactivityTimeout = 10 * 60;
+#endif
 
-      Log.Information("pepperspray v1.2.1");
+      Log.Information("pepperspray v1.2.2");
       var coreServer = DI.Get<ChatServerListener>();
       var externalServer = DI.Get<RestAPIServerListener>();
       var loginServer = DI.Get<LoginServerListener>();

@@ -18,7 +18,7 @@ namespace pepperspray.RestAPIServer.Storage
     internal class OversizeException : Exception { }
 
     internal static int FullsizeWidth = 1024, FullsizeHeight = 1024;
-    internal static int ThumbnailWidth = 150, ThumbnailHeight = 150;
+    internal static int ThumbnailWidth = 200, ThumbnailHeight = 200;
 
     private Configuration config;
     private Random random;

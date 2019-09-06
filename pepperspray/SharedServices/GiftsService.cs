@@ -213,7 +213,13 @@ namespace pepperspray.SharedServices
     {
       if (this.config.Currency.Enabled && handle.User != null)
       {
-        this.GrantOnlineBonus(handle.User, DateTime.Now - handle.LoggedAt);
+        try
+        {
+          this.GrantOnlineBonus(handle.User, DateTime.Now - handle.LoggedAt);
+        } catch (Database.NotFoundException)
+        {
+          Log.Warning("Failed to grant bonus - user {username} not found in the db!", handle.User.Username);
+        }
       }
     }
 

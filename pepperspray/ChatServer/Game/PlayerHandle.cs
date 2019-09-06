@@ -26,7 +26,6 @@ namespace pepperspray.ChatServer.Game
 
     internal User User;
     internal Character Character;
-    internal Client Client;
 
     internal DateTime LoggedAt = DateTime.Now;
     internal Group CurrentGroup;
@@ -65,12 +64,13 @@ namespace pepperspray.ChatServer.Game
 
     internal IPromise<Nothing> ErrorAlert(ErrorException exception)
     {
-      if (this.Client != null)
+      var loginServer = DI.Get<LoginServerListener>();
+      if (loginServer.HasClient(this.Token))
       {
         try
         {
           var message = String.Format("Connection will be terminated in 10 seconds.\n\nReason: {0}\n\nInternal code: {1}.", exception.PlayerMessage, exception.Message);
-          return this.Client.Emit("alert", message);
+          return loginServer.Emit(this.Token, "alert", message);
         }
         catch (LoginServerListener.NotFoundException) { }
       }

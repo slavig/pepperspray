@@ -9,6 +9,7 @@ using Serilog;
 using pepperspray.CIO;
 using pepperspray.ChatServer.Game;
 using pepperspray.Utils;
+using pepperspray.LoginServer;
 using pepperspray.SharedServices;
 
 namespace pepperspray.ChatServer.Protocol.Requests
@@ -18,12 +19,12 @@ namespace pepperspray.ChatServer.Protocol.Requests
     private Configuration config = DI.Get<Configuration>();
     private CharacterService characterService = DI.Get<CharacterService>();
     private LoginService loginService = DI.Get<LoginService>();
+    private LoginServerListener loginServer = DI.Get<LoginServerListener>();
 
     private string name, sex, token;
     private uint id;
     private Character character;
     private User user;
-    private Client client;
 
     internal static Login Parse(Message ev)
     {
@@ -66,7 +67,6 @@ namespace pepperspray.ChatServer.Protocol.Requests
       try
       {
         this.user = this.loginService.AuthorizeUser(this.token);
-        this.client = this.loginService.AuthorizeClient(token);
         this.character = this.characterService.LoginCharacter(user, this.id, this.name, this.sex);
 
         PlayerHandle sameUserPlayer;
@@ -139,10 +139,9 @@ namespace pepperspray.ChatServer.Protocol.Requests
       sender.IsLoggedIn = true;
       sender.Character = this.character;
       sender.User = this.user;
-      sender.Client = this.client;
       sender.Token = this.token;
 
-      this.client.LoggedCharacter = this.character;
+      this.loginServer.AssociateCharacter(this.token, this.character);
 
       lock (server)
       {
