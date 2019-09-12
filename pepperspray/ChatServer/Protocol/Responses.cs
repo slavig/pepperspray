@@ -45,13 +45,13 @@ namespace pepperspray.ChatServer.Protocol
       }
 
       return String.Format("{0}|{1}|house|{2}|{3}|{4}|{5}|{6}|",
-        room.User.Name,
+        room.OwnerName,
         room.Identifier,
         accessType,
         room.NumberOfPlayers >= 0 ? room.NumberOfPlayers : 0,
         room.Name,
-        room.Prioritized ? "True" : "False",
-        room.User.Id);
+        room.IsPrioritized ? "True" : "False",
+        room.OwnerId);
     }
 
     internal static string ServerRoomRecord(Lobby lobby)

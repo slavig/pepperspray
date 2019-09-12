@@ -50,7 +50,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
     internal override IPromise<Nothing> Process(PlayerHandle sender, ChatManager server)
     {
-      return this.userRoomService.CloseRoom(sender, server, this.userRoom);
+      return this.userRoomService.CloseRoom(this.userRoom);
     }
   }
 }

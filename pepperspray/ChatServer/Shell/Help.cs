@@ -27,6 +27,10 @@ namespace pepperspray.ChatServer.Shell
         .Then(a => dispatcher.Output(sender, server, "/pm PLAYER - open private message tab if player is online."))
         .Then(a => dispatcher.Output(sender, server, "/money - get amount of coints you have right now."))
         .Then(a => dispatcher.Output(sender, server, "/pay PLAYER AMOUNT - transfer currency to other player."))
+        .Then(a => dispatcher.Output(sender, server, "/expel PLAYER MINUTES - expel player from your location for MINUTES. \"0\" can be given as duration to simply kick him."))
+        .Then(a => dispatcher.Output(sender, server, "/room persist - will turn your room into semi-persistent one, meaning that it will be available for some time after you disconnect."))
+        .Then(a => dispatcher.Output(sender, server, "/room close - will close your currently shared room."))
+        .Then(a => dispatcher.Output(sender, server, "/room sex VALUE - \"allow\" to allow sex in your room, \"forbid\" to forbid it."))
       ;
     }
   }

@@ -53,6 +53,26 @@ namespace pepperspray.SharedServices
       public string InvisibleSecret;
     }
 
+    public class PermanentRoom
+    {
+      public string Name;
+      public string Identifier;
+      public string Owner;
+      public string[] Moderators;
+    }
+
+    public class DanglingRoomConfiguration
+    {
+      public bool Enabled;
+      public TimeSpan Timeout;
+    }
+
+    public class ExpelConfiguration
+    {
+      public bool Enabled;
+      public TimeSpan MaxDuration;
+    }
+
     internal IPAddress ChatServerAddress;
     internal int ChatServerPort;
 
@@ -65,6 +85,8 @@ namespace pepperspray.SharedServices
     internal IPAddress CrossOriginAddress;
     internal int CrossOriginPort;
 
+    internal ExpelConfiguration Expel;
+    internal DanglingRoomConfiguration DanglingRoom;
     internal Dictionary<string, string> Radiostations;
     internal MailConfiguration Mail;
     internal List<Announcement> Announcements;
@@ -73,9 +95,9 @@ namespace pepperspray.SharedServices
     internal CurrencyConfiguration Currency;
     internal RecaptchaConfiguration Recaptcha;
     internal List<string> BannedAddresses;
+    internal List<PermanentRoom> PermanentRooms;
 
     internal string TokenSalt;
-    internal bool SqliteMultithreading;
     internal int PlayerInactivityTimeout;
     internal uint PlayerPhotoSlots;
     internal uint PhotoSizeLimit;
@@ -113,6 +135,51 @@ namespace pepperspray.SharedServices
 
         var playerInactivityTimeoutNode = doc.SelectSingleNode("configuration/chat-server/player-inactivity-timeout");
         this.PlayerInactivityTimeout = Convert.ToInt32(playerInactivityTimeoutNode.Attributes["seconds"].InnerText);
+      }
+
+      {
+        var permanentRoomsNode = doc.SelectSingleNode("configuration/chat-server/permanent-rooms");
+        this.PermanentRooms = new List<PermanentRoom>();
+
+        if (permanentRoomsNode != null)
+        {
+          foreach (var nodeElement in permanentRoomsNode.ChildNodes)
+          {
+            var node = nodeElement as XmlNode;
+            var identifier = node.Attributes["identifier"].InnerText;
+            var name = node.Attributes["name"].InnerText;
+            var ownerName = node.Attributes["owner"].InnerText;
+            var modNames = node.Attributes["mods"].InnerText;
+
+            this.PermanentRooms.Add(new PermanentRoom
+            {
+              Identifier = identifier,
+              Name = name,
+              Owner = ownerName,
+              Moderators = modNames.Split(',').Select((a) => a.Trim()).ToArray(),
+            });
+          }
+        } 
+      }
+
+      {
+        var expelNode = doc.SelectSingleNode("configuration/chat-server/expel");
+        var maxDurationMinutes = Convert.ToUInt32(expelNode.Attributes["maximum-duration"].InnerText);
+        this.Expel = new ExpelConfiguration
+        {
+          Enabled = expelNode.Attributes["enabled"].InnerText.Equals("true"),
+          MaxDuration = TimeSpan.FromMinutes(maxDurationMinutes),
+        };
+      }
+
+      {
+        var danglingLocationNode = doc.SelectSingleNode("configuration/chat-server/dangling-user-rooms");
+        var timeoutMinutes = Convert.ToUInt32(danglingLocationNode.Attributes["timeout"].InnerText);
+        this.DanglingRoom = new DanglingRoomConfiguration
+        {
+          Enabled = danglingLocationNode.Attributes["enabled"].InnerText.Equals("true"),
+          Timeout = TimeSpan.FromMinutes(timeoutMinutes),
+        };
       }
 
       {
@@ -241,9 +308,6 @@ namespace pepperspray.SharedServices
 
       var tokenSaltNode = doc.SelectSingleNode("configuration/token");
       this.TokenSalt = tokenSaltNode.Attributes["salt"].InnerText;
-
-      var sqliteNode = doc.SelectSingleNode("configuration/sqlite");
-      this.SqliteMultithreading = sqliteNode.Attributes["multithreading"].InnerText == "true";
 
       var bannedAddresses = doc.SelectSingleNode("configuration/banned-addresses");
       if (bannedAddresses != null)

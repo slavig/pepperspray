@@ -42,7 +42,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
         this.userRoom = server.World.FindUserRoom(sender);
       }
 
-      return this.userRoom != null && this.userRoom.Prioritized == false;
+      return this.userRoom != null && this.userRoom.IsPrioritized == false;
     }
 
     internal override IPromise<Nothing> Process(PlayerHandle sender, ChatManager server)
@@ -50,7 +50,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
       try
       {
         this.giftService.ChangeCurrency(sender.User, -300);
-        this.userRoom.Prioritized = true;
+        this.userRoom.IsPrioritized = true;
         Log.Information("User {username} prioritized room {identifier}", sender.User.Username, this.userRoom.Identifier);
         return sender.Stream.Write(Responses.OrderOk());
 

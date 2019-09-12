@@ -40,8 +40,8 @@ namespace pepperspray.ChatServer.Shell
         return dispatcher.Error(sender, server, "Room {0} has not been found.", id);
       }
 
-      room.Prioritized = !room.Prioritized;
-      return dispatcher.Output(sender, server, room.Prioritized ? "Room now prioritized." : "Room now not prioritized");
+      room.IsPrioritized = !room.IsPrioritized;
+      return dispatcher.Output(sender, server, room.IsPrioritized ? "Room now prioritized." : "Room now not prioritized");
     }
   }
 }

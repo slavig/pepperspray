@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace pepperspray.ChatServer.Game
 {
-  internal class UserRoom
+  internal class UserRoom: IEquatable<UserRoom>
   {
     internal enum AccessType
     {
@@ -18,8 +18,24 @@ namespace pepperspray.ChatServer.Game
     internal string Name;
     internal string Identifier;
     internal AccessType Access;
-    internal PlayerHandle User;
-    internal bool Prioritized;
     internal int NumberOfPlayers;
+
+    internal uint OwnerId;
+    internal string OwnerName;
+    internal DateTime OwnerLastSeen;
+
+    internal string[] ModeratorNames = new string[] { };
+
+    internal bool IsSexAllowed = true;
+
+    internal bool IsDangling = false;
+    internal bool IsSemiPersistent = false;
+    internal bool IsPermanent = false;
+    internal bool IsPrioritized = false;
+
+    public bool Equals(UserRoom other)
+    {
+      return this.Identifier.Equals(other.Identifier);
+    }
   }
 }

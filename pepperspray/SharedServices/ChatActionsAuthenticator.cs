@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 using Serilog;
 using RSG;
-using pepperspray.ChatServer.Game;
 using pepperspray.CIO;
+using pepperspray.ChatServer.Game;
+using pepperspray.ChatServer.Protocol;
 using pepperspray.SharedServices;
 
 namespace pepperspray.SharedServices
@@ -60,25 +61,32 @@ namespace pepperspray.SharedServices
     {
       internal int ArgumentIndex;
 
-      internal bool Authenticate(PlayerHandle sender, Command command)
+      internal AuthenticationResult Authenticate(PlayerHandle sender, Command command)
       {
         if (command.Arguments.Count() < this.ArgumentIndex)
         {
-          return false;
+          return AuthenticationResult.NotAuthenticated;
         }
 
         if (ChatActionsAuthenticator.GhostNames.Contains(command.Arguments.ElementAt(this.ArgumentIndex)))
         {
-          return true;
+          return AuthenticationResult.Ok;
         }
 
         if (!command.Arguments.ElementAt(this.ArgumentIndex).Equals(sender.Name))
         {
-          return false;
+          return AuthenticationResult.NotAuthenticated;
         }
 
-        return true;
+        return AuthenticationResult.Ok;
       }
+    }
+    
+    internal enum AuthenticationResult
+    {
+      Ok,
+      NotAuthenticated,
+      SexDisabled
     }
 
     private List<PoseAgreement> activePoseAgreements = new List<PoseAgreement>();
@@ -104,22 +112,23 @@ namespace pepperspray.SharedServices
 
     }
 
-    internal bool ShouldProcess(PlayerHandle sender, PlayerHandle recepient, string message)
+    internal AuthenticationResult Authenticate(PlayerHandle sender, PlayerHandle recepient, string message)
     {
       var command = this.parseCommand(message);
       if (command.Type == Command.CommandType.none)
       {
-        return true;
+        return AuthenticationResult.Ok;
       }
 
-      if (this.Authenticate(sender, command))
+      var authenticationResult = this.authenticateCommand(sender, command);
+      if (authenticationResult == AuthenticationResult.Ok)
       {
         if (command.Name.Equals("acceptPoseAsk"))
         {
           if (recepient == null)
           {
             Log.Warning("Failed to authenticate command {command} from {sender} - recepient not set", command.Name, sender.Name);
-            return false;
+            return AuthenticationResult.NotAuthenticated;
           }
 
           var agreement = this.findPoseAgreement(recepient.Name);
@@ -130,7 +139,7 @@ namespace pepperspray.SharedServices
           }
           else
           {
-            return false;
+            return AuthenticationResult.NotAuthenticated;
           }
         }
         else if (command.Name.Equals("askForPose"))
@@ -160,35 +169,40 @@ namespace pepperspray.SharedServices
           else
           {
             Log.Debug("Player {recepient} is unable to agree to marry proposal of {initiator} - couldn't find agreement", sender.Name, recepient.Name);
-            return false;
+            return AuthenticationResult.NotAuthenticated;
           }
         }
 
-        return true;
+        return AuthenticationResult.Ok;
       }
       else
       {
         Log.Warning("Failed to authenticate message {message} from {sender}", message, sender.Name);
-        return false;
+        return authenticationResult;
       }
     }
 
-    private bool Authenticate(PlayerHandle sender, Command command)
+    private AuthenticationResult authenticateCommand(PlayerHandle sender, Command command)
     {
 #if !DEBUG
       if (sender.User.IsAdmin)
       {
-        return true;
+        return AuthenticationResult.Ok;
       }
 #endif
 
       switch (command.Name)
       {
         case "useSexPose":
+          if (sender.CurrentLobby != null && sender.CurrentLobby.IsUserRoom && !sender.CurrentLobby.UserRoom.IsSexAllowed)
+          {
+            return AuthenticationResult.SexDisabled;
+          }
+
           var agreement = this.findPoseAgreement(sender.Name);
           if (agreement == null)
           {
-            return false;
+            return AuthenticationResult.NotAuthenticated;
           }
 
           foreach (string participant in command.Arguments.Skip(3).Take(3))
@@ -201,39 +215,41 @@ namespace pepperspray.SharedServices
             string[] participantArguments = participant.Split('=');
             if (participantArguments.Count() != 2)
             {
-              return false;
+              return AuthenticationResult.NotAuthenticated;
             }
 
             string participantName = participantArguments.First();
             if (!agreement.Contains(participantName))
             {
-              return false;
+              return AuthenticationResult.NotAuthenticated;
             }
           }
 
-          return true;
+          return AuthenticationResult.Ok;
 
         case "stopSexPS":
           foreach (string participant in command.Arguments.Skip(1))
           {
             if (participant.Equals(sender.Name)) 
             {
-              return true;
+              return AuthenticationResult.Ok;
             }
           }
 
-          return false;
+          return AuthenticationResult.NotAuthenticated;
 
-        default:
-          AuthenticationTemplate tpl = null;
-          if (this.authTemplates.TryGetValue(command.Name, out tpl))
+        case "askForPose":
+          if (sender.CurrentLobby != null && sender.CurrentLobby.IsUserRoom && !sender.CurrentLobby.UserRoom.IsSexAllowed)
           {
-            return tpl.Authenticate(sender, command);
+            return AuthenticationResult.SexDisabled;
           }
           else
           {
-            return true;
+            return this.authenticateByTemplate(sender, command);
           }
+
+        default:
+          return this.authenticateByTemplate(sender, command);
       }
     }
 
@@ -264,6 +280,20 @@ namespace pepperspray.SharedServices
       }
 
       return false;
+    }
+
+    private AuthenticationResult authenticateByTemplate(PlayerHandle sender, Command command)
+    {
+      AuthenticationTemplate tpl = null;
+      if (this.authTemplates.TryGetValue(command.Name, out tpl))
+      {
+        return tpl.Authenticate(sender, command);
+      }
+      else
+      {
+        return AuthenticationResult.Ok;
+      }
+
     }
 
     private PoseAgreement findOrCreatePoseAgreement(string initiatorName)

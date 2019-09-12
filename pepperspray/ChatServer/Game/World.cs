@@ -129,7 +129,7 @@ namespace pepperspray.ChatServer.Game
 
     internal void AddUserRoom(UserRoom room)
     {
-      Log.Information("Adding user room {id}/{name} from {player_name}", room.Identifier, room.Name, room.User.Name);
+      Log.Information("Adding user room {id}/{name} from {player_name}", room.Identifier, room.Name, room.OwnerName);
 
       this.userRooms[room.Identifier] = room;
     }
@@ -162,7 +162,7 @@ namespace pepperspray.ChatServer.Game
     {
       foreach (var room in this.userRooms.Values)
       {
-        if (room.User == handle)
+        if (room.OwnerId == handle.Id)
         {
           return room;
         }
@@ -179,11 +179,6 @@ namespace pepperspray.ChatServer.Game
     internal void RemovePlayer(PlayerHandle player)
     {
       this.players.Remove(player.Name);
-
-      foreach (var room in this.userRooms.Where(a => a.Value.User == player).ToArray())
-      {
-        this.RemoveUserRoom(room.Key);
-      }
     }
   }
 }

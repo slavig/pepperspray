@@ -32,6 +32,8 @@ namespace pepperspray.ChatServer.Game
     internal UserRoom UserRoom;
     internal int NumberOfPlayers;
     internal bool IsUserRoom { get { return this.UserRoom != null; } }
+    internal bool IsPrivateRoom { get { return this.UserRoom == null && this.Identifier.EndsWith("_room"); } }
+    internal bool IsStandard { get { return Lobby.locationsMapping.Keys.Contains(this.Identifier);  } }
     internal List<PlayerHandle> Players;
 
     internal Lobby(string id)
@@ -54,11 +56,17 @@ namespace pepperspray.ChatServer.Game
     internal void RemovePlayer(PlayerHandle player)
     {
       this.Players.Remove(player);
-      this.NumberOfPlayers--;
+      if (this.NumberOfPlayers > 0)
+      {
+        this.NumberOfPlayers--;
+      }
 
       if (this.IsUserRoom)
       {
-        this.UserRoom.NumberOfPlayers -= 1;
+        if (this.UserRoom.NumberOfPlayers > 0)
+        {
+          this.UserRoom.NumberOfPlayers -= 1;
+        }
       }
     }
   }

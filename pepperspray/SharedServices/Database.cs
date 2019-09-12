@@ -21,6 +21,7 @@ namespace pepperspray.SharedServices
     private ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
     private ConcurrentQueue<DatabaseConnection> pool = new ConcurrentQueue<DatabaseConnection>();
     private DatabaseConnection mutatingConnection;
+    private bool enableMultithreading;
 
     public void Inject()
     {
@@ -37,6 +38,18 @@ namespace pepperspray.SharedServices
       connection.CreateTable<FriendLiaison>();
       connection.CreateTable<Gift>();
       connection.CreateTable<OfflineMessage>();
+      connection.CreateTable<BlacklistRecord>();
+
+      this.enableMultithreading = SQLitePCL.raw.sqlite3_compileoption_used("THREADSAFE=3") == 1;
+      if (!this.enableMultithreading)
+      {
+        Log.Warning("Current {0} was compiled without multithreading support,"
+          + " if you with to archieve more performance it's recommended that you recompile the library"
+          + " with build flag \"{1}\" and replace binary in the {2} folder for your target architecture.",
+          "libsqlite",
+          "SQLITE_THREADSAFE=3",
+          "./runtimes/");
+      }
 
       this.mutatingConnection = new DatabaseConnection(connection);
     }
@@ -53,7 +66,7 @@ namespace pepperspray.SharedServices
 
       try
       {
-        if (this.config.SqliteMultithreading)
+        if (this.enableMultithreading)
         {
           this.rwLock.EnterReadLock();
         } else
@@ -65,7 +78,7 @@ namespace pepperspray.SharedServices
       }
       finally
       {
-        if (this.config.SqliteMultithreading)
+        if (this.enableMultithreading)
         {
           this.rwLock.ExitReadLock();
         }
@@ -270,6 +283,26 @@ namespace pepperspray.SharedServices
     internal void OfflineMessageDelete(uint recepientId)
     {
       this.connection.Table<OfflineMessage>().Where(m => m.RecepientId == recepientId).Delete();
+    }
+
+    internal IEnumerable<Character> BlacklistFindById(uint userId)
+    {
+      return this.connection.Query<Character>("SELECT * FROM BlacklistRecord JOIN Character ON BlacklistRecord.ViolatorId = Character.Id WHERE BlacklistRecord.UserId = ?", userId);
+    }
+
+    internal BlacklistRecord BlacklistFind(uint userId, uint characterId)
+    {
+      return this.connection.Table<BlacklistRecord>().Where(i => i.UserId == userId && i.ViolatorId == characterId).RetrieveFirst();
+    }
+
+    internal void BlacklistInsert(BlacklistRecord ch)
+    {
+      this.connection.Insert(ch);
+    }
+
+    internal void BlacklistDelete(BlacklistRecord ch)
+    {
+      this.connection.Delete(ch);
     }
   }
 

@@ -50,6 +50,7 @@ namespace pepperspray.RestAPIServer
       new Controllers.PhotoController(this.server);
       new Controllers.GiftController(this.server);
       new Controllers.OfflineMessageController(this.server);
+      new Controllers.BlacklistController(this.server);
 
       return new Promise<Nothing>();
     }

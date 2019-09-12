@@ -15,7 +15,7 @@ using pepperspray.LoginServer;
 
 namespace pepperspray.ChatServer.Game
 {
-  internal class PlayerHandle
+  internal class PlayerHandle: IEquatable<PlayerHandle>
   {
     internal bool IsLoggedIn = false;
 
@@ -28,8 +28,10 @@ namespace pepperspray.ChatServer.Game
     internal Character Character;
 
     internal DateTime LoggedAt = DateTime.Now;
+
     internal Group CurrentGroup;
     internal Lobby CurrentLobby;
+
 
     internal string CurrentLobbyName
     {
@@ -52,6 +54,11 @@ namespace pepperspray.ChatServer.Game
     internal PlayerHandle(EventStream stream)
     {
       this.Stream = stream;
+    }
+
+    public bool Equals(PlayerHandle other)
+    {
+      return this.Id == other.Id;
     }
 
     internal IPromise<Nothing> Terminate(ErrorException exception)

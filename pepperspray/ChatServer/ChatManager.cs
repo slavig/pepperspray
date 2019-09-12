@@ -35,6 +35,7 @@ namespace pepperspray.ChatServer
 
     public void Inject()
     {
+      Log.Information("ChatManager initializing");
       this.config = DI.Get<Configuration>();
       this.nameValidator = DI.Get<NameValidator>();
       this.userRoomService = DI.Get<UserRoomService>();
@@ -43,9 +44,13 @@ namespace pepperspray.ChatServer
       this.dispatcher = DI.Get<EventDispatcher>();
       this.characterService = DI.Get<CharacterService>();
       this.giftService = DI.Get<GiftsService>();
-      this.nameValidator.ServerName = this.Monogram;
 
+      this.nameValidator.ServerName = this.Monogram;
       this.World = new World();
+      
+      Log.Information("Loading permanent rooms ({count} total)", this.config.PermanentRooms.Count);
+      this.userRoomService.LoadPermanentRooms();
+
       CIOReactor.Spawn("playerTimeoutWatchdog", () =>
       {
         while (true)
@@ -67,6 +72,60 @@ namespace pepperspray.ChatServer
             {
               Log.Error("Caught exception in playerTimeoutWatchdog: {ex}", e);
             }
+          }
+        }
+      });
+
+      CIOReactor.Spawn("excelRecordsWatchdog", () =>
+      {
+        Log.Debug("Cleaning up expel records");
+
+        while (true)
+        {
+#if !DEBUG
+          var duration = TimeSpan.FromMinutes(10);
+#else
+          var duration = TimeSpan.FromSeconds(30);
+#endif
+
+          Thread.Sleep(duration);
+
+          try
+          {
+            this.userRoomService.CleanupExpelRecords();
+          }
+          catch (Exception e)
+          {
+            Log.Error("Caught exception in excelRecordsWatchdog: {ex}", e);
+          }
+        }
+      });
+
+      CIOReactor.Spawn("danglingRoomWatchdog", () =>
+      {
+        while (true)
+        {
+#if !DEBUG
+          var duration = TimeSpan.FromMinutes(3);
+#else
+          var duration = TimeSpan.FromSeconds(30);
+#endif
+
+          Thread.Sleep(duration);
+
+          if (!this.config.DanglingRoom.Enabled)
+          {
+            continue;
+          }
+
+          Log.Debug("Cleaning up dangling rooms");
+          try
+          {
+            this.userRoomService.CleanupDanglingRooms();
+          }
+          catch (Exception e)
+          {
+            Log.Error("Caught exception in danglingRoomWatchdog: {ex}", e);
           }
         }
       });
@@ -120,6 +179,7 @@ namespace pepperspray.ChatServer
     {
       Log.Information("Player {name} logged in, connection {hash}/{endpoint}", player.Name, player.Stream.ConnectionHash, player.Stream.ConnectionEndpoint);
       this.groupService.PlayerLoggedIn(player);
+      this.userRoomService.PlayerLoggedIn(player);
 
       lock (this)
       {

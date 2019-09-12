@@ -188,8 +188,10 @@
     <Compile Include="ChatServer\Shell\AdminConfigReload.cs" />
     <Compile Include="ChatServer\Shell\AdminMoney.cs" />
     <Compile Include="ChatServer\Shell\AdminRoomPriority.cs" />
+    <Compile Include="ChatServer\Shell\Expel.cs" />
     <Compile Include="ChatServer\Shell\Money.cs" />
     <Compile Include="ChatServer\Shell\Pay.cs" />
+    <Compile Include="ChatServer\Shell\Room.cs" />
     <Compile Include="CIO\CIO.cs" />
     <Compile Include="CIO\CIOSocket.cs" />
     <Compile Include="CIO\CombinedPromise.cs" />
@@ -200,6 +202,8 @@
     <Compile Include="ChatServer\Protocol\Requests\FriendRequest.cs" />
     <Compile Include="ChatServer\Protocol\Requests\GroupJoin.cs" />
     <Compile Include="ChatServer\Protocol\Requests\GroupLeave.cs" />
+    <Compile Include="RestAPIServer\Controllers\BlacklistController.cs" />
+    <Compile Include="RestAPIServer\Services\BlacklistService.cs" />
     <Compile Include="SharedServices\ChatActionsAuthenticator.cs" />
     <Compile Include="ChatServer\Protocol\Message.cs" />
     <Compile Include="ChatServer\Protocol\Requests\RoomClose.cs" />
@@ -245,6 +249,7 @@
     <Compile Include="SharedServices\Database.cs" />
     <Compile Include="SharedServices\Models\FriendLiaison.cs" />
     <Compile Include="SharedServices\Models\Gift.cs" />
+    <Compile Include="SharedServices\Models\BlacklistRecord.cs" />
     <Compile Include="SharedServices\Models\OfflineMessage.cs" />
     <Compile Include="SharedServices\Models\PhotoSlot.cs" />
     <Compile Include="SharedServices\Models\User.cs" />

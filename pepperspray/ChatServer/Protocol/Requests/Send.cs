@@ -52,10 +52,20 @@ namespace pepperspray.ChatServer.Protocol.Requests
       }
       else
       {
-        var commands = this.Recepients(sender, server)
-          .Select(r => r.Stream.Write(Responses.Message(sender, this.contents)));
-
-        return new CombinedPromise<Nothing>(commands);
+        var recepients = this.Recepients(sender, server);
+        var authenticationResult = this.actionsAuthenticator.Authenticate(sender, recepients.Count() == 1 ? recepients.First() : null, this.contents);
+        switch (authenticationResult)
+        {
+          case ChatActionsAuthenticator.AuthenticationResult.Ok:
+            var commands = recepients.Select(r => r.Stream.Write(Responses.Message(sender, this.contents)));
+            return new CombinedPromise<Nothing>(commands);
+          case ChatActionsAuthenticator.AuthenticationResult.SexDisabled:
+            return sender.Stream.Write(Responses.ServerPrivateChatMessage(server.Monogram, "Sorry, sex is forbidden in this room."));
+          case ChatActionsAuthenticator.AuthenticationResult.NotAuthenticated:
+            return Nothing.Resolved();
+          default:
+            return Nothing.Resolved();
+        }
       }
     }
 
@@ -123,11 +133,6 @@ namespace pepperspray.ChatServer.Protocol.Requests
       }
 
       this.recepient = server.World.FindPlayer(this.recepientName);
-      if (!this.actionsAuthenticator.ShouldProcess(sender, this.recepient, this.contents))
-      {
-        return false;
-      }
-
       return true;
     }
 
@@ -178,11 +183,6 @@ namespace pepperspray.ChatServer.Protocol.Requests
         return false;
       }
  
-      if (!this.actionsAuthenticator.ShouldProcess(sender, null, this.contents))
-      {
-        return false;
-      }
-
       return sender.CurrentGroup != null;
     }
 
@@ -212,11 +212,6 @@ namespace pepperspray.ChatServer.Protocol.Requests
         return false;
       }
  
-      if (!this.actionsAuthenticator.ShouldProcess(sender, null, this.contents))
-      {
-        return false;
-      }
-
       return sender.CurrentLobby != null;
     }
 
@@ -246,11 +241,6 @@ namespace pepperspray.ChatServer.Protocol.Requests
         return false;
       }
  
-      if (!this.actionsAuthenticator.ShouldProcess(sender, null, this.contents))
-      {
-        return false;
-      }
-
       return true;
     }
 

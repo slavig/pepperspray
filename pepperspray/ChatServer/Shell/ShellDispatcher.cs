@@ -26,6 +26,8 @@ namespace pepperspray.ChatServer.Shell
       new Pay(),
       new Money(),
       new Players(),
+      new Expel(),
+      new Room(),
       new PrivateMessage(),
       new Help(),
     };

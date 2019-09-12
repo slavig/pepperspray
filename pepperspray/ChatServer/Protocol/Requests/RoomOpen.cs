@@ -88,13 +88,14 @@ namespace pepperspray.ChatServer.Protocol.Requests
       var room = new UserRoom
       {
         Identifier = this.lobbyIdentifier,
-        User = sender,
+        OwnerId = sender.Id,
+        OwnerName = sender.Name,
         Name = this.userRoomService.CleanupName(this.name),
         Access = this.accessType,
         NumberOfPlayers = this.numberOfPlayers
       };
 
-      return this.userRoomService.OpenRoom(sender, server, room);
+      return this.userRoomService.OpenRoom(room);
     }
   }
 }

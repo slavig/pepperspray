@@ -27,6 +27,11 @@ namespace pepperspray.ChatServer.Services
 
     internal bool PlayerCanJoinLobby(PlayerHandle player, Lobby lobby)
     {
+      if (player.User.IsAdmin)
+      {
+        return true;
+      }
+
       if (lobby.IsUserRoom)
       {
         return this.userRoomService.PlayerCanJoinRoom(player, lobby.UserRoom);
@@ -66,8 +71,6 @@ namespace pepperspray.ChatServer.Services
       {
         lobby.RemovePlayer(player);
         player.CurrentLobby = null;
-        lobbyPlayers = lobby.Players.ToArray();
-
         if (lobby.Players.Count() == 0)
         {
           server.World.RemoveLobby(lobby);
@@ -76,8 +79,26 @@ namespace pepperspray.ChatServer.Services
 
       Log.Information("Player {name} leaving lobby {id}, notifying {total} players.", player.Name, lobby != null ? lobby.Identifier : "INVALID", lobbyPlayers.Count());
       return player.Stream.Write(Responses.JoinedLobby())
-        .Then(a => new CombinedPromise<Nothing>(lobbyPlayers.Select(b => b.Stream.Write(Responses.PlayerLeave(player)))))
-      as IPromise<Nothing>;
+        .Then((a) => this.NotifyLobbyAboutLeavingPlayer(player, lobby));
+    }
+
+    internal IPromise<Nothing> NotifyLobbyAboutLeavingPlayer(PlayerHandle player, Lobby lobby)
+    {
+      PlayerHandle[] lobbyPlayers = new PlayerHandle[] { };
+
+      lock (server)
+      {
+        lobbyPlayers = lobby.Players.ToArray();
+      }
+
+      if (lobbyPlayers.Count() > 0)
+      {
+        return new CombinedPromise<Nothing>(lobbyPlayers.Select(b => b.Stream.Write(Responses.PlayerLeave(player))));
+      }
+      else
+      {
+        return Nothing.Resolved();
+      }
     }
   }
 }

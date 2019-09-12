@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using RSG;
 using pepperspray.CIO;
 using pepperspray.ChatServer.Game;
+using pepperspray.ChatServer.Services;
 using pepperspray.SharedServices;
 
 namespace pepperspray.ChatServer.Shell
@@ -14,6 +15,7 @@ namespace pepperspray.ChatServer.Shell
   internal class AdminConfigReload: AShellCommand
   {
     private Configuration config = DI.Get<Configuration>();
+    private UserRoomService userRoomService = DI.Get<UserRoomService>();
 
     internal override bool RequireAdmin()
     {
@@ -30,6 +32,8 @@ namespace pepperspray.ChatServer.Shell
       try
       {
         this.config.LoadConfiguration();
+        this.userRoomService.LoadPermanentRooms();
+
         return dispatcher.Output(sender, server, "Configuration file reloaded.");
       }
       catch (Exception e)
