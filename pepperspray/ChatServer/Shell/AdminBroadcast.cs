@@ -56,7 +56,21 @@ namespace pepperspray.ChatServer.Shell
         }
       }
 
-      return new CombinedPromise<Nothing>(players.Select(a => this.loginServer.Emit(a.Token, "alert", message)));
+      var promises = new List<IPromise<Nothing>>();
+      foreach (var player in players)
+      {
+
+        try
+        {
+          promises.Add(this.loginServer.Emit(player.Token, "alert", message));
+        }
+        catch (LoginServerListener.NotFoundException)
+        {
+          promises.Add(player.Stream.Write(Responses.MakeshiftAlert(message)));
+        }
+      }
+
+      return new CombinedPromise<Nothing>(promises);
     }
   }
 }

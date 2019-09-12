@@ -89,7 +89,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
       {
         Identifier = this.lobbyIdentifier,
         User = sender,
-        Name = this.name,
+        Name = this.userRoomService.CleanupName(this.name),
         Access = this.accessType,
         NumberOfPlayers = this.numberOfPlayers
       };

@@ -75,6 +75,7 @@ namespace pepperspray.SharedServices
     internal List<string> BannedAddresses;
 
     internal string TokenSalt;
+    internal bool SqliteMultithreading;
     internal int PlayerInactivityTimeout;
     internal uint PlayerPhotoSlots;
     internal uint PhotoSizeLimit;
@@ -240,6 +241,9 @@ namespace pepperspray.SharedServices
 
       var tokenSaltNode = doc.SelectSingleNode("configuration/token");
       this.TokenSalt = tokenSaltNode.Attributes["salt"].InnerText;
+
+      var sqliteNode = doc.SelectSingleNode("configuration/sqlite");
+      this.SqliteMultithreading = sqliteNode.Attributes["multithreading"].InnerText == "true";
 
       var bannedAddresses = doc.SelectSingleNode("configuration/banned-addresses");
       if (bannedAddresses != null)

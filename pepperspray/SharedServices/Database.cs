@@ -6,6 +6,7 @@ using System.Threading;
 using System.IO;
 using System.Threading.Tasks;
 
+using Serilog;
 using SQLite;
 using System.Collections.Concurrent;
 
@@ -15,18 +16,21 @@ namespace pepperspray.SharedServices
   {
     internal class NotFoundException : Exception { }
 
+    private Configuration config;
+
     private ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
     private ConcurrentQueue<DatabaseConnection> pool = new ConcurrentQueue<DatabaseConnection>();
     private DatabaseConnection mutatingConnection;
 
     public void Inject()
     {
-
+      this.config = DI.Get<Configuration>();
     }
 
     public Database()
     {
       var connection = new SQLiteConnection(Path.Combine("peppersprayData", "database", "database.sqlite"));
+
       connection.CreateTable<Character>();
       connection.CreateTable<User>();
       connection.CreateTable<PhotoSlot>();
@@ -49,12 +53,26 @@ namespace pepperspray.SharedServices
 
       try
       {
-        this.rwLock.EnterReadLock();
+        if (this.config.SqliteMultithreading)
+        {
+          this.rwLock.EnterReadLock();
+        } else
+        {
+          this.rwLock.EnterWriteLock();
+        }
+
         result = action(connection);
       }
       finally
       {
-        this.rwLock.ExitReadLock();
+        if (this.config.SqliteMultithreading)
+        {
+          this.rwLock.ExitReadLock();
+        }
+        else
+        {
+          this.rwLock.ExitWriteLock();
+        }
       }
 
       this.pool.Enqueue(connection);

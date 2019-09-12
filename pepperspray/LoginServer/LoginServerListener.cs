@@ -215,6 +215,7 @@ namespace pepperspray.LoginServer
           catch (Exception)
           {
             this.loggedClients.Remove(token);
+
             throw new NotFoundException();
           }
         }

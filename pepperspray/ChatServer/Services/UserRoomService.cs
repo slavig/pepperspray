@@ -39,6 +39,11 @@ namespace pepperspray.ChatServer.Services
       }
     }
 
+    internal string CleanupName(string name)
+    {
+      return name.Replace('=', ' ').Replace('|', ' ').Replace('+', ' ');
+    }
+
     internal IPromise<Nothing> OpenRoom(PlayerHandle sender, ChatManager server, UserRoom room) 
     {
       lock(server)
