@@ -34,12 +34,19 @@ namespace pepperspray.ChatServer.Game
     internal Lobby FindOrCreateLobby(string identifier)
     {
       var lobby = this.FindLobby(identifier);
+      var room = this.FindUserRoom(identifier);
+
       if (lobby == null)
       {
         lobby = this.CreateLobby(identifier);
+        if (room != null)
+        {
+          lobby.RadioURL = room.RadioURL;
+          lobby.UserRoom = room;
+          room.Lobby = lobby;
+        }
       }
 
-      lobby.UserRoom = this.FindUserRoom(identifier);
       return lobby;
     }
 
@@ -121,6 +128,11 @@ namespace pepperspray.ChatServer.Game
         Log.Information("Removing lobby {identifier}", lobby.Identifier);
 
         this.Lobbies.Remove(lobby.Identifier);
+        if (lobby.UserRoom != null)
+        {
+          lobby.UserRoom.Lobby = null;
+        }
+
       } else
       {
         Log.Warning("Couldn't remove lobby - {identifier} doesn't exist", lobby.Identifier);

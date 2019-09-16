@@ -11,6 +11,7 @@ using pepperspray.ChatServer.Game;
 using pepperspray.ChatServer.Protocol;
 using pepperspray.Utils;
 using pepperspray.SharedServices;
+using pepperspray.Resources;
 
 namespace pepperspray.ChatServer.Shell
 {
@@ -32,23 +33,54 @@ namespace pepperspray.ChatServer.Shell
     {
       if (arguments.Count() < 1)
       {
-        return dispatcher.Error(sender, server, "Invalid arguments");
+        return dispatcher.InvalidUsage(sender, server);
       }
 
-      var player = server.World.FindPlayer(arguments.ElementAt(0));
-      if (player == null)
-      {
-        return dispatcher.Error(sender, server, "Player not found: \"{0}\"", arguments.First());
-      }
-
-      var reason = "None.";
+      var name = arguments.ElementAt(0);
+      var reason = Strings.REASON_NONE;
       if (arguments.Count() > 1)
       {
         reason = String.Join(" ", arguments.Skip(1));
       }
 
-      return server.KickPlayer(player, reason)
-        .Then(a => dispatcher.Output(sender, server, "Player kicked"));
+      if (name.Equals("\\all"))
+      {
+        List<PlayerHandle> players;
+        lock (server)
+        {
+          players = new List<PlayerHandle>(server.World.Players);
+        }
+
+        foreach (var handle in players)
+        {
+          try
+          {
+            server.Sink(server.KickPlayer(handle, reason));
+          }
+          catch (Exception e)
+          {
+            Log.Warning("Failed to kick player during kick-all: {exception}", e);
+          }
+        }
+
+        return Nothing.Resolved();
+      }
+      else
+      {
+        PlayerHandle player;
+        lock (server)
+        {
+          player = server.World.FindPlayer(arguments.ElementAt(0));
+        }
+
+        if (player == null)
+        {
+          return dispatcher.Error(sender, server, Strings.PLAYER_NOT_FOUND, arguments.First());
+        }
+
+        return server.KickPlayer(player, reason)
+          .Then(a => dispatcher.Output(sender, server, Strings.PLAYER_HAS_BEEN_KICKED, arguments.First()));
+      }
     }
   }
 }

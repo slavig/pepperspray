@@ -84,8 +84,18 @@ namespace pepperspray.ChatServer
           int seekTo = 0;
           int newCount = this.slidingBuffer.Count();
 
-          Message ev = Parser.ParseMessage(this.slidingBuffer, seekTo, out seekTo);
-          this.LastCommunicationDate = DateTime.Now;
+          Message ev;
+          try
+          {
+            ev = Parser.ParseMessage(this.slidingBuffer, seekTo, out seekTo);
+            this.LastCommunicationDate = DateTime.Now;
+          }
+          catch (Parser.ParseException)
+          {
+            Log.Warning("EventStream {hash} encountered parsing exception, cleaning up the buffer", this.ConnectionHash);
+            this.slidingBuffer = new byte[0];
+            break;
+          }
 
           if (ev != null && ev.Type == Message.MessageType.Event)
           {

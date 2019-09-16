@@ -10,6 +10,7 @@ using pepperspray.ChatServer.Game;
 using pepperspray.LoginServer;
 using pepperspray.SharedServices;
 using pepperspray.ChatServer.Protocol;
+using pepperspray.Resources;
 
 namespace pepperspray.ChatServer.Shell
 {
@@ -31,7 +32,7 @@ namespace pepperspray.ChatServer.Shell
     {
       if (arguments.Count() == 0 || tag.Equals("aalert") && arguments.Count() < 2)
       {
-        return dispatcher.Error(sender, server, "Invalid usage");
+        return dispatcher.InvalidUsage(sender, server);
       }
 
       string message = "";
@@ -40,10 +41,10 @@ namespace pepperspray.ChatServer.Shell
       {
         if (tag.Equals("aalert"))
         {
-          var player = server.World.FindPlayer(arguments.ElementAt(0));
+          var player = server.World.FindPlayer(arguments.First());
           if (player == null)
           {
-            return dispatcher.Error(sender, server, "Unable to find player");
+            return dispatcher.Error(sender, server, Strings.PLAYER_NOT_FOUND, arguments.First());
           }
 
           players = new PlayerHandle[] { player };

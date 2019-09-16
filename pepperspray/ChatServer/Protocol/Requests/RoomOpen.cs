@@ -17,7 +17,6 @@ namespace pepperspray.ChatServer.Protocol.Requests
   {
     private string lobbyIdentifier;
     private string name;
-    private int numberOfPlayers;
     private UserRoom.AccessType accessType;
 
     private UserRoomService userRoomService = DI.Get<UserRoomService>();
@@ -35,7 +34,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
         return null;
       }
 
-      var lobbyIdentifier = arguments[0].ToString().Trim();
+      var lobbyIdentifier = CharacterService.StripCharacterName(arguments[0].ToString().Trim());
       var name = arguments[3].ToString().Trim();
 
       if (lobbyIdentifier.Count() == 0 || name.Count() == 0)
@@ -63,7 +62,6 @@ namespace pepperspray.ChatServer.Protocol.Requests
       {
         lobbyIdentifier = lobbyIdentifier,
         name = name,
-        numberOfPlayers = 0,
         accessType = accessType,
       };
     }
@@ -91,8 +89,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
         OwnerId = sender.Id,
         OwnerName = sender.Name,
         Name = this.userRoomService.CleanupName(this.name),
-        Access = this.accessType,
-        NumberOfPlayers = this.numberOfPlayers
+        Access = this.accessType
       };
 
       return this.userRoomService.OpenRoom(room);

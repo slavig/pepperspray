@@ -9,6 +9,7 @@ using Serilog;
 using Newtonsoft.Json;
 using pepperspray.SharedServices;
 using pepperspray.LoginServer;
+using pepperspray.ChatServer.Game;
 using pepperspray.RestAPIServer.Services;
 using pepperspray.Utils;
 
@@ -69,6 +70,7 @@ namespace pepperspray.SharedServices
         if (user.PasswordHash.Equals(passwordHash))
         {
           this.generateToken(user);
+          user.LastSeenAt = DateTime.Now;
 
           this.db.Write((c) => c.UserUpdate(user));
           return user;
@@ -152,7 +154,8 @@ namespace pepperspray.SharedServices
       {
         Username = username,
         PasswordHash = passwordHash,
-        Token = Hashing.Md5(this.random.Next().ToString())
+        Token = Hashing.Md5(this.random.Next().ToString()),
+        CreatedAt = DateTime.Now,
       };
 
       Log.Debug("Client {endpoint} signing up {name}/{password}",
@@ -228,12 +231,44 @@ namespace pepperspray.SharedServices
       }
     }
 
+    internal User FindUser(uint id)
+    {
+      try
+      {
+        return this.db.Read((c) => c.UserFind(id));
+      }
+      catch (Database.NotFoundException)
+      {
+        throw new NotFoundException();
+      }
+    }
+
+    internal void UpdateStatus(User user, string status)
+    {
+      user.Status = status;
+      this.db.Write(c => c.UserUpdate(user));
+    }
+
+    internal void PlayerLoggedOff(PlayerHandle handle)
+    {
+      if (handle.IsLoggedIn)
+      {
+        var beenOnlineFor = DateTime.Now - handle.LoggedAt;
+        var user = this.FindUser(handle.User.Id);
+
+        user.TotalSecondsOnline += beenOnlineFor.TotalSeconds;
+        this.db.Write(c => c.UserUpdate(user));
+      }
+    }
+
     internal string GetLoginResponseText(User user)
     {
       lock (this.db)
       {
         var builder = new StringBuilder();
-        builder.AppendLine("answer=" + (user.Status ?? "ok"));
+
+        var status = user.Status != null && user.Status != "" ? user.Status : "ok";
+        builder.AppendLine("answer=" + (status));
         builder.AppendLine("token=" + user.Token);
 
         int i = 1;

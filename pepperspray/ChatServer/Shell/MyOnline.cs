@@ -14,22 +14,18 @@ using pepperspray.Resources;
 
 namespace pepperspray.ChatServer.Shell
 {
-  internal class Help: AShellCommand
+  internal class MyOnline: AShellCommand
   {
     internal override bool WouldDispatch(string tag)
     {
-      return tag.Equals("help");
+      return tag.Equals("myonline");
     }
 
     internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
     {
-      var promises = new List<IPromise<Nothing>>();
-      foreach (var line in Strings.SHELL_HELP_TEXT.Split('\n'))
-      {
-        promises.Add(dispatcher.Output(sender, server, line));
-      }
-
-      return new CombinedPromise<Nothing>(promises);
+      var hoursOnline = TimeSpan.FromSeconds(sender.User.TotalSecondsOnline).TotalHours;
+      var message = String.Format(Strings.YOU_HAVE_BEEN_ONLINE_FOR_HOURS, hoursOnline < 1 ? "< 1" : Convert.ToUInt32(hoursOnline).ToString());
+      return dispatcher.Output(sender, server, message);
     }
   }
 }

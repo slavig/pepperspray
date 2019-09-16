@@ -17,6 +17,7 @@ using pepperspray.ChatServer;
 using pepperspray.RestAPIServer;
 using pepperspray.LoginServer;
 using pepperspray.SharedServices;
+using System.Globalization;
 
 namespace pepperspray
 {
@@ -47,7 +48,14 @@ namespace pepperspray
       config.PlayerInactivityTimeout = 10 * 60;
 #endif
 
-      Log.Information("pepperspray v1.3");
+      if (config.OverrideLocale != null)
+      {
+        Log.Information("Locale is overriden by the config and set to {local}", config.OverrideLocale);
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CreateSpecificCulture(config.OverrideLocale);
+        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CreateSpecificCulture(config.OverrideLocale);
+      }
+
+      Log.Information("pepperspray v1.3.3");
       var coreServer = DI.Get<ChatServerListener>();
       var externalServer = DI.Get<RestAPIServerListener>();
       var loginServer = DI.Get<LoginServerListener>();

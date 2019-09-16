@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -14,6 +15,7 @@ using pepperspray.ChatServer.Game;
 using pepperspray.ChatServer.Services;
 using pepperspray.Utils;
 using pepperspray.SharedServices;
+using pepperspray.Resources;
 
 namespace pepperspray.ChatServer
 {
@@ -32,6 +34,7 @@ namespace pepperspray.ChatServer
     private EventDispatcher dispatcher;
     private CharacterService characterService;
     private GiftsService giftService;
+    private LoginService loginService;
 
     public void Inject()
     {
@@ -44,6 +47,7 @@ namespace pepperspray.ChatServer
       this.dispatcher = DI.Get<EventDispatcher>();
       this.characterService = DI.Get<CharacterService>();
       this.giftService = DI.Get<GiftsService>();
+      this.loginService = DI.Get<LoginService>();
 
       this.nameValidator.ServerName = this.Monogram;
       this.World = new World();
@@ -149,7 +153,7 @@ namespace pepperspray.ChatServer
     {
 #if DEBUG
       Log.Debug("<= {player}@{lobby} {event_description}",
-          handle.Name,
+          handle.Digest,
           handle.CurrentLobby != null ? handle.CurrentLobby.Identifier : null,
           msg.DebugDescription());
 #endif
@@ -177,7 +181,7 @@ namespace pepperspray.ChatServer
 
     internal void PlayerLoggedIn(PlayerHandle player)
     {
-      Log.Information("Player {name} logged in, connection {hash}/{endpoint}", player.Name, player.Stream.ConnectionHash, player.Stream.ConnectionEndpoint);
+      Log.Information("Player {player} logged in, connection {hash}/{endpoint}", player.Digest, player.Stream.ConnectionHash, player.Stream.ConnectionEndpoint);
       this.groupService.PlayerLoggedIn(player);
       this.userRoomService.PlayerLoggedIn(player);
 
@@ -189,11 +193,12 @@ namespace pepperspray.ChatServer
 
     internal void PlayerLoggedOff(PlayerHandle player)
     {
-      Log.Information("Player {name} logged off (connection {hash}/{endpoint})", player.Name, player.Stream.ConnectionHash, player.Stream.ConnectionEndpoint);
+      Log.Information("Player {digest} logged off (connection {hash}/{endpoint})", player.Digest, player.Stream.ConnectionHash, player.Stream.ConnectionEndpoint);
       this.userRoomService.PlayerLoggedOff(player);
       this.actionsAuthenticator.PlayerLoggedOff(player);
       this.groupService.PlayerLoggedOff(player);
       this.giftService.PlayerLoggedOff(player);
+      this.loginService.PlayerLoggedOff(player);
 
       if (player.Character != null)
       {
@@ -220,14 +225,14 @@ namespace pepperspray.ChatServer
         }
       }
 
-      Log.Debug("Notifying {number_of_players} that {name} logged off.", playersToNotify.Count(), player.Name);
+      Log.Debug("Notifying {number_of_players} that {name} logged off.", playersToNotify.Count(), player.Digest);
       this.Sink(new CombinedPromise<Nothing>(playersToNotify.Select(b => b.Stream.Write(Responses.PlayerLeave(player)))));
     }
 
     internal bool CheckPlayerTimedOut(PlayerHandle handle)
     {
       var delta = DateTime.Now - handle.Stream.LastCommunicationDate;
-      Log.Verbose("Player {name} last seen in {delta}", handle.Name, delta.Seconds);
+      Log.Verbose("Player {player} last seen in {delta}", handle.Digest, delta.Seconds);
 
       if (delta.Seconds > this.config.PlayerInactivityTimeout)
       {
@@ -237,7 +242,7 @@ namespace pepperspray.ChatServer
           handle.Stream.ConnectionEndpoint,
           delta);
 
-        this.KickPlayer(handle, "Timed out.");
+        this.KickPlayer(handle, Strings.TIMED_OUT);
         return true;
       }
 

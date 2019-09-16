@@ -25,28 +25,15 @@ namespace pepperspray.ChatServer.Protocol.Requests
     internal override IPromise<Nothing> Process(PlayerHandle sender, ChatManager server)
     {
       {
-        var lobby = sender.CurrentLobby;
-        PlayerHandle[] lobbyPlayers = new PlayerHandle[] { };
-
-        if (lobby != null) 
+        if (sender.CurrentLobby != null)
         {
-          lock (server)
-          {
-            lobby.RemovePlayer(sender);
-            sender.CurrentLobby = null;
-            lobbyPlayers = lobby.Players.ToArray();
-
-            if (lobby.Players.Count() == 0)
-            {
-              server.World.RemoveLobby(lobby);
-            }
-          }
+          return this.lobbyService.Leave(sender, sender.CurrentLobby);
+        } 
+        else
+        {
+          Log.Debug("Player {name} requested to leave the lobby with null lobby!", sender.Digest);
+          return Nothing.Resolved();
         }
-
-        Log.Information("Player {name} leaving lobby {id}, notifying {total} players.", sender.Name, lobby != null ? lobby.Identifier : "INVALID", lobbyPlayers.Count());
-        return sender.Stream.Write(Responses.JoinedLobby())
-          .Then(a => new CombinedPromise<Nothing>(lobbyPlayers.Select(b => b.Stream.Write(Responses.PlayerLeave(sender)))))
-        as IPromise<Nothing>;
       }
     }
   }

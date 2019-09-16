@@ -57,6 +57,7 @@ namespace pepperspray.RestAPIServer
 
     internal HttpResponse DefaultRoute(HttpRequest req)
     {
+      Log.Debug("Unknown REST request on {url}", req.RawUrlWithQuery);
       return new HttpResponse(req, 404, null);
     }
 

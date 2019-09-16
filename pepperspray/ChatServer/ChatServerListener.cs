@@ -37,7 +37,7 @@ namespace pepperspray.ChatServer
           .Map(ev => this.coreServer.ProcessCommand(player, ev))
           .Catch(ex =>
           {
-            Log.Warning("Terminating connection of {name}/{token} due to unhandled exception: {exception}", player.Name, player.Token, ex);
+            Log.Warning("Terminating connection of {player} due to unhandled exception: {exception}", player.Digest, ex);
             this.coreServer.PlayerLoggedOff(player);
             player.Stream.Terminate();
           }))

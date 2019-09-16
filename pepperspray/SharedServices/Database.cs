@@ -145,6 +145,20 @@ namespace pepperspray.SharedServices
       this.connection.Table<Character>().Where(c => c.Id.Equals(uid)).Delete();
     }
 
+    internal Character CharacterFindByNameIgnoreCase(string name)
+    {
+      var result = this.connection.Query<Character>("SELECT * FROM Character WHERE Name = ? COLLATE NOCASE", name);
+
+      if (result.Count() > 0)
+      {
+        return result.First();
+      }
+      else
+      {
+        throw new Database.NotFoundException();
+      }
+    }
+
     internal Character CharacterFindByName(string name)
     {
       return this.connection.Table<Character>().Where(c => c.Name.Equals(name)).RetrieveFirst();
@@ -263,6 +277,11 @@ namespace pepperspray.SharedServices
     internal User UserFind(string username)
     {
       return this.connection.Table<User>().Where(u => u.Username.Equals(username)).RetrieveFirst();
+    }
+
+    internal User UserFind(uint id)
+    {
+      return this.connection.Table<User>().Where(u => u.Id == id).RetrieveFirst();
     }
 
     internal User UserFindByToken(string token)

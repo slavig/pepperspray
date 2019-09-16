@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Serilog;
 using RSG;
 using pepperspray.CIO;
 using pepperspray.ChatServer.Game;
 using pepperspray.ChatServer.Protocol;
 using pepperspray.SharedServices;
+using pepperspray.Resources;
 
 namespace pepperspray.ChatServer.Shell
 {
@@ -46,7 +48,7 @@ namespace pepperspray.ChatServer.Shell
           {
             if (sender.CurrentLobby == null)
             {
-              return dispatcher.Error(sender, server, "You are not in lobby.");
+              return dispatcher.Error(sender, server, Strings.YOU_ARE_NOT_IN_LOBBY);
             }
 
             players = sender.CurrentLobby.Players.ToArray();
@@ -56,7 +58,7 @@ namespace pepperspray.ChatServer.Shell
             var player = server.World.FindPlayer(arguments.First().Trim());
             if (player == null)
             {
-              return dispatcher.Error(sender, server, "Failed to find player.");
+              return dispatcher.Error(sender, server, Strings.PLAYER_NOT_FOUND, arguments.First());
             }
 
             players = new PlayerHandle[] { player };
@@ -65,7 +67,7 @@ namespace pepperspray.ChatServer.Shell
 
         if (this.config.Currency.Enabled == false)
         {
-          return dispatcher.Error(sender, server, "Currency is not enabled");
+          return dispatcher.Error(sender, server, Strings.CURRENCY_IS_NOT_ENABLED);
         }
 
         foreach (var player in players)
@@ -74,19 +76,21 @@ namespace pepperspray.ChatServer.Shell
           {
             this.giftService.ChangeCurrency(player.User, amount);
           }
-          catch (GiftsService.NotEnoughCurrencyException) {
+          catch (GiftsService.NotEnoughCurrencyException e)
+          {
+            Log.Warning("Failed to gift money as admin: {exception}", e);
           }
         }
 
-        var message = String.Format("You have been gifted {0} coins from admin.", amount);
+        var message = String.Format(Strings.YOU_HAVE_BEEN_GIFTED_COINS_FROM_ADMIN, amount);
         return new CombinedPromise<Nothing>(players.Select(p => p.Stream.Write(Responses.ServerMessage(server, message))))
-          .Then(a => dispatcher.Output(sender, server, "Done"));
+          .Then(a => dispatcher.Output(sender, server, Strings.DONE));
       }
       catch (Exception e)
       {
         if (e is FormatException || e is ArgumentOutOfRangeException)
         {
-          return dispatcher.Error(sender, server, "Invalid arguments");
+          return dispatcher.InvalidUsage(sender, server);
         }
         else
         {

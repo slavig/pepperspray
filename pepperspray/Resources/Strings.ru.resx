@@ -118,174 +118,174 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ADMIN_NOT_AUTHENTICATED" xml:space="preserve">
-    <value>Not authenticated. Incident will be reported.</value>
+    <value>Недостаточно прав. Об инциденте будет уведомлено.</value>
   </data>
   <data name="CHARACTER_NOT_FOUND" xml:space="preserve">
-    <value>Character not found.</value>
+    <value>Персонаж не найдет.</value>
   </data>
   <data name="CONFIGURATION_FILE_RELOADED" xml:space="preserve">
-    <value>Configuration file reloaded.</value>
+    <value>Конфигурационный файл перезагружен.</value>
   </data>
   <data name="CURRENCY_IS_NOT_ENABLED" xml:space="preserve">
-    <value>Currency is not enabled on this server.</value>
+    <value>Валюта не включена на этом сервере.</value>
   </data>
   <data name="DISCONNECTING_ON_TIMEOUT_LONG" xml:space="preserve">
-    <value>Connection will be terminated in 10 seconds.
+    <value>Вы будете отключены от сервера через 10 секунд.
 
-Reason: {0}
+Причина: {0}
 
-Internal code: {1}.</value>
+Внутренний код ошибки: {1}.</value>
   </data>
   <data name="DISCONNECTING_ON_TIMEOUT_SHORT" xml:space="preserve">
-    <value>DISCONNECTED FROM SERVER, disconnecting in 10s.: {0}</value>
+    <value>ОТКЛЮЧЕНИЕ ОТ СЕРВЕРА через 10с.: {0}</value>
   </data>
   <data name="DONE" xml:space="preserve">
-    <value>Done.</value>
+    <value>Готово.</value>
   </data>
   <data name="DURATION_CANT_BE_MORE_MINUTES" xml:space="preserve">
-    <value>Duration can't be more than {0} minutes!</value>
+    <value>Продолжительность не может превышать {0} минут!</value>
   </data>
   <data name="DURATION_HAS_BEEN_SPECIFIED_INCORRECTLY" xml:space="preserve">
-    <value>Duration has been specified incorrectly, it should be a number.</value>
+    <value>Продолжительность была указана неправильно, это должно быть число.</value>
   </data>
   <data name="FAILED_TO_RELOAD_CONFIGURATION" xml:space="preserve">
-    <value>Failed to reload configuration: </value>
+    <value>Ошибка при перезагрузке конфигурации:</value>
   </data>
   <data name="FORBIDDEN" xml:space="preserve">
-    <value>Forbidden.</value>
+    <value>Запрещено.</value>
   </data>
   <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
-    <value>Internal server error.</value>
+    <value>Внутренная ошибка сервера.</value>
   </data>
   <data name="INVALID_AMOUNT" xml:space="preserve">
-    <value>Invalid amount.</value>
+    <value>Неправильное количество.</value>
   </data>
   <data name="INVALID_USAGE" xml:space="preserve">
-    <value>Invalid usage.</value>
+    <value>Неправильные аргументы.</value>
   </data>
   <data name="LOGGED_IN_AS_ANOTHER_CHAR" xml:space="preserve">
-    <value>Logged as another character.</value>
+    <value>Вход с другого персонажа.</value>
   </data>
   <data name="LOGGED_IN_IN_ANOTHER_INSTANCE" xml:space="preserve">
-    <value>Logged in another instance.</value>
+    <value>Вход с другой инстанции игры.</value>
   </data>
   <data name="LOGIN_TOKEN_INVALID" xml:space="preserve">
-    <value>Login token invalid.</value>
+    <value>Неверный токен входа.</value>
   </data>
   <data name="MESSAGE_TO_WORLD_HAS_BEEN_SENT" xml:space="preserve">
-    <value>Your message to World has been sent ({0} coins), you now have {1} coins.</value>
+    <value>Ваше сообщение было отправлено в World (стоимость - {0} монет). У вас осталось {1} монет.</value>
   </data>
   <data name="NOT_AUTHORIZED_TO_PLAY_AS_THIS_CHARACTER" xml:space="preserve">
-    <value>You are not authorized to play as this character.</value>
+    <value>Вы не авторизованы что бы играть этим персонажем.</value>
   </data>
   <data name="NOT_ENOUGH_COINS" xml:space="preserve">
-    <value>Not enough coins!</value>
+    <value>Недостаточно монет!</value>
   </data>
   <data name="ONLINE_PLAYERS_COLON" xml:space="preserve">
-    <value>Online players:</value>
+    <value>Игроки онлайн:</value>
   </data>
   <data name="PLAYER_HAS_BEEN_EXPELLED" xml:space="preserve">
-    <value>Player has been expelled.</value>
+    <value>Игрок был исключен.</value>
   </data>
   <data name="PLAYER_HAS_BEEN_KICKED" xml:space="preserve">
-    <value>Player {0} has been kicked.</value>
+    <value>Игрок {0} был кикнут.</value>
   </data>
   <data name="PLAYER_IS_OFFLINE_MESSAGES_WILL_BE_DELIVERED" xml:space="preserve">
-    <value>Player is offline, messages will be only delivered to him on his next sign in.</value>
+    <value>Игрок оффлайн, сообщения будут доставлены когда он следующий раз зайдет в игру.</value>
   </data>
   <data name="PLAYER_IS_ONLINE_YOU_CAN_MESSAGE_HIM" xml:space="preserve">
-    <value>Player is online, you can message him.</value>
+    <value>Игрок онлайн, вы можете написать ему сообщение.</value>
   </data>
   <data name="PLAYER_NOT_FOUND" xml:space="preserve">
-    <value>Player not found: "{0}"</value>
+    <value>Игрок не найден: "{0}"</value>
   </data>
   <data name="PLAYER_SENT_YOU_COINS" xml:space="preserve">
-    <value>Player {0} send you {1} coins, you now have {2}.</value>
+    <value>Игрок {0} отправил вам {1} монет, у вас теперь в сумме {2} монет.</value>
   </data>
   <data name="REASON_NONE" xml:space="preserve">
-    <value>None given.</value>
+    <value>Нету.</value>
   </data>
   <data name="ROOM_CLOSED" xml:space="preserve">
-    <value>Room closed.</value>
+    <value>Комната закрыта.</value>
   </data>
   <data name="ROOM_HAS_NOT_BEEN_FOUND" xml:space="preserve">
-    <value>Room {0} has not been found.</value>
+    <value>Комната {0} не была найдена.</value>
   </data>
   <data name="ROOM_IS_NOW_PERSISTENT" xml:space="preserve">
-    <value>Room is now persistent. It will stay opened for {0} minutes after you log-off. Remember that you can only close it by "/room close".</value>
+    <value>Комната теперь постоянная. Она будет оставаться открытой до {0} минут после вашего выхода из игры. Помните, что закрыть ее можно только через "/room close".</value>
   </data>
   <data name="ROOM_NOW_NOT_PRIORITIZED" xml:space="preserve">
-    <value>Room now not prioritized.</value>
+    <value>Комната больше не приоритезирована.</value>
   </data>
   <data name="ROOM_NOW_PRIORITIZED" xml:space="preserve">
-    <value>Room now prioritized.</value>
+    <value>Комната теперь приоритезирована.</value>
   </data>
   <data name="SEX_IS_FORBIDDEN_IN_ROOM" xml:space="preserve">
-    <value>Sorry, sex is forbidden in this room.</value>
+    <value>Извините, секс запрещен в этой комнате.</value>
   </data>
   <data name="SEX_IS_NOW_ALLOWED_IN_ROOM" xml:space="preserve">
-    <value>Sex is now allowed in this room.</value>
+    <value>Секс теперь разрешен в этой комнате.</value>
   </data>
   <data name="SEX_IS_NOW_FORBIDDEN_IN_ROOM" xml:space="preserve">
-    <value>Sex is now forbidden in this room.</value>
+    <value>Секс теперь запрещен в этой комнате.</value>
   </data>
   <data name="SHELL_HELP_TEXT" xml:space="preserve">
-    <value>Following commands are available:
-/players - show how many players are at standard locations.
-/money - get amount of coints you have right now.
-/myonline - display for how much you have been online (across all characters).
-/pay PLAYER AMOUNT - transfer currency to other player.
-/expel PLAYER MINUTES - expel player from your location for MINUTES. Duration can be skipped so the player will only be kicked.
-/room persist - will turn your room into semi-persistent one, meaning that it will be available for some time after you disconnect.
-/room close - will close your currently shared room.
-/room sex VALUE - "allow" to allow sex in your room, "forbid" to forbid it.</value>
+    <value>Следующие команды доступны:
+/players - показать сколько игроков в стандартных локациях.
+/money - показать количество ваших монет.
+/myonline - показать суммарное время онлайна (на всех персонажах).
+/pay ИГРОК КОЛИЧЕСТВО- передать монеты другому игроку.
+/expel ИГРОК ДЛИТЕЛЬНОСТЬ- исключить игрока с комнаты на указанное количество минут. Длительность может быть исключена что бы просто кикнуть его.
+/room persist - сделать комнату постоянной,что бы она оставалась открытой на некоторое время после вашего выхода из игры.
+/room close - закроет вашу текущую комнату.
+/room sex ЗНАЧЕНИЕ- "allow" что бы разрешить секс в комнате, "forbid" что бы запретить его.</value>
   </data>
   <data name="STATUS_FOR_PLAYER_HAS_BEEN_SET" xml:space="preserve">
-    <value>Status for player {0} has been set to "{1}".</value>
+    <value>Статус аккаунта {0} был установлен в "{1}".</value>
   </data>
   <data name="THIS_FEATURE_IS_NOT_ENABLED" xml:space="preserve">
-    <value>This feature is not enabled on the server.</value>
+    <value>Эта возможность не включена на сервере.</value>
   </data>
   <data name="TIMED_OUT" xml:space="preserve">
-    <value>Timed out.</value>
+    <value>Тайм-аут.</value>
   </data>
   <data name="TRANSFERRED_COINS_TO" xml:space="preserve">
-    <value>Transferred {0} coins to {1}, you now have {2}.</value>
+    <value>Передано {0} монет игроку {1}, у вас осталось {2}.</value>
   </data>
   <data name="UNKNOWN_COMMAND" xml:space="preserve">
-    <value>Uknown command: "{0}".</value>
+    <value>Неизвестная команда: "{0}".</value>
   </data>
   <data name="UNKNOWN_COMMAND_SEE_HELP" xml:space="preserve">
-    <value>Unknown command, see /help.</value>
+    <value>Неизвестная команда, смотрите /help.</value>
   </data>
   <data name="USER_HAS_NOT_BEEN_FOUND_FOR_PLAYER" xml:space="preserve">
-    <value>User account has not been found for this player.</value>
+    <value>Аккаунт пользователя не был найден для этого игрока!</value>
   </data>
   <data name="YOU_ARE_NOT_IN_LOBBY" xml:space="preserve">
-    <value>You are not in lobby.</value>
+    <value>Вы сейчас не находитесь в лобби.</value>
   </data>
   <data name="YOU_ARE_NOT_IN_ROOM" xml:space="preserve">
-    <value>You are not currently in a room!</value>
+    <value>Вы сейчас не находитесь в комнате!</value>
   </data>
   <data name="YOU_CURRENTLY_HAVE_COINTS" xml:space="preserve">
-    <value>You currently have {0} coins.</value>
+    <value>Увас {0} монет.</value>
   </data>
   <data name="YOU_DONT_CURRENTLY_OWN_A_ROOM" xml:space="preserve">
-    <value>You don't currently own a room!</value>
+    <value>У вас сейчас нету публичной комнаты!</value>
   </data>
   <data name="YOU_DONT_HAVE_COINS_TO_WRITE_IN_WORLD" xml:space="preserve">
-    <value>You don't have {0} coins to write in World chat (you only have {1}).</value>
+    <value>Извините,у вас нету {0} монет что бы написать в World чат (у вас только {1}).</value>
   </data>
   <data name="YOU_DONT_HAVE_PERMISSION_TO_MODERATE_ROOM" xml:space="preserve">
-    <value>You don't have permissions to moderate this room!</value>
+    <value>У вас нету полномочий что бы модерировать эту комнату!</value>
   </data>
   <data name="YOU_HAVE_BEEN_GIFTED_COINS_FROM_ADMIN" xml:space="preserve">
-    <value>You have been gifted {0} coins from admin.</value>
+    <value>Вам было начислено {0} монет от администрации.</value>
   </data>
   <data name="YOU_HAVE_BEEN_ONLINE_FOR_HOURS" xml:space="preserve">
-    <value>You have been online for {0} hours.</value>
+    <value>Вы были онлайн {0} ч.</value>
   </data>
   <data name="YOU_SHOULD_BE_IN_THE_ROOM_TO_MODERATE_IT" xml:space="preserve">
-    <value>You should be in the room to moderate it!</value>
+    <value>Вам необходимо находится в комнате, что бы модерировать ее.</value>
   </data>
 </root>
