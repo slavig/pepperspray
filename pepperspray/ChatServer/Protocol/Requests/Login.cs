@@ -11,6 +11,7 @@ using pepperspray.ChatServer.Game;
 using pepperspray.Utils;
 using pepperspray.LoginServer;
 using pepperspray.SharedServices;
+using pepperspray.Resources;
 
 namespace pepperspray.ChatServer.Protocol.Requests
 {
@@ -36,7 +37,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
       try
       {
         var arguments = ev.data as Dictionary<string, object>;
-        string name = arguments["name"].ToString();
+        string name = CharacterService.StripCharacterName(arguments["name"].ToString());
         var id = Convert.ToUInt32(arguments["id"].ToString());
         string sex = arguments["sex"].ToString();
         string token = arguments["token"].ToString();
@@ -77,7 +78,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
         if (sameUserPlayer != null)
         {
-          server.KickPlayer(sameUserPlayer, "Logged as another character.");
+          server.KickPlayer(sameUserPlayer, Strings.LOGGED_IN_AS_ANOTHER_CHAR);
         }
 
         PlayerHandle sameNamePlayer;
@@ -88,20 +89,20 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
         if (sameNamePlayer != null)
         {
-          server.KickPlayer(sameNamePlayer, "Logged in another instance.");
+          server.KickPlayer(sameNamePlayer, Strings.LOGGED_IN_IN_ANOTHER_INSTANCE);
         }
       }
       catch (LoginService.InvalidTokenException)
       {
-        exception = new ErrorException("invalid token", "Login token invalid.");
+        exception = new ErrorException("invalid token", Strings.LOGIN_TOKEN_INVALID);
       }
       catch (CharacterService.NotAuthorizedException)
       {
-        exception = new ErrorException("not authorized", "You are not authorized to play as this character.");
+        exception = new ErrorException("not authorized", Strings.NOT_AUTHORIZED_TO_PLAY_AS_THIS_CHARACTER);
       }
       catch (CharacterService.NotFoundException)
       {
-        exception = new ErrorException("not found", "Character not found.");
+        exception = new ErrorException("not found", Strings.CHARACTER_NOT_FOUND);
       }
       catch (ErrorException e)
       {
@@ -110,7 +111,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
       catch (Exception e)
       {
         Log.Warning("Failed to login character {name}/{token}: {exception}", this.name, this.token, e);
-        exception = new ErrorException("internal", "Internal server error.");
+        exception = new ErrorException("internal", Strings.INTERNAL_SERVER_ERROR);
       }
 
       if (exception != null)
@@ -139,6 +140,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
       sender.IsLoggedIn = true;
       sender.Character = this.character;
       sender.User = this.user;
+      sender.AdminOptions.IsEnabled = this.user.IsAdmin;
       sender.Token = this.token;
 
       this.loginServer.AssociateCharacter(this.token, this.character);

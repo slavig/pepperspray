@@ -12,11 +12,17 @@ using pepperspray.ChatServer.Protocol;
 using pepperspray.Utils;
 using pepperspray.SharedServices;
 using pepperspray.LoginServer;
+using pepperspray.Resources;
 
 namespace pepperspray.ChatServer.Game
 {
   internal class PlayerHandle: IEquatable<PlayerHandle>
   {
+    internal class AdminOptionsConfiguration
+    {
+      internal bool IsEnabled = false;
+    }
+
     internal bool IsLoggedIn = false;
 
     internal uint Id;
@@ -25,6 +31,7 @@ namespace pepperspray.ChatServer.Game
     internal string Sex;
 
     internal User User;
+    internal AdminOptionsConfiguration AdminOptions = new AdminOptionsConfiguration();
     internal Character Character;
 
     internal DateTime LoggedAt = DateTime.Now;
@@ -32,6 +39,15 @@ namespace pepperspray.ChatServer.Game
     internal Group CurrentGroup;
     internal Lobby CurrentLobby;
 
+    internal EventStream Stream;
+
+    internal string Digest
+    {
+      get
+      {
+        return String.Format("{0}#{1}/{2}", this.Name, this.Stream.ConnectionHash, this.Stream.ConnectionEndpoint);
+      }
+    }
 
     internal string CurrentLobbyName
     {
@@ -45,11 +61,9 @@ namespace pepperspray.ChatServer.Game
     {
       get
       {
-        return this.CurrentLobby != null ? this.CurrentLobby.Identifier : "none";
+        return this.CurrentLobby != null ? this.CurrentLobby.IsPrivateRoom ? "private_room" : this.CurrentLobby.Identifier : "none";
       }
     }
-
-    internal EventStream Stream;
 
     internal PlayerHandle(EventStream stream)
     {
@@ -76,7 +90,7 @@ namespace pepperspray.ChatServer.Game
       {
         try
         {
-          var message = String.Format("Connection will be terminated in 10 seconds.\n\nReason: {0}\n\nInternal code: {1}.", exception.PlayerMessage, exception.Message);
+          var message = String.Format(Strings.DISCONNECTING_ON_TIMEOUT_LONG, exception.PlayerMessage, exception.Message);
           return loginServer.Emit(this.Token, "alert", message);
         }
         catch (LoginServerListener.NotFoundException) { }
@@ -84,7 +98,7 @@ namespace pepperspray.ChatServer.Game
 
       if (this.Stream != null)
       {
-        var message = String.Format("DISCONNECTED FROM SERVER, disconnecting in 10s.: {0}", exception.PlayerMessage);
+        var message = String.Format(Strings.DISCONNECTING_ON_TIMEOUT_SHORT, exception.PlayerMessage);
         return this.Stream.Write(Responses.MakeshiftAlert(message));
       }
 

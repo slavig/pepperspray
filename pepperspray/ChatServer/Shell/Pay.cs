@@ -10,6 +10,7 @@ using pepperspray.CIO;
 using pepperspray.ChatServer.Game;
 using pepperspray.SharedServices;
 using pepperspray.ChatServer.Protocol;
+using pepperspray.Resources;
 
 namespace pepperspray.ChatServer.Shell
 {
@@ -31,25 +32,20 @@ namespace pepperspray.ChatServer.Shell
         var amount = Convert.ToUInt32(arguments.ElementAt(1).Trim());
 
         PlayerHandle recepient = server.World.FindPlayer(recepientName);
-        if (recepient == null)
+        if (recepient == null || recepient.User.Id == sender.User.Id)
         {
-          return dispatcher.Error(sender, server, "Failed to find player {0}.", recepientName);
-        }
-
-        if (recepient.User.Id == sender.User.Id)
-        {
-          return dispatcher.Error(sender, server, "Failed to send currency.");
+          return dispatcher.Error(sender, server, Strings.PLAYER_NOT_FOUND, recepientName);
         }
 
         if (this.config.Currency.Enabled == false)
         {
-          return dispatcher.Error(sender, server, "Currency is not enabled on this server!");
+          return dispatcher.Error(sender, server, Strings.CURRENCY_IS_NOT_ENABLED);
         }
 
         this.giftsService.TransferCurrency(sender.User, recepient.User, amount);
 
-        var senderMessage = String.Format("Transferred {0} coins to {1}, you now have {2}.", amount, recepientName, this.giftsService.GetCurrency(sender.User));
-        var recepientMessage = String.Format("Player {0} send you {1} coins, you now have {2}.", sender.Name, amount, this.giftsService.GetCurrency(recepient.User));
+        var senderMessage = String.Format(Strings.TRANSFERRED_COINS_TO, amount, recepientName, this.giftsService.GetCurrency(sender.User));
+        var recepientMessage = String.Format(Strings.PLAYER_SENT_YOU_COINS, sender.Name, amount, this.giftsService.GetCurrency(recepient.User));
 
         return dispatcher
           .Output(sender, server, senderMessage)
@@ -57,13 +53,13 @@ namespace pepperspray.ChatServer.Shell
       }
       catch (GiftsService.NotEnoughCurrencyException)
       {
-        return dispatcher.Error(sender, server, "Not enough currency!");
+        return dispatcher.Error(sender, server, Strings.NOT_ENOUGH_COINS);
       }
       catch (Exception e)
       {
         if (e is FormatException || e is ArgumentOutOfRangeException)
         {
-          return dispatcher.Error(sender, server, "Invalid arguments");
+          return dispatcher.Error(sender, server, Strings.INVALID_AMOUNT);
         }
         else
         {

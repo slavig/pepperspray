@@ -9,6 +9,7 @@ using Serilog;
 using Newtonsoft.Json;
 using pepperspray.LoginServer;
 using pepperspray.Utils;
+using System.Text.RegularExpressions;
 
 namespace pepperspray.SharedServices
 {
@@ -76,7 +77,7 @@ namespace pepperspray.SharedServices
 
       try
       {
-        this.db.Read((c) => c.CharacterFindByName(name));
+        var character = this.db.Read((c) => c.CharacterFindByNameIgnoreCase(name));
         throw new NameTakenException();
       }
       catch (Database.NotFoundException) { }
@@ -121,6 +122,11 @@ namespace pepperspray.SharedServices
       Log.Debug("Client {token} updating character {uid} - new {name}/{sex}", token, id, newName, newSex);
 
       var character = this.FindAndAuthorize(token, id);
+      if (character.Name.ToLower() != newName.ToLower())
+      {
+        this.CheckName(newName);
+      }
+
       character.Name = newName;
       character.Sex = newSex;
 
@@ -342,6 +348,11 @@ namespace pepperspray.SharedServices
       {
         throw new NotFoundException();
       }
+    }
+
+    internal static string StripCharacterName(string name)
+    {
+      return Regex.Replace(name, "<.*?>", String.Empty);
     }
 
     private Dictionary<string, string> getPhotos(uint id)

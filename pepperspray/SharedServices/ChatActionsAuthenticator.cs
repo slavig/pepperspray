@@ -73,7 +73,8 @@ namespace pepperspray.SharedServices
           return AuthenticationResult.Ok;
         }
 
-        if (!command.Arguments.ElementAt(this.ArgumentIndex).Equals(sender.Name))
+        var matchingArgument = CharacterService.StripCharacterName(command.Arguments.ElementAt(this.ArgumentIndex));
+        if (!matchingArgument.Equals(sender.Name))
         {
           return AuthenticationResult.NotAuthenticated;
         }
@@ -127,14 +128,14 @@ namespace pepperspray.SharedServices
         {
           if (recepient == null)
           {
-            Log.Warning("Failed to authenticate command {command} from {sender} - recepient not set", command.Name, sender.Name);
+            Log.Warning("Failed to authenticate command {command} from {sender} - recepient not set", command.Name, sender.Digest);
             return AuthenticationResult.NotAuthenticated;
           }
 
           var agreement = this.findPoseAgreement(recepient.Name);
           if (agreement != null)
           {
-            Log.Debug("Agreement of {initiator} - added {name}", recepient.Name, sender.Name);
+            Log.Debug("Agreement of {initiator} - added {name}", recepient.Digest, sender.Digest);
             agreement.Participants.Add(sender.Name);
           }
           else
@@ -144,18 +145,18 @@ namespace pepperspray.SharedServices
         }
         else if (command.Name.Equals("askForPose"))
         {
-          Log.Debug("Agreement containing {player} removed, moving to next agreement", sender.Name);
+          Log.Debug("Agreement containing {player} removed, moving to next agreement", sender.Digest);
           this.removePoseAgreement(sender.Name);
           this.findOrCreatePoseAgreement(sender.Name);
         }
         else if (command.Name.Equals("stopSexPS"))
         {
-          Log.Debug("Agreement containing {player} removed due to pose stop request", sender.Name);
+          Log.Debug("Agreement containing {player} removed due to pose stop request", sender.Digest);
           this.removePoseAgreement(sender.Name);
         }
         else if (command.Name.Equals("marry"))
         {
-          Log.Debug("Marry agreement of {initiator} - added", sender.Name);
+          Log.Debug("Marry agreement of {initiator} - added", sender.Digest);
           this.findOrCreateMarryAgreement(sender.Name);
         }
         else if (command.Name.Equals("marry_agree"))
@@ -163,12 +164,12 @@ namespace pepperspray.SharedServices
           var agreement = this.findMarryAgreement(recepient.Name);
           if (agreement != null)
           {
-            Log.Debug("Marry agreement of {initiator} - agreed upon from {sender}", recepient.Name, sender.Name);
+            Log.Debug("Marry agreement of {initiator} - agreed upon from {sender}", recepient.Digest, sender.Digest);
             agreement.Recepient = sender.Name;
           }
           else
           {
-            Log.Debug("Player {recepient} is unable to agree to marry proposal of {initiator} - couldn't find agreement", sender.Name, recepient.Name);
+            Log.Debug("Player {recepient} is unable to agree to marry proposal of {initiator} - couldn't find agreement", sender.Digest, recepient.Digest);
             return AuthenticationResult.NotAuthenticated;
           }
         }
@@ -177,7 +178,7 @@ namespace pepperspray.SharedServices
       }
       else
       {
-        Log.Warning("Failed to authenticate message {message} from {sender}", message, sender.Name);
+        Log.Warning("Failed to authenticate message {message} from {sender}", message, sender.Digest);
         return authenticationResult;
       }
     }
@@ -185,7 +186,7 @@ namespace pepperspray.SharedServices
     private AuthenticationResult authenticateCommand(PlayerHandle sender, Command command)
     {
 #if !DEBUG
-      if (sender.User.IsAdmin)
+      if (sender.AdminOptions.IsEnabled)
       {
         return AuthenticationResult.Ok;
       }
@@ -205,12 +206,14 @@ namespace pepperspray.SharedServices
             return AuthenticationResult.NotAuthenticated;
           }
 
-          foreach (string participant in command.Arguments.Skip(3).Take(3))
+          foreach (string participantRaw in command.Arguments.Skip(3).Take(3))
           {
-            if (participant.Count() == 0)
+            if (participantRaw.Count() == 0)
             {
               continue;
             }
+
+            var participant = CharacterService.StripCharacterName(participantRaw);
 
             string[] participantArguments = participant.Split('=');
             if (participantArguments.Count() != 2)
@@ -228,8 +231,9 @@ namespace pepperspray.SharedServices
           return AuthenticationResult.Ok;
 
         case "stopSexPS":
-          foreach (string participant in command.Arguments.Skip(1))
+          foreach (string participantRaw in command.Arguments.Skip(1))
           {
+            var participant = CharacterService.StripCharacterName(participantRaw);
             if (participant.Equals(sender.Name)) 
             {
               return AuthenticationResult.Ok;
@@ -257,7 +261,7 @@ namespace pepperspray.SharedServices
     {
       if (player.Name != null)
       {
-        Log.Debug("Removing agreements containing {name} - logged off", player.Name);
+        Log.Debug("Removing agreements containing {player} - logged off", player.Digest);
         this.removePoseAgreement(player.Name);
         this.removeMarryAgreement(player.Name);
       }

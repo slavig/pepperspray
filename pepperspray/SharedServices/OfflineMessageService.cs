@@ -6,8 +6,13 @@ using System.Threading.Tasks;
 
 
 using Serilog;
+using RSG;
+using pepperspray.CIO;
+using pepperspray.ChatServer.Game;
+using pepperspray.ChatServer.Protocol;
 using pepperspray.SharedServices;
 using pepperspray.Utils;
+using pepperspray.Resources;
 
 namespace pepperspray.SharedServices
 {
@@ -24,24 +29,30 @@ namespace pepperspray.SharedServices
       this.loginService = DI.Get<LoginService>();
     }
 
-    internal void QueueMessage(uint senderId, string recepientName, string messageText)
+    internal IPromise<Nothing> QueueMessage(PlayerHandle sender, string recepientName, string messageText)
     {
       try
       {
-        Log.Debug("Offline message queue: from {senderId} to {recepientName}", senderId, recepientName);
+        Log.Debug("Offline message queue: from {sender} to {recepientName}", sender.Digest, recepientName);
         var recepient = this.characterService.Find(recepientName);
         var message = new OfflineMessage
         {
-          SenderId = senderId,
+          SenderId = sender.Id,
           RecepientId = recepient.Id,
           Message = messageText
         };
 
         this.db.Write((c) => c.OfflineMessageInsert(message));
+        return sender.Stream.Write(Responses.ServerPrivateChatMessage(
+          recepient.Name, 
+          recepient.Id, 
+          Strings.PLAYER_IS_OFFLINE_MESSAGES_WILL_BE_DELIVERED
+          ));
       }
       catch (Database.NotFoundException) 
       {
-        Log.Warning("Failed to queue offline message from {senderId} - {recepientName} not found!", senderId, recepientName);
+        Log.Warning("Failed to queue offline message from {sender} - {recepientName} not found!", sender.Digest, recepientName);
+        return Nothing.Resolved();
       }
     }
 

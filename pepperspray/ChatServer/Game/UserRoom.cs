@@ -17,8 +17,9 @@ namespace pepperspray.ChatServer.Game
 
     internal string Name;
     internal string Identifier;
+    internal Lobby Lobby;
     internal AccessType Access;
-    internal int NumberOfPlayers;
+    internal string RadioURL;
 
     internal uint OwnerId;
     internal string OwnerName;
@@ -26,12 +27,22 @@ namespace pepperspray.ChatServer.Game
 
     internal string[] ModeratorNames = new string[] { };
 
+    internal bool IsPrioritized = false;
+    internal bool IsVisibilityRestricted = false;
+
     internal bool IsSexAllowed = true;
 
-    internal bool IsDangling = false;
-    internal bool IsSemiPersistent = false;
     internal bool IsPermanent = false;
-    internal bool IsPrioritized = false;
+    internal bool IsSemiPersistent = false;
+    internal bool IsDangling = false;
+
+    internal int NumberOfPlayers
+    {
+      get
+      {
+        return this.Lobby != null ? this.Lobby.Players.Count : 0;
+      }
+    }
 
     public bool Equals(UserRoom other)
     {

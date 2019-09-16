@@ -61,11 +61,489 @@ namespace pepperspray.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Test.
+        ///   Looks up a localized string similar to Not authenticated. Incident will be reported..
         /// </summary>
-        internal static string Test {
+        internal static string ADMIN_NOT_AUTHENTICATED {
             get {
-                return ResourceManager.GetString("Test", resourceCulture);
+                return ResourceManager.GetString("ADMIN_NOT_AUTHENTICATED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Character not found..
+        /// </summary>
+        internal static string CHARACTER_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("CHARACTER_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configuration file reloaded..
+        /// </summary>
+        internal static string CONFIGURATION_FILE_RELOADED {
+            get {
+                return ResourceManager.GetString("CONFIGURATION_FILE_RELOADED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Currency is not enabled on this server..
+        /// </summary>
+        internal static string CURRENCY_IS_NOT_ENABLED {
+            get {
+                return ResourceManager.GetString("CURRENCY_IS_NOT_ENABLED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connection will be terminated in 10 seconds.
+        ///
+        ///Reason: {0}
+        ///
+        ///Internal code: {1}..
+        /// </summary>
+        internal static string DISCONNECTING_ON_TIMEOUT_LONG {
+            get {
+                return ResourceManager.GetString("DISCONNECTING_ON_TIMEOUT_LONG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DISCONNECTED FROM SERVER, disconnecting in 10s.: {0}.
+        /// </summary>
+        internal static string DISCONNECTING_ON_TIMEOUT_SHORT {
+            get {
+                return ResourceManager.GetString("DISCONNECTING_ON_TIMEOUT_SHORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Done..
+        /// </summary>
+        internal static string DONE {
+            get {
+                return ResourceManager.GetString("DONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duration can&apos;t be more than {0} minutes!.
+        /// </summary>
+        internal static string DURATION_CANT_BE_MORE_MINUTES {
+            get {
+                return ResourceManager.GetString("DURATION_CANT_BE_MORE_MINUTES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duration has been specified incorrectly, it should be a number..
+        /// </summary>
+        internal static string DURATION_HAS_BEEN_SPECIFIED_INCORRECTLY {
+            get {
+                return ResourceManager.GetString("DURATION_HAS_BEEN_SPECIFIED_INCORRECTLY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to reload configuration: .
+        /// </summary>
+        internal static string FAILED_TO_RELOAD_CONFIGURATION {
+            get {
+                return ResourceManager.GetString("FAILED_TO_RELOAD_CONFIGURATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Forbidden..
+        /// </summary>
+        internal static string FORBIDDEN {
+            get {
+                return ResourceManager.GetString("FORBIDDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Internal server error..
+        /// </summary>
+        internal static string INTERNAL_SERVER_ERROR {
+            get {
+                return ResourceManager.GetString("INTERNAL_SERVER_ERROR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid amount..
+        /// </summary>
+        internal static string INVALID_AMOUNT {
+            get {
+                return ResourceManager.GetString("INVALID_AMOUNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid usage..
+        /// </summary>
+        internal static string INVALID_USAGE {
+            get {
+                return ResourceManager.GetString("INVALID_USAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Logged as another character..
+        /// </summary>
+        internal static string LOGGED_IN_AS_ANOTHER_CHAR {
+            get {
+                return ResourceManager.GetString("LOGGED_IN_AS_ANOTHER_CHAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Logged in another instance..
+        /// </summary>
+        internal static string LOGGED_IN_IN_ANOTHER_INSTANCE {
+            get {
+                return ResourceManager.GetString("LOGGED_IN_IN_ANOTHER_INSTANCE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Login token invalid..
+        /// </summary>
+        internal static string LOGIN_TOKEN_INVALID {
+            get {
+                return ResourceManager.GetString("LOGIN_TOKEN_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your message to World has been sent ({0} coins), you now have {1} coins..
+        /// </summary>
+        internal static string MESSAGE_TO_WORLD_HAS_BEEN_SENT {
+            get {
+                return ResourceManager.GetString("MESSAGE_TO_WORLD_HAS_BEEN_SENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are not authorized to play as this character..
+        /// </summary>
+        internal static string NOT_AUTHORIZED_TO_PLAY_AS_THIS_CHARACTER {
+            get {
+                return ResourceManager.GetString("NOT_AUTHORIZED_TO_PLAY_AS_THIS_CHARACTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not enough coins!.
+        /// </summary>
+        internal static string NOT_ENOUGH_COINS {
+            get {
+                return ResourceManager.GetString("NOT_ENOUGH_COINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Online players:.
+        /// </summary>
+        internal static string ONLINE_PLAYERS_COLON {
+            get {
+                return ResourceManager.GetString("ONLINE_PLAYERS_COLON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Player has been expelled..
+        /// </summary>
+        internal static string PLAYER_HAS_BEEN_EXPELLED {
+            get {
+                return ResourceManager.GetString("PLAYER_HAS_BEEN_EXPELLED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Player {0} has been kicked..
+        /// </summary>
+        internal static string PLAYER_HAS_BEEN_KICKED {
+            get {
+                return ResourceManager.GetString("PLAYER_HAS_BEEN_KICKED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Player is offline, messages will be only delivered to him on his next sign in..
+        /// </summary>
+        internal static string PLAYER_IS_OFFLINE_MESSAGES_WILL_BE_DELIVERED {
+            get {
+                return ResourceManager.GetString("PLAYER_IS_OFFLINE_MESSAGES_WILL_BE_DELIVERED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Player is online, you can message him..
+        /// </summary>
+        internal static string PLAYER_IS_ONLINE_YOU_CAN_MESSAGE_HIM {
+            get {
+                return ResourceManager.GetString("PLAYER_IS_ONLINE_YOU_CAN_MESSAGE_HIM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Player not found: &quot;{0}&quot;.
+        /// </summary>
+        internal static string PLAYER_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("PLAYER_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Player {0} send you {1} coins, you now have {2}..
+        /// </summary>
+        internal static string PLAYER_SENT_YOU_COINS {
+            get {
+                return ResourceManager.GetString("PLAYER_SENT_YOU_COINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to None given..
+        /// </summary>
+        internal static string REASON_NONE {
+            get {
+                return ResourceManager.GetString("REASON_NONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Room closed..
+        /// </summary>
+        internal static string ROOM_CLOSED {
+            get {
+                return ResourceManager.GetString("ROOM_CLOSED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Room {0} has not been found..
+        /// </summary>
+        internal static string ROOM_HAS_NOT_BEEN_FOUND {
+            get {
+                return ResourceManager.GetString("ROOM_HAS_NOT_BEEN_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Room is now persistent. It will stay opened for {0} minutes after you log-off. Remember that you can only close it by &quot;/room close&quot;..
+        /// </summary>
+        internal static string ROOM_IS_NOW_PERSISTENT {
+            get {
+                return ResourceManager.GetString("ROOM_IS_NOW_PERSISTENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Room now not prioritized..
+        /// </summary>
+        internal static string ROOM_NOW_NOT_PRIORITIZED {
+            get {
+                return ResourceManager.GetString("ROOM_NOW_NOT_PRIORITIZED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Room now prioritized..
+        /// </summary>
+        internal static string ROOM_NOW_PRIORITIZED {
+            get {
+                return ResourceManager.GetString("ROOM_NOW_PRIORITIZED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sorry, sex is forbidden in this room..
+        /// </summary>
+        internal static string SEX_IS_FORBIDDEN_IN_ROOM {
+            get {
+                return ResourceManager.GetString("SEX_IS_FORBIDDEN_IN_ROOM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sex is now allowed in this room..
+        /// </summary>
+        internal static string SEX_IS_NOW_ALLOWED_IN_ROOM {
+            get {
+                return ResourceManager.GetString("SEX_IS_NOW_ALLOWED_IN_ROOM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sex is now forbidden in this room..
+        /// </summary>
+        internal static string SEX_IS_NOW_FORBIDDEN_IN_ROOM {
+            get {
+                return ResourceManager.GetString("SEX_IS_NOW_FORBIDDEN_IN_ROOM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Following commands are available:
+        ////players - show how many players are at standard locations.
+        ////money - get amount of coints you have right now.
+        ////myonline - display for how much you have been online (across all characters).
+        ////pay PLAYER AMOUNT - transfer currency to other player.
+        ////expel PLAYER MINUTES - expel player from your location for MINUTES. Duration can be skipped so the player will only be kicked.
+        ////room persist - will turn your room into semi-persistent one, meaning that it will be available for [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string SHELL_HELP_TEXT {
+            get {
+                return ResourceManager.GetString("SHELL_HELP_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status for player {0} has been set to &quot;{1}&quot;..
+        /// </summary>
+        internal static string STATUS_FOR_PLAYER_HAS_BEEN_SET {
+            get {
+                return ResourceManager.GetString("STATUS_FOR_PLAYER_HAS_BEEN_SET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This feature is not enabled on the server..
+        /// </summary>
+        internal static string THIS_FEATURE_IS_NOT_ENABLED {
+            get {
+                return ResourceManager.GetString("THIS_FEATURE_IS_NOT_ENABLED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timed out..
+        /// </summary>
+        internal static string TIMED_OUT {
+            get {
+                return ResourceManager.GetString("TIMED_OUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Transferred {0} coins to {1}, you now have {2}..
+        /// </summary>
+        internal static string TRANSFERRED_COINS_TO {
+            get {
+                return ResourceManager.GetString("TRANSFERRED_COINS_TO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uknown command: &quot;{0}&quot;..
+        /// </summary>
+        internal static string UNKNOWN_COMMAND {
+            get {
+                return ResourceManager.GetString("UNKNOWN_COMMAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown command, see /help..
+        /// </summary>
+        internal static string UNKNOWN_COMMAND_SEE_HELP {
+            get {
+                return ResourceManager.GetString("UNKNOWN_COMMAND_SEE_HELP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User account has not been found for this player..
+        /// </summary>
+        internal static string USER_HAS_NOT_BEEN_FOUND_FOR_PLAYER {
+            get {
+                return ResourceManager.GetString("USER_HAS_NOT_BEEN_FOUND_FOR_PLAYER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are not in lobby..
+        /// </summary>
+        internal static string YOU_ARE_NOT_IN_LOBBY {
+            get {
+                return ResourceManager.GetString("YOU_ARE_NOT_IN_LOBBY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are not currently in a room!.
+        /// </summary>
+        internal static string YOU_ARE_NOT_IN_ROOM {
+            get {
+                return ResourceManager.GetString("YOU_ARE_NOT_IN_ROOM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You currently have {0} coins..
+        /// </summary>
+        internal static string YOU_CURRENTLY_HAVE_COINTS {
+            get {
+                return ResourceManager.GetString("YOU_CURRENTLY_HAVE_COINTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You don&apos;t currently own a room!.
+        /// </summary>
+        internal static string YOU_DONT_CURRENTLY_OWN_A_ROOM {
+            get {
+                return ResourceManager.GetString("YOU_DONT_CURRENTLY_OWN_A_ROOM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You don&apos;t have {0} coins to write in World chat (you only have {1})..
+        /// </summary>
+        internal static string YOU_DONT_HAVE_COINS_TO_WRITE_IN_WORLD {
+            get {
+                return ResourceManager.GetString("YOU_DONT_HAVE_COINS_TO_WRITE_IN_WORLD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You don&apos;t have permissions to moderate this room!.
+        /// </summary>
+        internal static string YOU_DONT_HAVE_PERMISSION_TO_MODERATE_ROOM {
+            get {
+                return ResourceManager.GetString("YOU_DONT_HAVE_PERMISSION_TO_MODERATE_ROOM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have been gifted {0} coins from admin..
+        /// </summary>
+        internal static string YOU_HAVE_BEEN_GIFTED_COINS_FROM_ADMIN {
+            get {
+                return ResourceManager.GetString("YOU_HAVE_BEEN_GIFTED_COINS_FROM_ADMIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have been online for {0} hours..
+        /// </summary>
+        internal static string YOU_HAVE_BEEN_ONLINE_FOR_HOURS {
+            get {
+                return ResourceManager.GetString("YOU_HAVE_BEEN_ONLINE_FOR_HOURS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You should be in the room to moderate it!.
+        /// </summary>
+        internal static string YOU_SHOULD_BE_IN_THE_ROOM_TO_MODERATE_IT {
+            get {
+                return ResourceManager.GetString("YOU_SHOULD_BE_IN_THE_ROOM_TO_MODERATE_IT", resourceCulture);
             }
         }
     }

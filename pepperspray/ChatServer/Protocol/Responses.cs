@@ -44,19 +44,20 @@ namespace pepperspray.ChatServer.Protocol
           break;
       }
 
+      bool isPrioritized = room.IsPrioritized;
+      if (room.IsPermanent || room.IsVisibilityRestricted)
+      {
+        isPrioritized = true;
+      }
+
       return String.Format("{0}|{1}|house|{2}|{3}|{4}|{5}|{6}|",
         room.OwnerName,
         room.Identifier,
         accessType,
         room.NumberOfPlayers >= 0 ? room.NumberOfPlayers : 0,
         room.Name,
-        room.IsPrioritized ? "True" : "False",
+        isPrioritized ? "True" : "False",
         room.OwnerId);
-    }
-
-    internal static string ServerRoomRecord(Lobby lobby)
-    {
-      return String.Format("{0}|{1}||0|{2}|{3}|False|{4}|", "Server", lobby.Identifier, lobby.NumberOfPlayers, lobby.Name, Hashing.Md5("Server"));
     }
 
     internal static Message UserRoomClosed(UserRoom room)
@@ -138,9 +139,19 @@ namespace pepperspray.ChatServer.Protocol
     }
 
     internal static Message Message(PlayerHandle sender, string contents) {
+      var name = sender.Name;
+
+      if (sender.Character.ChatNameDecoration != null)
+      {
+        if (contents.StartsWith("~world") || contents.StartsWith("~chat") || contents.StartsWith("~group"))
+        {
+          name = String.Format(sender.Character.ChatNameDecoration, name);
+        }
+      }
+
       return new Message("msg", new Dictionary<string, object>
         {
-          { "name", sender.Name },
+          { "name", name },
           { "id", sender.Id.ToString() },
           { "data", contents },
         }
@@ -152,12 +163,12 @@ namespace pepperspray.ChatServer.Protocol
       return Responses.Message(sender, "~private/" + contents);
     }
 
-    internal static Message ServerPrivateChatMessage(string sender, string contents)
+    internal static Message ServerPrivateChatMessage(string senderName, uint senderId, string contents)
     {
       return new Message("msg", new Dictionary<string, object>
       {
-        { "name", sender },
-        { "id", "0" },
+        { "name", senderName },
+        { "id", senderId.ToString() },
         { "data", "~private/" + contents },
       });
     }
@@ -168,6 +179,16 @@ namespace pepperspray.ChatServer.Protocol
           { "name", server.Monogram },
           { "id", "0" },
           { "data", "~private/" + contents }
+        }
+      );
+    }
+
+    internal static Message ServerWorldMessage(ChatManager server, string contents) {
+      return new Message("msg", new Dictionary<string, object>
+        {
+          { "name", server.Monogram },
+          { "id", "0" },
+          { "data", "~worldchat/" + contents }
         }
       );
     }
@@ -187,6 +208,16 @@ namespace pepperspray.ChatServer.Protocol
     internal static Message CharacterAppearance(PlayerHandle player)
     {
       return Responses.Message(player, "~action2/charData|" + player.Character.Appearance);
+    }
+
+    internal static Message RunRadio(ChatManager server, string senderName, string url)
+    {
+      return new Message("msg", new Dictionary<string, object>
+      {
+          { "name", senderName },
+          { "id", "0" },
+          { "data", "~action2/runRadio|" + url }
+      });
     }
   }
 }

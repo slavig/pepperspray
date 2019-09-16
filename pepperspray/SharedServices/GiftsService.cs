@@ -197,8 +197,17 @@ namespace pepperspray.SharedServices
 
         var delta = (uint)Math.Floor(timeSpan.TotalHours * this.config.Currency.BonusPerHourOnline);
 
-        Log.Information("Granting online currency bonus of {delta} for {user}, has been online for {timeSpan}", delta, user.Username, timeSpan);
-        user.Currency += delta;
+        if (this.config.Currency.SoftCap != -1 && user.Currency + delta > this.config.Currency.SoftCap)
+        {
+          user.Currency = Math.Max(Convert.ToUInt32(this.config.Currency.SoftCap), user.Currency);
+          Log.Information("Currency bonus for {user} has not been granted, amount is at soft cap", user.Username);
+        }
+        else
+        {
+          user.Currency += delta;
+          Log.Information("Granting online currency bonus of {delta} for {user}, has been online for {timeSpan}", delta, user.Username, timeSpan);
+        }
+
         this.db.Write((c) => c.UserUpdate(user));
 
         return delta;

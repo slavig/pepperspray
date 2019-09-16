@@ -12,6 +12,7 @@ using pepperspray.ChatServer.Protocol;
 using pepperspray.ChatServer.Services;
 using pepperspray.SharedServices;
 using pepperspray.Utils;
+using pepperspray.Resources;
 
 namespace pepperspray.ChatServer.Shell
 {
@@ -28,33 +29,33 @@ namespace pepperspray.ChatServer.Shell
     {
       if (arguments.Count() < 1)
       {
-        return dispatcher.Error(sender, server, "Invalid arguments");
+        return dispatcher.InvalidUsage(sender, server);
       }
 
       var currentLobby = sender.CurrentLobby;
       if (currentLobby == null || !currentLobby.IsUserRoom)
       {
-        return dispatcher.Error(sender, server, "You are not currently in a room!");
+        return dispatcher.Error(sender, server, Strings.YOU_ARE_NOT_IN_ROOM);
       }
 
       if (!this.userRoomService.PlayerCanModerateRoom(sender, currentLobby.UserRoom))
       {
-        Log.Information("Player {sender} attempted to run /expel, but didn't have permission for that", sender.Name);
-        return dispatcher.Error(sender, server, "You don't have permissions to moderate this room!");
+        Log.Information("Player {sender} attempted to run /expel, but didn't have permission for that", sender.Digest);
+        return dispatcher.Error(sender, server, Strings.YOU_DONT_HAVE_PERMISSION_TO_MODERATE_ROOM);
       }
 
       var userRoom = currentLobby.UserRoom;
 
       if (arguments.ElementAt(0).Equals("\\all"))
       {
-        Log.Information("Player {sender} expelling everyone from user room {room}", sender.Name, userRoom.Identifier);
+        Log.Information("Player {sender} expelling everyone from user room {room}", sender.Digest, userRoom.Identifier);
         return this.userRoomService.ExpellAll(userRoom);
       }
 
       var player = server.World.FindPlayer(arguments.ElementAt(0));
       if (player == null || player.Character.Equals(sender.Character) || player.Character.Id == userRoom.OwnerId)
       {
-        return dispatcher.Error(sender, server, "Invalid player: \"{0}\"", arguments.First());
+        return dispatcher.Error(sender, server, Strings.PLAYER_NOT_FOUND, arguments.First());
       }
 
       uint duration = 0;
@@ -66,23 +67,23 @@ namespace pepperspray.ChatServer.Shell
         }
         catch (FormatException)
         {
-          return dispatcher.Error(sender, server, "Wrong duration!");
+          return dispatcher.Error(sender, server, Strings.DURATION_HAS_BEEN_SPECIFIED_INCORRECTLY);
         }
       } 
 
       if (duration > 30)
       {
-        return dispatcher.Error(sender, server, "Duration can't be more than 30 minutes!");
+        return dispatcher.Error(sender, server, Strings.DURATION_CANT_BE_MORE_MINUTES);
       }
 
       if (sender.CurrentLobby == null || !sender.CurrentLobby.IsUserRoom)
       {
-        return dispatcher.Error(sender, server, "You should be in your room.");
+        return dispatcher.Error(sender, server, Strings.YOU_SHOULD_BE_IN_THE_ROOM_TO_MODERATE_IT);
       }
 
-      Log.Information("Player {sender} expelling player {player} from user room {room} for {duration} m.", sender.Name, player.Name, userRoom.Identifier, duration);
+      Log.Information("Player {sender} expelling player {player} from user room {room} for {duration} m.", sender.Digest, player.Digest, userRoom.Identifier, duration);
       return this.userRoomService.ExpelPlayer(player, userRoom, TimeSpan.FromMinutes(duration))
-        .Then(a => dispatcher.Output(sender, server, "Player expelled."));
+        .Then(a => dispatcher.Output(sender, server, Strings.PLAYER_HAS_BEEN_EXPELLED));
     }
   }
 }

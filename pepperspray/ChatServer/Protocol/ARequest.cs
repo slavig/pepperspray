@@ -13,6 +13,13 @@ namespace pepperspray.ChatServer.Protocol
 {
   internal abstract class ARequest
   {
+    internal Message originalMessage;
+
+    internal virtual string DebugDescription()
+    {
+      return originalMessage.DebugDescription();
+    }
+
     internal abstract IPromise<Nothing> Process(PlayerHandle sender, ChatManager server);
 
     internal virtual bool Validate(PlayerHandle sender, ChatManager server)
@@ -22,41 +29,64 @@ namespace pepperspray.ChatServer.Protocol
 
     internal static ARequest Parse(PlayerHandle player, ChatManager server, Message ev)
     {
+      ARequest request = null;
       switch (ev.name)
       {
         case "login":
-          return Requests.Login.Parse(ev);
+          request = Requests.Login.Parse(ev);
+          break;
         case "joinroom":
-          return Requests.LobbyJoin.Parse(ev);
+          request = Requests.LobbyJoin.Parse(ev);
+          break;
         case "leaveroom":
-          return Requests.LobbyLeave.Parse(ev);
+          request = Requests.LobbyLeave.Parse(ev);
+          break;
         case "openroom":
-          return Requests.RoomOpen.Parse(ev);
+          request = Requests.RoomOpen.Parse(ev);
+          break;
         case "closeroom":
-          return Requests.RoomClose.Parse(ev);
+          request = Requests.RoomClose.Parse(ev);
+          break;
         case "joingroup":
-          return Requests.GroupJoin.Parse(ev);
+          request = Requests.GroupJoin.Parse(ev);
+          break;
         case "leavegroup":
-          return Requests.GroupLeave.Parse(ev);
+          request = Requests.GroupLeave.Parse(ev);
+          break;
         case "getUserRoomList":
-          return Requests.RoomList.Parse(ev);
+          request = Requests.RoomList.Parse(ev);
+          break;
         case "sendgroup":
-          return Requests.SendGroup.Parse(ev);
+          request = Requests.SendGroup.Parse(ev);
+          break;
         case "sendroom":
-          return Requests.SendLocal.Parse(ev);
+          request = Requests.SendLocal.Parse(ev);
+          break;
         case "sendworld":
-          return Requests.SendWorld.Parse(ev);
+          request = Requests.SendWorld.Parse(ev);
+          break;
         case "private":
-          return Requests.SendPM.Parse(ev);
+          request = Requests.SendPM.Parse(ev);
+          break;
         case "friend":
-          return Requests.FriendRequest.Parse(ev);
+          request = Requests.FriendRequest.Parse(ev);
+          break;
         case "getonline":
-          return Requests.GetOnline.Parse(ev);
+          request = Requests.GetOnline.Parse(ev);
+          break;
         case "order":
-          return Requests.Order.Parse(ev);
+          request = Requests.Order.Parse(ev);
+          break;
         default:
-          return null;
+          break;
       }
+
+      if (request != null)
+      {
+        request.originalMessage = ev;
+      }
+
+      return request;
     }
   }
 }

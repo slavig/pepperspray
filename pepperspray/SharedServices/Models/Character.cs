@@ -28,6 +28,7 @@ namespace pepperspray.SharedServices
     public string Sex { get; set; }
     public string Appearance { get; set; }
 
+    public string ChatNameDecoration { get; set; }
     public string ProfileJSON { get; set; }
 
     internal List<FriendLiaison> Liaisons;

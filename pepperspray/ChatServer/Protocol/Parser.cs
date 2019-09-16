@@ -16,6 +16,8 @@ namespace pepperspray.ChatServer.Protocol
 {
   internal class Parser
   {
+    internal class ParseException : Exception { }
+
     internal static byte[] SerializeMessage(Message e)
     {
       var networkMessage = Parser.networkMessageFrom(e);
@@ -28,7 +30,16 @@ namespace pepperspray.ChatServer.Protocol
 
     internal static Message ParseMessage(byte[] bytes, int seekPos, out int seekTo)
     {
-      var tcpMessage = Parser.tcpMessageFrom(bytes, seekPos, out seekTo);
+      NetMessage tcpMessage;
+      try
+      {
+        tcpMessage = Parser.tcpMessageFrom(bytes, seekPos, out seekTo);
+      }
+      catch (Exception)
+      {
+        throw new ParseException();
+      }
+
       if (tcpMessage == null)
       {
         return null;
@@ -39,7 +50,16 @@ namespace pepperspray.ChatServer.Protocol
         return Message.Ping;
       }
 
-      var networkMessage = Parser.networkMessageFrom(tcpMessage);
+      NetworkMessage networkMessage;
+      try
+      {
+        networkMessage = Parser.networkMessageFrom(tcpMessage);
+      }
+      catch (Exception)
+      {
+        throw new ParseException();
+      }
+
       var reader = new BinaryReader(new MemoryStream(networkMessage.data, 0, networkMessage.Size));
       try
       {
@@ -50,7 +70,9 @@ namespace pepperspray.ChatServer.Protocol
           return new Message(ev.name, ev.data);
         }
       }
-      catch (Exception) { }
+      catch (Exception) {
+        throw new ParseException();
+      }
 
       return null;
     }

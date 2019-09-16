@@ -27,7 +27,7 @@ namespace pepperspray.ChatServer.Services
 
     internal bool PlayerCanJoinLobby(PlayerHandle player, Lobby lobby)
     {
-      if (player.User.IsAdmin)
+      if (player.AdminOptions.IsEnabled)
       {
         return true;
       }
@@ -55,7 +55,7 @@ namespace pepperspray.ChatServer.Services
       var notifyExistingAboutNew = otherPlayers.Select(a => a.Stream.Write(Responses.NewPlayer(player)));
       var notifyNewAboutExisting = otherPlayers.Select(a => player.Stream.Write(Responses.NewPlayer(a)));
 
-      Log.Information("Player {name} joined lobby {id}, total {total} players.", player.Name, lobby.Identifier, otherPlayers.Count());
+      Log.Information("Player {sender} joined lobby {id}, total {total} players.", player.Digest, lobby.Identifier, otherPlayers.Count());
 
       return player.Stream.Write(Responses.JoinedRoom(lobby))
         .Then(a => new CombinedPromise<Nothing>(notifyExistingAboutNew))
@@ -77,7 +77,7 @@ namespace pepperspray.ChatServer.Services
         }
       }
 
-      Log.Information("Player {name} leaving lobby {id}, notifying {total} players.", player.Name, lobby != null ? lobby.Identifier : "INVALID", lobbyPlayers.Count());
+      Log.Information("Player {sender} leaving lobby {id}, notifying {total} players.", player.Digest, lobby != null ? lobby.Identifier : "INVALID", lobbyPlayers.Count());
       return player.Stream.Write(Responses.JoinedLobby())
         .Then((a) => this.NotifyLobbyAboutLeavingPlayer(player, lobby));
     }

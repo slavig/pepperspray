@@ -12,6 +12,7 @@ using pepperspray.ChatServer.Shell;
 using pepperspray.ChatServer.Services;
 using pepperspray.Utils;
 using pepperspray.SharedServices;
+using pepperspray.Resources;
 
 namespace pepperspray.ChatServer.Protocol.Requests
 {
@@ -23,8 +24,28 @@ namespace pepperspray.ChatServer.Protocol.Requests
     protected ChatActionsAuthenticator actionsAuthenticator = DI.Get<ChatActionsAuthenticator>();
     protected AppearanceRequestService appearanceRequestService = DI.Get<AppearanceRequestService>();
     protected OfflineMessageService offlineMessageService = DI.Get<OfflineMessageService>();
+    protected RoomRadioService roomRadioService = DI.Get<RoomRadioService>();
 
     internal abstract IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, ChatManager server);
+
+    internal override string DebugDescription()
+    {
+      var command = Send.TextCommand(this.contents);
+      if (command != "")
+      {
+        return String.Format("msg (data = {0})",
+#if DEBUG
+          this.contents
+#else
+          command + "HIDDEN"
+#endif
+          );
+      }
+      else
+      {
+        return base.DebugDescription();
+      }
+    }
 
     internal override bool Validate(PlayerHandle sender, ChatManager server)
     {
@@ -38,8 +59,29 @@ namespace pepperspray.ChatServer.Protocol.Requests
       }
     }
 
+    internal bool WillServicesDispatch()
+    {
+      var text = Send.StripCommand(this.contents);
+      if (this.shellDispatcher.ShouldDispatch(text))
+      {
+        return true;
+      }
+      else if (this.appearanceRequestService.ShouldDispatch(text))
+      {
+        return true;
+      }
+      else if (this.roomRadioService.ShouldDispatch(text))
+      {
+        return true;
+      } else
+      {
+        return false;
+      }
+    }
+
     internal override IPromise<Nothing> Process(PlayerHandle sender, ChatManager server)
     {
+      var recepients = this.Recepients(sender, server);
       var text = Send.StripCommand(this.contents);
 
       if (this.shellDispatcher.ShouldDispatch(text))
@@ -48,11 +90,14 @@ namespace pepperspray.ChatServer.Protocol.Requests
       }
       else if (this.appearanceRequestService.ShouldDispatch(text))
       {
-        return this.appearanceRequestService.Dispatch(sender, this.Recepients(sender, server), server, text);
+        return this.appearanceRequestService.Dispatch(sender, recepients, server, text);
+      }
+      else if (this.roomRadioService.ShouldDispatch(text))
+      {
+        return this.roomRadioService.Dispatch(sender, server, recepients, text);
       }
       else
       {
-        var recepients = this.Recepients(sender, server);
         var authenticationResult = this.actionsAuthenticator.Authenticate(sender, recepients.Count() == 1 ? recepients.First() : null, this.contents);
         switch (authenticationResult)
         {
@@ -60,7 +105,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
             var commands = recepients.Select(r => r.Stream.Write(Responses.Message(sender, this.contents)));
             return new CombinedPromise<Nothing>(commands);
           case ChatActionsAuthenticator.AuthenticationResult.SexDisabled:
-            return sender.Stream.Write(Responses.ServerPrivateChatMessage(server.Monogram, "Sorry, sex is forbidden in this room."));
+            return sender.Stream.Write(Responses.ServerPrivateChatMessage(server.Monogram, 0, Strings.SEX_IS_FORBIDDEN_IN_ROOM));
           case ChatActionsAuthenticator.AuthenticationResult.NotAuthenticated:
             return Nothing.Resolved();
           default:
@@ -101,6 +146,11 @@ namespace pepperspray.ChatServer.Protocol.Requests
     private string recepientName;
     private PlayerHandle recepient;
 
+    internal override string DebugDescription()
+    {
+      return base.DebugDescription() + ", to " + this.recepientName;
+    }
+
     internal static SendPM Parse(Message ev)
     {
       if (!(ev.data is List<object>))
@@ -115,7 +165,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
       return new SendPM
       {
-        recepientName = arguments[0].ToString(),
+        recepientName = CharacterService.StripCharacterName(arguments[0].ToString()),
         contents = arguments[1].ToString()
       };
     }
@@ -150,14 +200,13 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
     internal override IPromise<Nothing> Process(PlayerHandle sender, ChatManager server)
     {
-      if (this.recepient != null || this.recepientName.Equals(server.Monogram))
+      if (this.recepient != null || this.recepientName.Equals(server.Monogram) || this.WillServicesDispatch())
       {
         return base.Process(sender, server);
       }
       else if (this.contents.StartsWith("~private/"))
       {
-        this.offlineMessageService.QueueMessage(sender.Character.Id, this.recepientName, Send.StripCommand(this.contents));
-        return Nothing.Resolved();
+        return this.offlineMessageService.QueueMessage(sender, this.recepientName, Send.StripCommand(this.contents));
       } 
       else
       {
@@ -226,6 +275,9 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
   internal class SendWorld: Send
   {
+    private GiftsService giftsService = DI.Get<GiftsService>();
+    private Configuration config = DI.Get<Configuration>();
+
     internal static SendWorld Parse(Message ev)
     {
       return new SendWorld
@@ -253,6 +305,29 @@ namespace pepperspray.ChatServer.Protocol.Requests
       }
 
       return recepients;
+    }
+
+    internal override IPromise<Nothing> Process(PlayerHandle sender, ChatManager server)
+    {
+      if (this.WillServicesDispatch())
+      {
+        return base.Process(sender, server);
+      }
+
+      var cost = this.config.Currency.WorldChatCost;
+      var userCurrency = this.giftsService.GetCurrency(sender.User);
+
+      try
+      {
+        this.giftsService.ChangeCurrency(sender.User, -cost);
+
+        var message = String.Format(Strings.MESSAGE_TO_WORLD_HAS_BEEN_SENT, cost, userCurrency - cost);
+        return sender.Stream.Write(Responses.ServerMessage(server, message)).Then(a => base.Process(sender, server));
+      }
+      catch (GiftsService.NotEnoughCurrencyException)
+      {
+        return sender.Stream.Write(Responses.ServerWorldMessage(server, String.Format(Strings.YOU_DONT_HAVE_COINS_TO_WRITE_IN_WORLD, cost, userCurrency)));
+      }
     }
   }
 }

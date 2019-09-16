@@ -51,6 +51,11 @@ namespace pepperspray.ChatServer
         return Nothing.Resolved();
       }
 
+      Log.Verbose("<= {player}@{lobby} {event_description}",
+          client.Digest,
+          client.CurrentLobbyIdentifier,
+          request.DebugDescription());
+
       return request.Process(client, this.server);
     }
   }

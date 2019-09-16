@@ -9,6 +9,7 @@ using pepperspray.CIO;
 using pepperspray.ChatServer.Game;
 using pepperspray.ChatServer.Protocol;
 using pepperspray.SharedServices;
+using pepperspray.Resources;
 
 namespace pepperspray.ChatServer.Shell
 {
@@ -23,7 +24,7 @@ namespace pepperspray.ChatServer.Shell
 
     internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
     {
-      return dispatcher.Output(sender, server, "You currently have {0} coins.", this.giftService.GetCurrency(sender.User));
+      return dispatcher.Output(sender, server, Strings.YOU_CURRENTLY_HAVE_COINTS, this.giftService.GetCurrency(sender.User));
     }
   }
 }

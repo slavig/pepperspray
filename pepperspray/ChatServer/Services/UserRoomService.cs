@@ -90,7 +90,7 @@ namespace pepperspray.ChatServer.Services
 
     internal bool PlayerCanModerateRoom(PlayerHandle player, UserRoom room)
     {
-      if (room.OwnerId == player.Id || player.User.IsAdmin)
+      if (room.OwnerId == player.Id || player.AdminOptions.IsEnabled)
       {
         return true;
       }
@@ -144,54 +144,21 @@ namespace pepperspray.ChatServer.Services
     {
       var list = new List<UserRoom>();
 
-      List<string> addedIdentifiersList = new List<string>();
-
       List<UserRoom> rooms;
       lock (this.server)
       {
         rooms = new List<UserRoom>(this.server.World.UserRooms);
       }
 
-      rooms.Sort((a, b) => a.IsPermanent.CompareTo(b.IsPermanent));
       foreach (var room in rooms)
       {
         if (this.PlayerCanJoinRoom(sender, room))
         {
           list.Add(room);
-          addedIdentifiersList.Add(room.Identifier);
         }
       }
 
-      lock (this.server)
-      {
-        if (sender.User.IsAdmin)
-        {
-          foreach (var lobby in this.server.World.Lobbies.Values)
-          {
-            if (lobby.IsPrivateRoom || (lobby.IsUserRoom && !addedIdentifiersList.Contains(lobby.Identifier)))
-            {
-              try
-              {
-                string name = lobby.Identifier.Substring(0, lobby.Identifier.Length - "_room".Length);
-                var character = this.characterService.Find(name);
-
-                list.Add(new UserRoom
-                {
-                  Name = lobby.Identifier,
-                  Identifier = lobby.Identifier,
-                  OwnerName = "_private",
-                  OwnerId = character.Id,
-                  Access = UserRoom.AccessType.ForAll,
-                  NumberOfPlayers = lobby.NumberOfPlayers + 700,
-                  IsPrioritized = true,
-                });
-              }
-              catch (CharacterService.NotFoundException) { }
-              catch (ArgumentOutOfRangeException) { }
-            }
-          }
-        }
-      }
+      list.Sort((a, b) => a.IsPermanent.CompareTo(b.IsPermanent));
 
       return sender.Stream.Write(Responses.UserRoomList(list));
     }
@@ -208,14 +175,18 @@ namespace pepperspray.ChatServer.Services
       foreach (var existingRoom in existingRooms)
       {
         var permanentRoom = pendingRooms.Find((r) => r.Identifier == existingRoom.Identifier);
+
         Character ownerCharacter = null;
-        try
+        if (permanentRoom != null)
         {
-          ownerCharacter = this.characterService.Find(permanentRoom.Owner);
-        }
-        catch (CharacterService.NotFoundException)
-        {
-          Log.Warning("Failed to reload permanent room: character {name} not found, existing room will be closed!", permanentRoom.Owner);
+          try
+          {
+            ownerCharacter = this.characterService.Find(permanentRoom.Owner);
+          }
+          catch (CharacterService.NotFoundException)
+          {
+            Log.Warning("Failed to reload permanent room: character {name} not found, existing room will be closed!", permanentRoom.Owner);
+          }
         }
 
         if (permanentRoom != null && ownerCharacter != null)
@@ -228,13 +199,20 @@ namespace pepperspray.ChatServer.Services
           existingRoom.ModeratorNames = permanentRoom.Moderators;
           existingRoom.OwnerName = permanentRoom.Owner;
           existingRoom.OwnerId = ownerCharacter.Id;
+          existingRoom.RadioURL = permanentRoom.RadioURL;
+          existingRoom.IsPermanent = true;
+
+          if (existingRoom.Lobby != null)
+          {
+            existingRoom.Lobby.RadioURL = permanentRoom.RadioURL;
+          }
         }
         else
         {
           lock (this.server)
           {
             Log.Debug("Removing existing user room {identifier}", existingRoom.Identifier);
-            this.server.World.RemoveUserRoom(existingRoom.Identifier);
+            this.CloseRoom(existingRoom);
           }
         }
       }
@@ -255,6 +233,7 @@ namespace pepperspray.ChatServer.Services
             OwnerName = permanentRoom.Owner,
             OwnerId = ownerCharacter.Id,
             ModeratorNames = permanentRoom.Moderators,
+            RadioURL = permanentRoom.RadioURL,
             IsPermanent = true,
             IsPrioritized = true
           };
@@ -283,8 +262,6 @@ namespace pepperspray.ChatServer.Services
         {
           lobbyPlayers = lobby.Players.ToArray();
         }
-
-        userRoom.NumberOfPlayers = 0;
       }
 
       return new CombinedPromise<Nothing>(lobbyPlayers.Select(a => a.Stream.Write(Responses.UserRoomClosed(userRoom))));
@@ -316,7 +293,7 @@ namespace pepperspray.ChatServer.Services
         }
         else
         {
-          Log.Debug("Player {name} is not currently in the target lobby ({identifier}), only timer added", player.Name, userRoom.Identifier);
+          Log.Debug("Player {name} is not currently in the target lobby ({identifier}), only timer added", player.Digest, userRoom.Identifier);
         }
       }
 
@@ -330,7 +307,7 @@ namespace pepperspray.ChatServer.Services
         var room = this.server.World.FindUserRoom(handle);
         if (room != null && room.IsDangling)
         {
-          Log.Information("Player {name} logged back, room {identifier} is no longer dangling", handle.Name, room.Identifier);
+          Log.Information("Player {player} logged back, room {identifier} is no longer dangling", handle.Digest, room.Identifier);
           room.IsDangling = false;
         }
       }
@@ -358,7 +335,7 @@ namespace pepperspray.ChatServer.Services
           room.OwnerLastSeen = DateTime.Now;
           if (room.IsSemiPersistent)
           {
-            Log.Information("Player {name} logged off and left his room {identifier} dangling", sender.Name, room.Identifier);
+            Log.Information("Player {player} logged off and left his room {identifier} dangling", sender.Digest, room.Identifier);
             room.IsDangling = true;
           }
         }

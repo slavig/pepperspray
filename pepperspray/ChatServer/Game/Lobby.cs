@@ -20,6 +20,10 @@ namespace pepperspray.ChatServer.Game
     };
 
     internal string Identifier;
+    internal List<PlayerHandle> Players;
+    internal UserRoom UserRoom;
+    internal string RadioURL;
+
     internal string Name {
       get
       {
@@ -28,13 +32,9 @@ namespace pepperspray.ChatServer.Game
         return name;
       }
     }
-
-    internal UserRoom UserRoom;
-    internal int NumberOfPlayers;
     internal bool IsUserRoom { get { return this.UserRoom != null; } }
     internal bool IsPrivateRoom { get { return this.UserRoom == null && this.Identifier.EndsWith("_room"); } }
     internal bool IsStandard { get { return Lobby.locationsMapping.Keys.Contains(this.Identifier);  } }
-    internal List<PlayerHandle> Players;
 
     internal Lobby(string id)
     {
@@ -45,29 +45,11 @@ namespace pepperspray.ChatServer.Game
     internal void AddPlayer(PlayerHandle player)
     {
       this.Players.Add(player);
-      this.NumberOfPlayers++;
-
-      if (this.IsUserRoom)
-      {
-        this.UserRoom.NumberOfPlayers += 1;
-      }
     }
 
     internal void RemovePlayer(PlayerHandle player)
     {
       this.Players.Remove(player);
-      if (this.NumberOfPlayers > 0)
-      {
-        this.NumberOfPlayers--;
-      }
-
-      if (this.IsUserRoom)
-      {
-        if (this.UserRoom.NumberOfPlayers > 0)
-        {
-          this.UserRoom.NumberOfPlayers -= 1;
-        }
-      }
     }
   }
 }

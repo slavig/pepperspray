@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Serilog;
 using RSG;
 using pepperspray.CIO;
 using pepperspray.ChatServer.Game;
 using pepperspray.ChatServer.Services;
 using pepperspray.SharedServices;
+using pepperspray.Resources;
 
 namespace pepperspray.ChatServer.Shell
 {
@@ -29,17 +31,22 @@ namespace pepperspray.ChatServer.Shell
 
     internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
     {
+#if !DEBUG
       try
       {
+#endif
         this.config.LoadConfiguration();
         this.userRoomService.LoadPermanentRooms();
 
-        return dispatcher.Output(sender, server, "Configuration file reloaded.");
+        return dispatcher.Output(sender, server, Strings.CONFIGURATION_FILE_RELOADED);
+#if !DEBUG
       }
-      catch (Exception e)
+      catch (Configuration.LoadException e)
       {
-        return dispatcher.Error(sender, server, "Failed to reload configuration: " + e);
+        Log.Warning("Failed to reload config (stage {stage}): {exception}", e.Stage, e.UnderlyingException);
+        return dispatcher.Error(sender, server, Strings.FAILED_TO_RELOAD_CONFIGURATION + e);
       }
+#endif
     }
   }
 }

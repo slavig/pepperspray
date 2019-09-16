@@ -10,6 +10,7 @@ using pepperspray.ChatServer.Game;
 using pepperspray.ChatServer.Protocol;
 using pepperspray.ChatServer.Services;
 using pepperspray.SharedServices;
+using pepperspray.Resources;
 
 namespace pepperspray.ChatServer.Shell
 {
@@ -24,7 +25,7 @@ namespace pepperspray.ChatServer.Shell
 
     internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
     {
-      var builder = new StringBuilder("Online players: ");
+      var builder = new StringBuilder(Strings.ONLINE_PLAYERS_COLON);
 
       lock (server)
       {

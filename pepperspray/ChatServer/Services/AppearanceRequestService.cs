@@ -29,7 +29,7 @@ namespace pepperspray.ChatServer.Services
     {
       if (recepients.Count() < 1)
       {
-        Log.Debug("Failed to dispatch message from {sender}/{endpoint} - no recepients", sender.Name, sender.Stream.ConnectionEndpoint);
+        Log.Debug("Failed to dispatch message from {sender} - no recepients", sender.Digest);
         return Nothing.Resolved();
       }
 
