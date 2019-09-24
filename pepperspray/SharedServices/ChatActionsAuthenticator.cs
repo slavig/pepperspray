@@ -106,6 +106,25 @@ namespace pepperspray.SharedServices
       { "marry", new AuthenticationTemplate {ArgumentIndex = 0 } }
     };
 
+    private List<string> safePoses = new List<string>
+    {
+      "wall_1",
+      "bed47",
+      "bed46",
+      "bed23",
+      "bed32",
+      "bed44",
+      "bed9",
+      "bed22",
+      "bed24",
+      "bed31",
+      "bed32",
+      "chair_G_1",
+      "pillow_1",
+      "sofa4",
+      "sofa6",
+    };
+
     internal static string[] GhostNames = new string[] { "Female Ghost", "Male Ghost" };
 
     public void Inject()
@@ -186,7 +205,7 @@ namespace pepperspray.SharedServices
     private AuthenticationResult authenticateCommand(PlayerHandle sender, Command command)
     {
 #if !DEBUG
-      if (sender.AdminOptions.IsEnabled)
+      if (sender.AdminOptions.HasFlag(AdminFlags.DisabledAuthenticator))
       {
         return AuthenticationResult.Ok;
       }
@@ -195,7 +214,7 @@ namespace pepperspray.SharedServices
       switch (command.Name)
       {
         case "useSexPose":
-          if (sender.CurrentLobby != null && sender.CurrentLobby.IsUserRoom && !sender.CurrentLobby.UserRoom.IsSexAllowed)
+          if (this.checkIfPoseIsForbiddenInLobby(sender, command))
           {
             return AuthenticationResult.SexDisabled;
           }
@@ -243,7 +262,7 @@ namespace pepperspray.SharedServices
           return AuthenticationResult.NotAuthenticated;
 
         case "askForPose":
-          if (sender.CurrentLobby != null && sender.CurrentLobby.IsUserRoom && !sender.CurrentLobby.UserRoom.IsSexAllowed)
+          if (this.checkIfPoseIsForbiddenInLobby(sender, command))
           {
             return AuthenticationResult.SexDisabled;
           }
@@ -395,6 +414,35 @@ namespace pepperspray.SharedServices
           }
         }
       }
+    }
+
+    private bool checkIfPoseIsForbiddenInLobby(PlayerHandle sender, Command command)
+    {
+      if (sender.CurrentLobby != null && sender.CurrentLobby.IsUserRoom && !sender.CurrentLobby.UserRoom.IsSexAllowed)
+      {
+        string poseIdentifier = null;
+        switch (command.Name)
+        {
+          case "askForPose":
+            poseIdentifier = command.Arguments.ElementAtOrDefault(1);
+            break;
+          case "useSexPose":
+            poseIdentifier = command.Arguments.ElementAtOrDefault(command.Arguments.Length - 2);
+            foreach (var arg in command.Arguments.Skip(3).Take(3))
+            {
+              var components = arg.Split('=');
+              if (components.Count() > 1 && components.Last() != poseIdentifier)
+              {
+                return true;
+              }
+            }
+            break;
+        }
+
+        return !this.safePoses.Contains(poseIdentifier);
+      }
+
+      return false;
     }
 
     private Command parseCommand(string message)

@@ -51,5 +51,10 @@ namespace pepperspray.ChatServer.Game
     {
       this.Players.Remove(player);
     }
+
+    internal static bool IsIdentifierFromDefaultPool(string identifier)
+    {
+      return Lobby.locationsMapping.ContainsKey(identifier);
+    }
   }
 }

@@ -118,9 +118,9 @@ namespace pepperspray.SharedServices
     internal string OverrideLocale;
     internal string TokenSalt;
     internal int PlayerInactivityTimeout;
-    internal uint PlayerPhotoSlots;
+    internal uint PlayerDefaultPhotoSlots;
+    internal uint PlayerMaxPhotoSlots;
     internal uint PhotoSizeLimit;
-    internal uint LoginAttemptThrottle;
 
     internal string WebfrontProtocolVersion = "web";
     internal uint MinimumProtocolVersion = 5;
@@ -264,7 +264,8 @@ namespace pepperspray.SharedServices
           {
             section = "rest-api-server/photos";
             var photosNode = doc.SelectSingleNode("configuration/rest-api-server/photos");
-            this.PlayerPhotoSlots = Convert.ToUInt32(photosNode.Attributes["slot-count"].InnerText);
+            this.PlayerDefaultPhotoSlots = Convert.ToUInt32(photosNode.Attributes["default-slot-count"].InnerText);
+            this.PlayerMaxPhotoSlots = Convert.ToUInt32(photosNode.Attributes["max-slot-count"].InnerText);
             this.PhotoSizeLimit = Convert.ToUInt32(photosNode.Attributes["size-limit"].InnerText);
           }
 

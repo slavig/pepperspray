@@ -20,23 +20,25 @@ namespace pepperspray.ChatServer.Shell
   {
     private UserRoomService userRoomService = DI.Get<UserRoomService>();
     private Configuration config = DI.Get<Configuration>();
+    private ShellDispatcher dispatcher = DI.Get<ShellDispatcher>();
+    private ChatManager manager = DI.Get<ChatManager>();
     
-    internal override bool WouldDispatch(string tag)
+    internal override bool WouldDispatch(string tag, IEnumerable<string> arguments)
     {
-      return tag.Equals("room");
+      return tag.Equals("/room");
     }
 
-    internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
+    internal override IPromise<Nothing> Dispatch(PlayerHandle sender, CommandDomain domain, string tag, IEnumerable<string> arguments)
     {
       if (arguments.Count() < 1 || arguments.ElementAt(0).Equals("sex") && arguments.Count() < 2)
       {
-        return dispatcher.InvalidUsage(sender, server);
+        return this.dispatcher.InvalidUsage(sender);
       }
 
-      var userRoom = server.World.FindUserRoom(sender);
+      var userRoom = this.manager.World.FindUserRoom(sender);
       if (userRoom == null)
       {
-        return dispatcher.Error(sender, server, Strings.YOU_DONT_CURRENTLY_OWN_A_ROOM);
+        return this.dispatcher.Error(sender, Strings.YOU_DONT_CURRENTLY_OWN_A_ROOM);
       }
 
       var command = arguments.ElementAt(0);
@@ -44,27 +46,27 @@ namespace pepperspray.ChatServer.Shell
       {
         if (!this.config.DanglingRoom.Enabled)
         {
-          return dispatcher.Error(sender, server, Strings.THIS_FEATURE_IS_NOT_ENABLED);
+          return this.dispatcher.Error(sender, Strings.THIS_FEATURE_IS_NOT_ENABLED);
         }
 
         userRoom.IsSemiPersistent = true;
 
         var message = String.Format(Strings.ROOM_IS_NOW_PERSISTENT, this.config.DanglingRoom.Timeout.TotalMinutes);
-        return dispatcher.Output(sender, server, message);
+        return this.dispatcher.Output(sender, message);
       } 
       else if (command.Equals("close"))
       {
         return this.userRoomService.CloseRoom(userRoom)
-          .Then((a) => dispatcher.Output(sender, server, Strings.ROOM_CLOSED));
+          .Then((a) => this.dispatcher.Output(sender, Strings.ROOM_CLOSED));
       }
       else if (command.Equals("sex"))
       {
         userRoom.IsSexAllowed = !arguments.ElementAt(1).Equals("forbid");
-        return dispatcher.Output(sender, server, userRoom.IsSexAllowed ? Strings.SEX_IS_NOW_ALLOWED_IN_ROOM : Strings.SEX_IS_FORBIDDEN_IN_ROOM);
+        return this.dispatcher.Output(sender, userRoom.IsSexAllowed ? Strings.SEX_IS_NOW_ALLOWED_IN_ROOM : Strings.SEX_IS_NOW_FORBIDDEN_IN_ROOM);
       }
       else
       {
-        return dispatcher.Error(sender, server, Strings.UNKNOWN_COMMAND, command);
+        return this.dispatcher.Error(sender, Strings.UNKNOWN_COMMAND, command);
       }
     }
   }

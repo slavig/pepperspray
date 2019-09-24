@@ -16,15 +16,16 @@ namespace pepperspray.ChatServer.Shell
   internal class Money: AShellCommand
   {
     private GiftsService giftService = DI.Get<GiftsService>();
+    private ShellDispatcher dispatcher = DI.Get<ShellDispatcher>();
 
-    internal override bool WouldDispatch(string tag)
+    internal override bool WouldDispatch(string tag, IEnumerable<string> arguments)
     {
-      return tag.Equals("money");
+      return tag.Equals("/money");
     }
 
-    internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
+    internal override IPromise<Nothing> Dispatch(PlayerHandle sender, CommandDomain domain, string tag, IEnumerable<string> arguments)
     {
-      return dispatcher.Output(sender, server, Strings.YOU_CURRENTLY_HAVE_COINTS, this.giftService.GetCurrency(sender.User));
+      return this.dispatcher.Output(sender, Strings.YOU_CURRENTLY_HAVE_COINTS, this.giftService.GetCurrency(sender.User));
     }
   }
 }

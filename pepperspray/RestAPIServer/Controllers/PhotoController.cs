@@ -66,10 +66,10 @@ namespace pepperspray.RestAPIServer.Controllers
         uid = Convert.ToUInt32(parser.GetParameterValue("uid"));
         var token = parser.GetParameterValue("token");
         var slot = parser.GetParameterValue("slot");
-        this.characterService.FindAndAuthorize(token, Convert.ToUInt32(uid));
+        var character = this.characterService.FindAndAuthorize(token, Convert.ToUInt32(uid));
 
         var slotId = Convert.ToUInt32(slot);
-        if (slotId > this.config.PlayerPhotoSlots)
+        if (slotId > character.NumberOfSlots)
         {
           Log.Warning("Client {endpoint} failed to upload photo: slot out of range ({slot})!", req.GetEndpoint(), slot);
           return req.TextResponse("limit=");

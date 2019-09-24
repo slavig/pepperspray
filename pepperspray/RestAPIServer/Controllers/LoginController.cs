@@ -219,27 +219,6 @@ namespace pepperspray.RestAPIServer.Controllers
       return "http://" + this.config.CrossOriginAddress + (this.config.CrossOriginPort != 0 ? ":" + this.config.CrossOriginPort.ToString() : "");
     }
 
-    private void throttleLoginAttempt(string sourceIp)
-    {
-      var previousAttempt = DateTime.MinValue;
-      lock (this)
-      {
-        this.loginAttempts.TryGetValue(sourceIp, out previousAttempt);
-      }
-
-      var delta = DateTime.Now - previousAttempt;
-      if (delta.Seconds < this.config.LoginAttemptThrottle)
-      {
-        Log.Information("Login attempt throttling - ip {ip} attempted login {seconds} s. before", sourceIp, delta.Seconds);
-        Thread.Sleep(TimeSpan.FromSeconds(this.config.LoginAttemptThrottle - delta.Seconds));
-      }
-
-      lock(this)
-      {
-        this.loginAttempts[sourceIp] = DateTime.Now;
-      }
-    }
-
     private async Task<bool> validateInvisibleRecaptcha(HttpRequest req, string token)
     {
       if (this.config.Recaptcha.Enabled)

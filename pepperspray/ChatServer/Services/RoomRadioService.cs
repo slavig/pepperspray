@@ -48,7 +48,7 @@ namespace pepperspray.ChatServer.Services
       else if (query.First() == "runRadio")
       {
         var url = query.ElementAt(1).Trim();
-        if (lobbyOwnerName == sender.Name || sender.AdminOptions.IsEnabled)
+        if (lobbyOwnerName == sender.Name || sender.AdminOptions.HasFlag(AdminFlags.RoomManagement))
         {
           Log.Debug("Player {sender} setting radio URL for lobby {identifier} to {url}", sender.Digest, lobby.Identifier, url);
           lobby.RadioURL = url;

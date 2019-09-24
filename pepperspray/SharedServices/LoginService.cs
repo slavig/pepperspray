@@ -28,6 +28,7 @@ namespace pepperspray.SharedServices
     private MailService mailService;
     private Random random;
     private LoginServerListener socialServer;
+    private CharacterService characterService;
 
     public void Inject()
     {
@@ -36,6 +37,7 @@ namespace pepperspray.SharedServices
       this.mailService = DI.Get<MailService>();
       this.random = new Random();
       this.socialServer = DI.Get<LoginServerListener>();
+      this.characterService = DI.Get<CharacterService>();
     }
 
     internal void CheckProtocolVersion(string versionString)
@@ -180,16 +182,13 @@ namespace pepperspray.SharedServices
 
         if (user.PasswordHash.Equals(passwordHash))
         {
-          this.db.Write((c) =>
+          var characters = this.db.Read(c => c.CharactersFindByUser(user));
+          foreach (var character in characters)
           {
-            // delete
-            foreach (var character in c.CharactersFindByUser(user))
-            {
-              c.CharacterDelete(character);
-            }
+            this.characterService.DeleteCharacter(token, character.Id);
+          }
 
-            c.UserDelete(user);
-          });
+          this.db.Write((c) => c.UserDelete(user));
         }
         else
         {

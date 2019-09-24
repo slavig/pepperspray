@@ -12,7 +12,7 @@ namespace pepperspray.SharedServices
   {
     [PrimaryKey, AutoIncrement]
     public uint Id { get; set; }
-    public bool IsAdmin { get; set; }
+    public int AdminFlags { get; set; }
     public uint Currency { get; set; }
 
     public string Username { get; set; }

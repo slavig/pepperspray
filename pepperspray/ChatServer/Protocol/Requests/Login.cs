@@ -140,7 +140,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
       sender.IsLoggedIn = true;
       sender.Character = this.character;
       sender.User = this.user;
-      sender.AdminOptions.IsEnabled = this.user.IsAdmin;
+      sender.AdminOptions = new PlayerHandle.AdminOptionsConfiguration(this.user.AdminFlags);
       sender.Token = this.token;
 
       this.loginServer.AssociateCharacter(this.token, this.character);

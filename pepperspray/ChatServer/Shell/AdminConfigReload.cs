@@ -18,18 +18,20 @@ namespace pepperspray.ChatServer.Shell
   {
     private Configuration config = DI.Get<Configuration>();
     private UserRoomService userRoomService = DI.Get<UserRoomService>();
+    private ShellDispatcher dispatcher = DI.Get<ShellDispatcher>();
+    private ChatManager manager = DI.Get<ChatManager>();
 
-    internal override bool RequireAdmin()
+    internal override bool HasPermissionToExecute(PlayerHandle sender)
     {
-      return true;
+      return sender.AdminOptions.HasFlag(AdminFlags.ConfigReload);
     }
 
-    internal override bool WouldDispatch(string tag)
+    internal override bool WouldDispatch(string tag, IEnumerable<string> arguments)
     {
-      return tag.Equals("aconfigreload");
+      return tag.Equals("/aconfigreload");
     }
 
-    internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
+    internal override IPromise<Nothing> Dispatch(PlayerHandle sender, CommandDomain domain, string tag, IEnumerable<string> arguments)
     {
 #if !DEBUG
       try
@@ -38,13 +40,13 @@ namespace pepperspray.ChatServer.Shell
         this.config.LoadConfiguration();
         this.userRoomService.LoadPermanentRooms();
 
-        return dispatcher.Output(sender, server, Strings.CONFIGURATION_FILE_RELOADED);
+        return this.dispatcher.Output(sender, Strings.CONFIGURATION_FILE_RELOADED);
 #if !DEBUG
       }
       catch (Configuration.LoadException e)
       {
         Log.Warning("Failed to reload config (stage {stage}): {exception}", e.Stage, e.UnderlyingException);
-        return dispatcher.Error(sender, server, Strings.FAILED_TO_RELOAD_CONFIGURATION + e);
+        return this.dispatcher.Error(sender, Strings.FAILED_TO_RELOAD_CONFIGURATION + e);
       }
 #endif
     }

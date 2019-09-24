@@ -181,8 +181,14 @@ Internal code: {1}.</value>
   <data name="NOT_ENOUGH_COINS" xml:space="preserve">
     <value>Not enough coins!</value>
   </data>
+  <data name="NOT_ENOUGH_COINS_REQUIRED" xml:space="preserve">
+    <value>Not enough coins, this operation costs {0} coins and you currently have {1}.</value>
+  </data>
   <data name="ONLINE_PLAYERS_COLON" xml:space="preserve">
     <value>Online players:</value>
+  </data>
+  <data name="PHOTO_SLOTS_NUMBER_EXCEEDED" xml:space="preserve">
+    <value>Maximum number of photo slots on this server is {0}.</value>
   </data>
   <data name="PLAYER_HAS_BEEN_EXPELLED" xml:space="preserve">
     <value>Player has been expelled.</value>
@@ -198,6 +204,12 @@ Internal code: {1}.</value>
   </data>
   <data name="PLAYER_NOT_FOUND" xml:space="preserve">
     <value>Player not found: "{0}"</value>
+  </data>
+  <data name="PLAYER_ROLLED_OUT_OF" xml:space="preserve">
+    <value>Player {0} rolled {1} out of {2}.</value>
+  </data>
+  <data name="PLAYER_ROLLED_OUT_OF_VERIFY" xml:space="preserve">
+    <value>Player {0} rolled {1} out of {2}; verify by server message.</value>
   </data>
   <data name="PLAYER_SENT_YOU_COINS" xml:space="preserve">
     <value>Player {0} send you {1} coins, you now have {2}.</value>
@@ -234,6 +246,8 @@ Internal code: {1}.</value>
 /players - show how many players are at standard locations.
 /money - get amount of coints you have right now.
 /myonline - display for how much you have been online (across all characters).
+/pm PLAYER - open private message window with PLAYER.
+/dice NUMBER - roll the dice. Number will be omitted, defaulting to 6.
 /pay PLAYER AMOUNT - transfer currency to other player.
 /expel PLAYER MINUTES - expel player from your location for MINUTES. Duration can be skipped so the player will only be kicked.
 /room persist - will turn your room into semi-persistent one, meaning that it will be available for some time after you disconnect.
@@ -247,7 +261,7 @@ Internal code: {1}.</value>
     <value>This feature is not enabled on the server.</value>
   </data>
   <data name="TIMED_OUT" xml:space="preserve">
-    <value>Timed out.</value>
+    <value>Connection timed out.</value>
   </data>
   <data name="TRANSFERRED_COINS_TO" xml:space="preserve">
     <value>Transferred {0} coins to {1}, you now have {2}.</value>

@@ -55,7 +55,7 @@ namespace pepperspray
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CreateSpecificCulture(config.OverrideLocale);
       }
 
-      Log.Information("pepperspray v1.3.4");
+      Log.Information("pepperspray v1.3.6_hotfix3");
       var coreServer = DI.Get<ChatServerListener>();
       var externalServer = DI.Get<RestAPIServerListener>();
       var loginServer = DI.Get<LoginServerListener>();

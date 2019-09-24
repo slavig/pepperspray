@@ -245,11 +245,29 @@ namespace pepperspray.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Not enough coins, this operation costs {0} coins and you currently have {1}..
+        /// </summary>
+        internal static string NOT_ENOUGH_COINS_REQUIRED {
+            get {
+                return ResourceManager.GetString("NOT_ENOUGH_COINS_REQUIRED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Online players:.
         /// </summary>
         internal static string ONLINE_PLAYERS_COLON {
             get {
                 return ResourceManager.GetString("ONLINE_PLAYERS_COLON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maximum number of photo slots on this server is {0}..
+        /// </summary>
+        internal static string PHOTO_SLOTS_NUMBER_EXCEEDED {
+            get {
+                return ResourceManager.GetString("PHOTO_SLOTS_NUMBER_EXCEEDED", resourceCulture);
             }
         }
         
@@ -295,6 +313,24 @@ namespace pepperspray.Resources {
         internal static string PLAYER_NOT_FOUND {
             get {
                 return ResourceManager.GetString("PLAYER_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Player {0} rolled {1} out of {2}..
+        /// </summary>
+        internal static string PLAYER_ROLLED_OUT_OF {
+            get {
+                return ResourceManager.GetString("PLAYER_ROLLED_OUT_OF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Player {0} rolled {1} out of {2}; verify by server message..
+        /// </summary>
+        internal static string PLAYER_ROLLED_OUT_OF_VERIFY {
+            get {
+                return ResourceManager.GetString("PLAYER_ROLLED_OUT_OF_VERIFY", resourceCulture);
             }
         }
         
@@ -393,9 +429,10 @@ namespace pepperspray.Resources {
         ////players - show how many players are at standard locations.
         ////money - get amount of coints you have right now.
         ////myonline - display for how much you have been online (across all characters).
+        ////pm PLAYER - open private message window with PLAYER.
+        ////dice NUMBER - roll the dice. Number will be omitted, defaulting to 6.
         ////pay PLAYER AMOUNT - transfer currency to other player.
-        ////expel PLAYER MINUTES - expel player from your location for MINUTES. Duration can be skipped so the player will only be kicked.
-        ////room persist - will turn your room into semi-persistent one, meaning that it will be available for [rest of string was truncated]&quot;;.
+        ////expel PLAYER MINUTES - expel player from your location for MINUTES. Duration can be skipped so the p [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SHELL_HELP_TEXT {
             get {
@@ -422,7 +459,7 @@ namespace pepperspray.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Timed out..
+        ///   Looks up a localized string similar to Connection timed out..
         /// </summary>
         internal static string TIMED_OUT {
             get {

@@ -204,6 +204,11 @@ namespace pepperspray.SharedServices
       this.connection.Table<FriendLiaison>().Where(c => (c.InitiatorId == ch1 && c.ReceiverId == ch2) || (c.InitiatorId == ch2 && c.ReceiverId == ch1)).Delete();
     }
 
+    internal void LiaisonDeleteByParticipant(uint ch1)
+    {
+      this.connection.Table<FriendLiaison>().Where(c => c.InitiatorId == ch1 || c.ReceiverId == ch1).Delete();
+    }
+
     internal void PhotoSlotInsert(PhotoSlot slot)
     {
       this.connection.Insert(slot);
@@ -227,6 +232,11 @@ namespace pepperspray.SharedServices
     internal IEnumerable<PhotoSlot> PhotoSlotFindByCharacterId(uint id)
     {
       return this.connection.Table<PhotoSlot>().Where(c => c.CharacterId == id).OrderBy(p => p.Identifier);
+    }
+
+    internal void PhotoSlotDeleteByCharacterId(uint id)
+    {
+      this.connection.Table<PhotoSlot>().Where(c => c.CharacterId == id).Delete();
     }
 
     internal PhotoSlot PhotoSlotFind(uint id, string slot)

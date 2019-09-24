@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Serilog;
 using pepperspray.ChatServer.Game;
 using pepperspray.LoginServer;
+using pepperspray.Resources;
 
 namespace pepperspray.SharedServices
 {
@@ -14,6 +15,7 @@ namespace pepperspray.SharedServices
   {
     internal class NotFoundException : Exception { }
     internal class NotEnoughCurrencyException : Exception { }
+    internal class SlotsAmountExceeded : Exception { }
 
     private Configuration config;
     private LoginServerListener loginServer;
@@ -141,6 +143,60 @@ namespace pepperspray.SharedServices
       }
     }
 
+    internal void BuySlot(string token, uint fromId, uint toId)
+    {
+      Log.Debug("Client {token} of {sender} buying slot for {id}", token, fromId, toId);
+
+      try
+      {
+        var senderCharacter = this.characterService.FindAndAuthorize(token, fromId);
+        var recepientCharacter = this.characterService.Find(toId);
+
+        if (recepientCharacter.NumberOfSlots + 1 > this.config.PlayerMaxPhotoSlots)
+        {
+          try
+          {
+            this.loginServer.Emit(token, "alert", String.Format(Strings.PHOTO_SLOTS_NUMBER_EXCEEDED, this.config.PlayerMaxPhotoSlots));
+          }
+          catch (LoginServerListener.NotFoundException) {
+            Log.Warning("Failed to notify {token} about failed buy slot operation - not found on login server!", token);
+          }
+
+          throw new SlotsAmountExceeded();
+        }
+
+        var senderUser = this.db.Read((c) => c.UserFind(senderCharacter.UserId));
+        var price = this.nextSlotPrice(recepientCharacter.NumberOfSlots);
+        if (senderUser.Currency < price)
+        {
+          try
+          {
+            this.loginServer.Emit(token, "alert", String.Format(Strings.NOT_ENOUGH_COINS_REQUIRED, price, senderUser.Currency));
+          }
+          catch (LoginServerListener.NotFoundException) {
+            Log.Warning("Failed to notify {token} about failed buy slot operation - not found on login server!", token);
+          }
+
+          throw new NotEnoughCurrencyException();
+        }
+        else
+        {
+          senderUser.Currency -= price;
+          recepientCharacter.NumberOfSlots += 1;
+
+          this.db.Write((c) => {
+            c.UserUpdate(senderUser);
+            c.CharacterUpdate(recepientCharacter);
+          });
+        }
+      }
+      catch (Database.NotFoundException)
+      {
+        Log.Warning("Client {token} from {sender}: failed to send gift - {id} not found", token, fromId, toId);
+        throw new NotFoundException();
+      }
+    }
+
     internal void ChangeCurrency(User user_, int amount)
     {
       Log.Information("Changing currency amount of user {username} by {amount}", user_.Username, amount);
@@ -189,6 +245,11 @@ namespace pepperspray.SharedServices
       return this.db.Read((c) => c.UserFind(user_.Username)).Currency;
     }
 
+    internal uint GetCurrency(uint id)
+    {
+      return this.db.Read((c) => c.UserFind(id)).Currency;
+    }
+
     internal uint GrantOnlineBonus(User user_, TimeSpan timeSpan)
     {
       if (this.config.Currency.Enabled && this.config.Currency.BonusPerHourOnline != 0)
@@ -235,6 +296,11 @@ namespace pepperspray.SharedServices
     private string giftIdPrefix()
     {
       return "gift_";
+    }
+
+    private uint nextSlotPrice(uint number)
+    {
+      return (uint)(150 * Math.Pow(2, number - 1));
     }
   }
 }

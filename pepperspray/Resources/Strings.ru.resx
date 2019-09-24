@@ -181,8 +181,14 @@
   <data name="NOT_ENOUGH_COINS" xml:space="preserve">
     <value>Недостаточно монет!</value>
   </data>
+  <data name="NOT_ENOUGH_COINS_REQUIRED" xml:space="preserve">
+    <value>Недостаточно монет, эта операция стоит {0} монет, а у вас {1}.</value>
+  </data>
   <data name="ONLINE_PLAYERS_COLON" xml:space="preserve">
     <value>Игроки онлайн:</value>
+  </data>
+  <data name="PHOTO_SLOTS_NUMBER_EXCEEDED" xml:space="preserve">
+    <value>Максимальное количество фотографий на этом сервере: {0}.</value>
   </data>
   <data name="PLAYER_HAS_BEEN_EXPELLED" xml:space="preserve">
     <value>Игрок был исключен.</value>
@@ -198,6 +204,12 @@
   </data>
   <data name="PLAYER_NOT_FOUND" xml:space="preserve">
     <value>Игрок не найден: "{0}"</value>
+  </data>
+  <data name="PLAYER_ROLLED_OUT_OF" xml:space="preserve">
+    <value>Игроку {0} выпало {1} из {2}.</value>
+  </data>
+  <data name="PLAYER_ROLLED_OUT_OF_VERIFY" xml:space="preserve">
+    <value>Игроку {0} выпало {1} из {2}; проверьте через сообщение сервера.</value>
   </data>
   <data name="PLAYER_SENT_YOU_COINS" xml:space="preserve">
     <value>Игрок {0} отправил вам {1} монет, у вас теперь в сумме {2} монет.</value>
@@ -234,6 +246,8 @@
 /players - показать сколько игроков в стандартных локациях.
 /money - показать количество ваших монет.
 /myonline - показать суммарное время онлайна (на всех персонажах).
+/pm ИГРОК - открыть окно личных сообщений с ИГРОК.
+/dice ЧИСЛО - кинуть кубик.ЧИСЛО можно не указывать, мо умолчанию будет 6.
 /pay ИГРОК КОЛИЧЕСТВО- передать монеты другому игроку.
 /expel ИГРОК ДЛИТЕЛЬНОСТЬ- исключить игрока с комнаты на указанное количество минут. Длительность может быть исключена что бы просто кикнуть его.
 /room persist - сделать комнату постоянной,что бы она оставалась открытой на некоторое время после вашего выхода из игры.
@@ -247,7 +261,7 @@
     <value>Эта возможность не включена на сервере.</value>
   </data>
   <data name="TIMED_OUT" xml:space="preserve">
-    <value>Тайм-аут.</value>
+    <value>Подключение превысило время ожидания.</value>
   </data>
   <data name="TRANSFERRED_COINS_TO" xml:space="preserve">
     <value>Передано {0} монет игроку {1}, у вас осталось {2}.</value>
@@ -268,13 +282,13 @@
     <value>Вы сейчас не находитесь в комнате!</value>
   </data>
   <data name="YOU_CURRENTLY_HAVE_COINTS" xml:space="preserve">
-    <value>Увас {0} монет.</value>
+    <value>У вас {0} монет.</value>
   </data>
   <data name="YOU_DONT_CURRENTLY_OWN_A_ROOM" xml:space="preserve">
     <value>У вас сейчас нету публичной комнаты!</value>
   </data>
   <data name="YOU_DONT_HAVE_COINS_TO_WRITE_IN_WORLD" xml:space="preserve">
-    <value>Извините,у вас нету {0} монет что бы написать в World чат (у вас только {1}).</value>
+    <value>Извините, вам нужно {0} монет что бы написать в World чат (у вас только {1}).</value>
   </data>
   <data name="YOU_DONT_HAVE_PERMISSION_TO_MODERATE_ROOM" xml:space="preserve">
     <value>У вас нету полномочий что бы модерировать эту комнату!</value>

@@ -25,6 +25,7 @@ namespace pepperspray.RestAPIServer.Controllers
       s.StaticRoutes.Add(HttpMethod.POST, "/createchar", this.CreateChar);
       s.StaticRoutes.Add(HttpMethod.POST, "/changechar", this.ChangeChar);
       s.StaticRoutes.Add(HttpMethod.POST, "/savechar", this.SaveChar);
+      s.StaticRoutes.Add(HttpMethod.POST, "/resetchars", this.ResetChars);
       s.StaticRoutes.Add(HttpMethod.POST, "/deletechar", this.DeleteChar);
 
       s.StaticRoutes.Add(HttpMethod.POST, "/getprofile", this.GetProfile);
@@ -154,15 +155,37 @@ namespace pepperspray.RestAPIServer.Controllers
       }
     }
 
+    internal HttpResponse ResetChars(HttpRequest req)
+    {
+      try
+      {
+        string token = req.GetBearerToken();
+
+        this.characterService.ResetCharacterAppearances(token);
+        return req.TextResponse("ok");
+      }
+      catch (Exception e)
+      {
+        Request.HandleException(req, e);
+        if (e is FormatException || e is ArgumentException || e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException)
+        {
+          return req.FailureResponse();
+        }
+        else
+        {
+          throw e;
+        }
+      }
+    }
+
     internal HttpResponse DeleteChar(HttpRequest req)
     {
       try
       {
         var uid = Convert.ToUInt32(req.GetFormParameter("id"));
-        var name = req.GetFormParameter("name");
         var token = req.GetBearerToken();
 
-        this.characterService.DeleteCharacter(token, uid, name);
+        this.characterService.DeleteCharacter(token, uid);
         return req.JsonResponse(new Dictionary<string, string> { { "token", token } });
       }
       catch (Exception e)
@@ -242,6 +265,10 @@ namespace pepperspray.RestAPIServer.Controllers
         if (e is ArgumentException || e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException || e is FormatException)
         {
           return req.FailureResponse();
+        }
+        else if (e is CharacterService.NotEnoughCurrencyException)
+        {
+          return req.TextResponse("money");
         }
         else
         {

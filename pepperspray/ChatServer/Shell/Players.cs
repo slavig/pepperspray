@@ -17,19 +17,21 @@ namespace pepperspray.ChatServer.Shell
   internal class Players: AShellCommand
   {
     private LobbyService lobbyService = DI.Get<LobbyService>();
+    private ShellDispatcher dispatcher = DI.Get<ShellDispatcher>();
+    private ChatManager manager = DI.Get<ChatManager>();
     
-    internal override bool WouldDispatch(string tag)
+    internal override bool WouldDispatch(string tag, IEnumerable<string> arguments)
     {
-      return tag.Equals("players");
+      return tag.Equals("/players");
     }
 
-    internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
+    internal override IPromise<Nothing> Dispatch(PlayerHandle sender, CommandDomain domain, string tag, IEnumerable<string> arguments)
     {
       var builder = new StringBuilder(Strings.ONLINE_PLAYERS_COLON);
 
-      lock (server)
+      lock (this.manager)
       {
-        foreach (var item in server.World.Lobbies)
+        foreach (var item in this.manager.World.Lobbies)
         {
           string name = item.Value.Name;
           if (name != null)
@@ -40,7 +42,7 @@ namespace pepperspray.ChatServer.Shell
       }
 
       var response = builder.ToString();
-      return dispatcher.Output(sender, server, response.Substring(0, response.Length - 1));
+      return this.dispatcher.Output(sender, response.Substring(0, response.Length - 1));
     }
   }
 }

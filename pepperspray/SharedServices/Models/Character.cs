@@ -21,6 +21,7 @@ namespace pepperspray.SharedServices
     public uint SpouseId { get; set; }
 
     public string AvatarSlot { get; set; }
+    public uint NumberOfSlots { get; set; }
 
     public DateTime LastLogin { get; set; }
 
@@ -28,7 +29,6 @@ namespace pepperspray.SharedServices
     public string Sex { get; set; }
     public string Appearance { get; set; }
 
-    public string ChatNameDecoration { get; set; }
     public string ProfileJSON { get; set; }
 
     internal List<FriendLiaison> Liaisons;

@@ -13,32 +13,29 @@ using pepperspray.Resources;
 
 namespace pepperspray.ChatServer.Shell
 {
-  class AdminPrivateMessage: AShellCommand
+  class PrivateMessage: AShellCommand
   {
     private CharacterService characterService = DI.Get<CharacterService>();
+    private ShellDispatcher dispatcher = DI.Get<ShellDispatcher>();
+    private ChatManager manager = DI.Get<ChatManager>();
 
-    internal override bool RequireAdmin()
+    internal override bool WouldDispatch(string tag, IEnumerable<string> arguments)
     {
-      return true;
+      return tag.Equals("/pm");
     }
 
-    internal override bool WouldDispatch(string tag)
-    {
-      return tag.Equals("apm");
-    }
-
-    internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
+    internal override IPromise<Nothing> Dispatch(PlayerHandle sender, CommandDomain domain, string tag, IEnumerable<string> arguments)
     {
       if (arguments.Count() != 1)
       {
-        return dispatcher.InvalidUsage(sender, server);
+        return this.dispatcher.InvalidUsage(sender);
       }
 
       var name = arguments.First().Trim();
 
-      lock (server)
+      lock (this.manager)
       {
-        var player = server.World.FindPlayer(name);
+        var player = this.manager.World.FindPlayer(name);
         if (player != null)
         {
           return sender.Stream.Write(Responses.PrivateChatMessage(player, Strings.PLAYER_IS_ONLINE_YOU_CAN_MESSAGE_HIM));
@@ -52,7 +49,7 @@ namespace pepperspray.ChatServer.Shell
           }
           catch (CharacterService.NotFoundException)
           {
-            return dispatcher.Error(sender, server, Strings.PLAYER_NOT_FOUND, name);
+            return this.dispatcher.Error(sender, Strings.PLAYER_NOT_FOUND, name);
           }
         }
       }

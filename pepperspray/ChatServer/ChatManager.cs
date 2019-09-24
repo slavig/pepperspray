@@ -169,7 +169,29 @@ namespace pepperspray.ChatServer
         reason);
 
       this.PlayerLoggedOff(handle);
-      return handle.Terminate(new ErrorException("kicked", reason));
+      return handle.Terminate(new ErrorException("terminated", reason));
+    }
+
+    internal bool CheckWorldMessagePermission(PlayerHandle sender)
+    {
+      var cost = this.config.Currency.WorldChatCost;
+      var userCurrency = this.giftService.GetCurrency(sender.User);
+
+      try
+      {
+        this.giftService.ChangeCurrency(sender.User, -cost);
+
+        var message = String.Format(Strings.MESSAGE_TO_WORLD_HAS_BEEN_SENT, cost, userCurrency - cost);
+        this.Sink(sender.Stream.Write(Responses.ServerDirectMessage(this, message)));
+
+        return true;
+      }
+      catch (GiftsService.NotEnoughCurrencyException e)
+      {
+        this.Sink(sender.Stream.Write(Responses.ServerWorldMessage(this, String.Format(Strings.YOU_DONT_HAVE_COINS_TO_WRITE_IN_WORLD, cost, userCurrency))));
+
+        return false;
+      }
     }
 
     internal void PlayerLoggedIn(PlayerHandle player)
@@ -225,8 +247,6 @@ namespace pepperspray.ChatServer
     internal bool CheckPlayerTimedOut(PlayerHandle handle)
     {
       var delta = DateTime.Now - handle.Stream.LastCommunicationDate;
-      Log.Verbose("Player {player} last seen in {delta}", handle.Digest, delta.Seconds);
-
       if (delta.Seconds > this.config.PlayerInactivityTimeout)
       {
         Log.Information("Disconnecting player {player}/{hash}/{endpoint} due to time out (last heard of {delta} ago)",

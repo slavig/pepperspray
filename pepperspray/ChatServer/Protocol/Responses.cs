@@ -50,9 +50,10 @@ namespace pepperspray.ChatServer.Protocol
         isPrioritized = true;
       }
 
-      return String.Format("{0}|{1}|house|{2}|{3}|{4}|{5}|{6}|",
+      return String.Format("{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|",
         room.OwnerName,
         room.Identifier,
+        room.Type,
         accessType,
         room.NumberOfPlayers >= 0 ? room.NumberOfPlayers : 0,
         room.Name,
@@ -141,14 +142,6 @@ namespace pepperspray.ChatServer.Protocol
     internal static Message Message(PlayerHandle sender, string contents) {
       var name = sender.Name;
 
-      if (sender.Character.ChatNameDecoration != null)
-      {
-        if (contents.StartsWith("~world") || contents.StartsWith("~chat") || contents.StartsWith("~group"))
-        {
-          name = String.Format(sender.Character.ChatNameDecoration, name);
-        }
-      }
-
       return new Message("msg", new Dictionary<string, object>
         {
           { "name", name },
@@ -163,6 +156,16 @@ namespace pepperspray.ChatServer.Protocol
       return Responses.Message(sender, "~private/" + contents);
     }
 
+    internal static Message ServerMessage(ChatManager server, string contents) {
+      return new Message("msg", new Dictionary<string, object>
+        {
+          { "name", server.Monogram },
+          { "id", "0" },
+          { "data", contents }
+        }
+      );
+    }
+
     internal static Message ServerPrivateChatMessage(string senderName, uint senderId, string contents)
     {
       return new Message("msg", new Dictionary<string, object>
@@ -173,7 +176,7 @@ namespace pepperspray.ChatServer.Protocol
       });
     }
 
-    internal static Message ServerMessage(ChatManager server, string contents) {
+    internal static Message ServerDirectMessage(ChatManager server, string contents) {
       return new Message("msg", new Dictionary<string, object>
         {
           { "name", server.Monogram },

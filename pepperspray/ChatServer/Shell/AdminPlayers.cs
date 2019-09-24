@@ -7,23 +7,27 @@ using System.Threading.Tasks;
 using RSG;
 using pepperspray.CIO;
 using pepperspray.ChatServer.Game;
+using pepperspray.SharedServices;
 using pepperspray.ChatServer.Protocol;
 
 namespace pepperspray.ChatServer.Shell
 {
   internal class AdminPlayers: AShellCommand
   {
-    internal override bool RequireAdmin()
+    private ShellDispatcher dispatcher = DI.Get<ShellDispatcher>();
+    private ChatManager manager = DI.Get<ChatManager>();
+
+    internal override bool HasPermissionToExecute(PlayerHandle sender)
     {
-      return true;
+      return sender.AdminOptions.HasFlag(AdminFlags.OnlinePlayerLookup);
     }
 
-    internal override bool WouldDispatch(string tag)
+    internal override bool WouldDispatch(string tag, IEnumerable<string> arguments)
     {
-      return tag.Equals("aplayers");
+      return tag.Equals("/aplayers");
     }
 
-    internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
+    internal override IPromise<Nothing> Dispatch(PlayerHandle sender, CommandDomain domain, string tag, IEnumerable<string> arguments)
     {
       string query = null;
       if (arguments.Count() > 0)
@@ -35,9 +39,9 @@ namespace pepperspray.ChatServer.Shell
       var output = new List<IPromise<Nothing>>();
 
       List<PlayerHandle> players;
-      lock (server)
+      lock (this.manager)
       {
-        players = server.World.Players.ToList();
+        players = this.manager.World.Players.ToList();
       }
 
       players.Sort((a, b) => a.CurrentLobbyIdentifier.CompareTo(b.CurrentLobbyIdentifier));
@@ -53,7 +57,7 @@ namespace pepperspray.ChatServer.Shell
 
         if (player.CurrentLobbyIdentifier != lastLobbyIdentifier)
         {
-          output.Add(dispatcher.Output(sender, server, builder.ToString()));
+          output.Add(this.dispatcher.Output(sender, builder.ToString()));
           builder.Clear();
 
           builder.AppendFormat("{0}: ", player.CurrentLobbyIdentifier);
@@ -63,14 +67,14 @@ namespace pepperspray.ChatServer.Shell
         builder.AppendFormat(" {0},", player.Name);
         if (builder.Length > 200)
         {
-          output.Add(dispatcher.Output(sender, server, builder.ToString()));
+          output.Add(this.dispatcher.Output(sender, builder.ToString()));
           builder.Clear();
         }
       }
 
       if (builder.ToString().Trim().Count() > 0)
       {
-        output.Add(dispatcher.Output(sender, server, builder.ToString()));
+        output.Add(this.dispatcher.Output(sender, builder.ToString()));
       }
       return new CombinedPromise<Nothing>(output);
     }

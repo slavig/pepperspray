@@ -12,12 +12,39 @@ namespace pepperspray.ChatServer.Shell
 {
   internal abstract class AShellCommand
   {
-    internal abstract bool WouldDispatch(string tag);
-    internal abstract IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments);
+    internal abstract bool WouldDispatch(string tag, IEnumerable<string> arguments);
+    internal abstract IPromise<Nothing> Dispatch(PlayerHandle sender, CommandDomain domain, string tag, IEnumerable<string> arguments);
 
-    internal virtual bool RequireAdmin()
+    internal virtual bool HasPermissionToExecute(PlayerHandle sender)
     {
-      return false;
+      return true;
+    }
+  }
+
+  internal class CommandDomain
+  {
+    internal IEnumerable<PlayerHandle> Recepients;
+    internal string Identifier;
+    internal bool IsPrivate
+    {
+      get
+      {
+        return this.Identifier.StartsWith("~private/");
+      }
+    }
+
+    internal bool IsWorld
+    {
+      get
+      {
+        return this.Identifier.StartsWith("~worldchat/");
+      }
+    }
+
+    internal CommandDomain(string identifier, IEnumerable<PlayerHandle> recepients)
+    {
+      this.Recepients = recepients;
+      this.Identifier = identifier;
     }
   }
 }

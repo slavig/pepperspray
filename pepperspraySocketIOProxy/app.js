@@ -78,11 +78,23 @@ socketServer.on("connection", socket => {
 		proxy(["retokennect", token]);
 	});
 
+	var dataBuffer = "";
 	client.on("data", data => {
-		logger.info("client received, sending to socket", { bytes: data.length });
-		socket.emit.apply(socket, JSON.parse(data));
+		dataBuffer += data;
+		try {
+			var emitArgs = JSON.parse(dataBuffer);
+
+			logger.info("client received, sending to socket", { bytes: dataBuffer.length });
+			socket.emit.apply(socket, emitArgs);
+			console.log(emitArgs[1]);
+			dataBuffer = "";
+		} catch (error) {
+			if (error.name != "SyntaxError") {
+				throw error;
+			}
+		}
 	});
 });
 
-logger.info("pepperspraySocketIOProxy v1.0");
+logger.info("pepperspraySocketIOProxy v1.0.1");
 httpServer.listen(3002, () => logger.info("listening on ", { address: ADDRESS, port: 3002 }));

@@ -18,18 +18,20 @@ namespace pepperspray.ChatServer.Shell
   {
     private Configuration config = DI.Get<Configuration>();
     private GiftsService giftService = DI.Get<GiftsService>();
+    private ShellDispatcher dispatcher = DI.Get<ShellDispatcher>();
+    private ChatManager manager = DI.Get<ChatManager>();
 
-    internal override bool RequireAdmin()
+    internal override bool HasPermissionToExecute(PlayerHandle sender)
     {
-      return true;
+      return sender.AdminOptions.HasFlag(AdminFlags.Currency);
     }
 
-    internal override bool WouldDispatch(string tag)
+    internal override bool WouldDispatch(string tag, IEnumerable<string> arguments)
     {
-      return tag.Equals("amoney");
+      return tag.Equals("/amoney");
     }
 
-    internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
+    internal override IPromise<Nothing> Dispatch(PlayerHandle sender, CommandDomain domain, string tag, IEnumerable<string> arguments)
     {
       try
       {
@@ -38,27 +40,27 @@ namespace pepperspray.ChatServer.Shell
 
         PlayerHandle[] players;
 
-        lock (server)
+        lock (this.manager)
         {
           if (playerName.Equals("\\world"))
           {
-            players = server.World.Players.ToArray();
+            players = this.manager.World.Players.ToArray();
           }
           else if (playerName.Equals("\\lobby"))
           {
             if (sender.CurrentLobby == null)
             {
-              return dispatcher.Error(sender, server, Strings.YOU_ARE_NOT_IN_LOBBY);
+              return this.dispatcher.Error(sender, Strings.YOU_ARE_NOT_IN_LOBBY);
             }
 
             players = sender.CurrentLobby.Players.ToArray();
           }
           else
           {
-            var player = server.World.FindPlayer(arguments.First().Trim());
+            var player = this.manager.World.FindPlayer(arguments.First().Trim());
             if (player == null)
             {
-              return dispatcher.Error(sender, server, Strings.PLAYER_NOT_FOUND, arguments.First());
+              return this.dispatcher.Error(sender, Strings.PLAYER_NOT_FOUND, arguments.First());
             }
 
             players = new PlayerHandle[] { player };
@@ -67,7 +69,7 @@ namespace pepperspray.ChatServer.Shell
 
         if (this.config.Currency.Enabled == false)
         {
-          return dispatcher.Error(sender, server, Strings.CURRENCY_IS_NOT_ENABLED);
+          return this.dispatcher.Error(sender, Strings.CURRENCY_IS_NOT_ENABLED);
         }
 
         foreach (var player in players)
@@ -83,14 +85,14 @@ namespace pepperspray.ChatServer.Shell
         }
 
         var message = String.Format(Strings.YOU_HAVE_BEEN_GIFTED_COINS_FROM_ADMIN, amount);
-        return new CombinedPromise<Nothing>(players.Select(p => p.Stream.Write(Responses.ServerMessage(server, message))))
-          .Then(a => dispatcher.Output(sender, server, Strings.DONE));
+        return new CombinedPromise<Nothing>(players.Select(p => p.Stream.Write(Responses.ServerDirectMessage(this.manager, message))))
+          .Then(a => this.dispatcher.Output(sender, Strings.DONE));
       }
       catch (Exception e)
       {
         if (e is FormatException || e is ArgumentOutOfRangeException)
         {
-          return dispatcher.InvalidUsage(sender, server);
+          return this.dispatcher.InvalidUsage(sender);
         }
         else
         {

@@ -16,11 +16,38 @@ using pepperspray.Resources;
 
 namespace pepperspray.ChatServer.Game
 {
+  [Flags]
+  internal enum AdminFlags
+  {
+    AdminBroadcast = 1 << 0,
+    ConfigReload = 1 << 1,
+    PlayerKick = 1 << 2,
+    Currency = 1 << 3,
+    PlayerManagement = 1 << 4,
+    OnlinePlayerLookup = 1 << 5,
+    RoomManagement = 1 << 6,
+    DisabledAuthenticator = 1 << 7,
+    AdminPlayerManagement = 1 << 8,
+  }
+
   internal class PlayerHandle: IEquatable<PlayerHandle>
   {
     internal class AdminOptionsConfiguration
     {
-      internal bool IsEnabled = false;
+      private AdminFlags flags = 0;
+      internal AdminOptionsConfiguration(int flags)
+      {
+        this.flags = (AdminFlags)flags;
+      }
+      
+      internal AdminOptionsConfiguration()
+      {
+      }
+
+      internal bool HasFlag(AdminFlags flag)
+      {
+        return this.flags.HasFlag(flag);
+      }
     }
 
     internal bool IsLoggedIn = false;
@@ -86,7 +113,7 @@ namespace pepperspray.ChatServer.Game
     internal IPromise<Nothing> ErrorAlert(ErrorException exception)
     {
       var loginServer = DI.Get<LoginServerListener>();
-      if (loginServer.HasClient(this.Token))
+      if (this.Token != null && loginServer.HasClient(this.Token))
       {
         try
         {

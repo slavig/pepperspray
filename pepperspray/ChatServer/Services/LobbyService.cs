@@ -27,7 +27,7 @@ namespace pepperspray.ChatServer.Services
 
     internal bool PlayerCanJoinLobby(PlayerHandle player, Lobby lobby)
     {
-      if (player.AdminOptions.IsEnabled)
+      if (player.AdminOptions.HasFlag(AdminFlags.RoomManagement))
       {
         return true;
       }

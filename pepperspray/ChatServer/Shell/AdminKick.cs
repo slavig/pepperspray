@@ -18,22 +18,24 @@ namespace pepperspray.ChatServer.Shell
   internal class AdminKick: AShellCommand
   {
     private Configuration config = DI.Get<Configuration>();
+    private ShellDispatcher dispatcher = DI.Get<ShellDispatcher>();
+    private ChatManager manager = DI.Get<ChatManager>();
 
-    internal override bool RequireAdmin()
+    internal override bool HasPermissionToExecute(PlayerHandle sender)
     {
-      return true;
+      return sender.AdminOptions.HasFlag(AdminFlags.PlayerKick);
     }
 
-    internal override bool WouldDispatch(string tag)
+    internal override bool WouldDispatch(string tag, IEnumerable<string> arguments)
     {
-      return tag.Equals("akick");
+      return tag.Equals("/akick");
     }
 
-    internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
+    internal override IPromise<Nothing> Dispatch(PlayerHandle sender, CommandDomain domain, string tag, IEnumerable<string> arguments)
     {
       if (arguments.Count() < 1)
       {
-        return dispatcher.InvalidUsage(sender, server);
+        return this.dispatcher.InvalidUsage(sender);
       }
 
       var name = arguments.ElementAt(0);
@@ -46,16 +48,16 @@ namespace pepperspray.ChatServer.Shell
       if (name.Equals("\\all"))
       {
         List<PlayerHandle> players;
-        lock (server)
+        lock (this.manager)
         {
-          players = new List<PlayerHandle>(server.World.Players);
+          players = new List<PlayerHandle>(this.manager.World.Players);
         }
 
         foreach (var handle in players)
         {
           try
           {
-            server.Sink(server.KickPlayer(handle, reason));
+            this.manager.Sink(this.manager.KickPlayer(handle, reason));
           }
           catch (Exception e)
           {
@@ -68,18 +70,18 @@ namespace pepperspray.ChatServer.Shell
       else
       {
         PlayerHandle player;
-        lock (server)
+        lock (this.manager)
         {
-          player = server.World.FindPlayer(arguments.ElementAt(0));
+          player = this.manager.World.FindPlayer(arguments.ElementAt(0));
         }
 
         if (player == null)
         {
-          return dispatcher.Error(sender, server, Strings.PLAYER_NOT_FOUND, arguments.First());
+          return this.dispatcher.Error(sender, Strings.PLAYER_NOT_FOUND, arguments.First());
         }
 
-        return server.KickPlayer(player, reason)
-          .Then(a => dispatcher.Output(sender, server, Strings.PLAYER_HAS_BEEN_KICKED, arguments.First()));
+        return this.manager.KickPlayer(player, reason)
+          .Then(a => this.dispatcher.Output(sender, Strings.PLAYER_HAS_BEEN_KICKED, arguments.First()));
       }
     }
   }

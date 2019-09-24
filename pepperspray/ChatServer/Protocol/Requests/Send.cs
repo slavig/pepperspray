@@ -83,10 +83,11 @@ namespace pepperspray.ChatServer.Protocol.Requests
     {
       var recepients = this.Recepients(sender, server);
       var text = Send.StripCommand(this.contents);
+      var domain = new CommandDomain(Send.TextCommand(this.contents), recepients);
 
       if (this.shellDispatcher.ShouldDispatch(text))
       {
-        return this.shellDispatcher.Dispatch(sender, server, text);
+        return this.shellDispatcher.Dispatch(sender, domain, text);
       }
       else if (this.appearanceRequestService.ShouldDispatch(text))
       {
@@ -102,8 +103,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
         switch (authenticationResult)
         {
           case ChatActionsAuthenticator.AuthenticationResult.Ok:
-            var commands = recepients.Select(r => r.Stream.Write(Responses.Message(sender, this.contents)));
-            return new CombinedPromise<Nothing>(commands);
+            return new CombinedPromise<Nothing>(recepients.Select((r) => r.Stream.Write(Responses.Message(sender, this.contents))));
           case ChatActionsAuthenticator.AuthenticationResult.SexDisabled:
             return sender.Stream.Write(Responses.ServerPrivateChatMessage(server.Monogram, 0, Strings.SEX_IS_FORBIDDEN_IN_ROOM));
           case ChatActionsAuthenticator.AuthenticationResult.NotAuthenticated:
@@ -314,19 +314,13 @@ namespace pepperspray.ChatServer.Protocol.Requests
         return base.Process(sender, server);
       }
 
-      var cost = this.config.Currency.WorldChatCost;
-      var userCurrency = this.giftsService.GetCurrency(sender.User);
-
-      try
+      if (server.CheckWorldMessagePermission(sender))
       {
-        this.giftsService.ChangeCurrency(sender.User, -cost);
-
-        var message = String.Format(Strings.MESSAGE_TO_WORLD_HAS_BEEN_SENT, cost, userCurrency - cost);
-        return sender.Stream.Write(Responses.ServerMessage(server, message)).Then(a => base.Process(sender, server));
+        return base.Process(sender, server);
       }
-      catch (GiftsService.NotEnoughCurrencyException)
+      else
       {
-        return sender.Stream.Write(Responses.ServerWorldMessage(server, String.Format(Strings.YOU_DONT_HAVE_COINS_TO_WRITE_IN_WORLD, cost, userCurrency)));
+        return Nothing.Resolved();
       }
     }
   }

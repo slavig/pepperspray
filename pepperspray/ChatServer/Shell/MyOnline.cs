@@ -11,21 +11,24 @@ using pepperspray.ChatServer.Game;
 using pepperspray.ChatServer.Protocol;
 using pepperspray.Utils;
 using pepperspray.Resources;
+using pepperspray.SharedServices;
 
 namespace pepperspray.ChatServer.Shell
 {
   internal class MyOnline: AShellCommand
   {
-    internal override bool WouldDispatch(string tag)
+    private ShellDispatcher dispatcher = DI.Get<ShellDispatcher>();
+
+    internal override bool WouldDispatch(string tag, IEnumerable<string> arguments)
     {
-      return tag.Equals("myonline");
+      return tag.Equals("/myonline");
     }
 
-    internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
+    internal override IPromise<Nothing> Dispatch(PlayerHandle sender, CommandDomain domain, string tag, IEnumerable<string> arguments)
     {
       var hoursOnline = TimeSpan.FromSeconds(sender.User.TotalSecondsOnline).TotalHours;
       var message = String.Format(Strings.YOU_HAVE_BEEN_ONLINE_FOR_HOURS, hoursOnline < 1 ? "< 1" : Convert.ToUInt32(hoursOnline).ToString());
-      return dispatcher.Output(sender, server, message);
+      return this.dispatcher.Output(sender, message);
     }
   }
 }

@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using pepperspray.LoginServer;
 using pepperspray.Utils;
 using System.Text.RegularExpressions;
+using pepperspray.Resources;
 
 namespace pepperspray.SharedServices
 {
@@ -20,8 +21,10 @@ namespace pepperspray.SharedServices
 
     internal class NotFoundException: Exception { }
     internal class NotAuthorizedException: Exception { }
+    internal class NotEnoughCurrencyException : Exception { }
 
     internal static string characterPresetsDirectoryPath = Path.Combine("peppersprayData", "presets");
+    internal static uint WeddingPrice = 4000;
     private Dictionary<uint, Character> loggedCharacters = new Dictionary<uint, Character>();
 
     private Configuration config;
@@ -29,6 +32,7 @@ namespace pepperspray.SharedServices
     private Database db;
     private LoginServerListener loginServer;
     private ChatActionsAuthenticator actionsAuthenticator;
+    private GiftsService giftService;
 
     public void Inject()
     {
@@ -37,6 +41,7 @@ namespace pepperspray.SharedServices
       this.db = DI.Get<Database>();
       this.loginServer = DI.Get<LoginServerListener>();
       this.actionsAuthenticator = DI.Get<ChatActionsAuthenticator>();
+      this.giftService = DI.Get<GiftsService>();
     }
 
     internal Character LoginCharacter(User user, uint id, string name, string sex)
@@ -103,6 +108,7 @@ namespace pepperspray.SharedServices
         Name = name,
         Sex = sex,
         Appearance = this.GetDefaultAppearance(sex),
+        NumberOfSlots = this.config.PlayerDefaultPhotoSlots,
         AvatarSlot = "0",
         ProfileJSON = JsonConvert.SerializeObject(new Dictionary<string, object>
         {
@@ -127,6 +133,12 @@ namespace pepperspray.SharedServices
         this.CheckName(newName);
       }
 
+      if (character.Sex != newSex)
+      {
+        Log.Debug("Character sex of {uid} has been changed by {token}, reseting appearance to default.", id, token);
+        character.Appearance = this.GetDefaultAppearance(newSex);
+      }
+
       character.Name = newName;
       character.Sex = newSex;
 
@@ -145,11 +157,25 @@ namespace pepperspray.SharedServices
       }
     }
 
+    internal void ResetCharacterAppearances(string token)
+    {
+      Log.Debug("Client {token} reseting character appearances", token);
+
+      var user = this.db.Read((c) => c.UserFindByToken(token));
+      var characters = this.db.Read((c) => c.CharactersFindByUser(user));
+      foreach (var character in characters)
+      {
+        character.Appearance = this.GetDefaultAppearance(character.Sex);
+        this.db.Write((c) => c.CharacterUpdate(character));
+      }
+    }
+
     internal void SetCharacterSpouse(string token, uint id, uint spouseId)
     {
       Log.Debug("Client {token} updating character {id} spouse to {spouseId}", token, id, spouseId);
 
       var character = this.FindAndAuthorize(token, id);
+      var senderUser = this.db.Read((c) => c.UserFind(character.UserId));
       var spouse = this.Find(spouseId);
 
       if (spouse.SpouseId != 0)
@@ -164,11 +190,27 @@ namespace pepperspray.SharedServices
         throw new NotAuthorizedException();
       }
 
+      if (senderUser.Currency < CharacterService.WeddingPrice)
+      {
+        try
+        {
+          this.loginServer.Emit(token, "alert", String.Format(Strings.NOT_ENOUGH_COINS_REQUIRED, CharacterService.WeddingPrice, senderUser.Currency));
+        }
+        catch (LoginServerListener.NotFoundException)
+        {
+          Log.Warning("Failed to notify {token} about failed marry operation - not found on login server!", token);
+        }
+
+        throw new NotEnoughCurrencyException();
+      }
+
+      senderUser.Currency -= CharacterService.WeddingPrice;
       spouse.SpouseId = character.Id;
       character.SpouseId = spouseId;
 
       this.db.Write((c) =>
       {
+        c.UserUpdate(senderUser);
         c.CharacterUpdate(character);
         c.CharacterUpdate(spouse);
       });
@@ -202,12 +244,17 @@ namespace pepperspray.SharedServices
       this.db.Write((c) => c.CharacterUpdate(character));
     }
 
-    internal void DeleteCharacter(string token, uint id, string name)
+    internal void DeleteCharacter(string token, uint id)
     {
       Log.Debug("Client {token} deleting character {uid}", token, id);
 
       var character = this.FindAndAuthorize(token, id);
-      this.db.Write((c) => c.CharacterDeleteById(character.Id));
+      this.db.Write(c =>
+      {
+        c.PhotoSlotDeleteByCharacterId(character.Id);
+        c.LiaisonDeleteByParticipant(character.Id);
+        c.CharacterDeleteById(character.Id);
+      });
     }
 
     internal string GetCharacterProfile(uint id)
@@ -236,7 +283,7 @@ namespace pepperspray.SharedServices
           ? new Dictionary<string, object> { { "id", 0 } } 
           : new Dictionary<string, object> { { "id", spouse.Id }, { "name", spouse.Name }, {"sex", spouse.Sex } } },
         { "ava", character.AvatarSlot ?? "0" },
-        { "photos", this.config.PlayerPhotoSlots },
+        { "photos", character.NumberOfSlots },
         { "photoSlots", this.getPhotos(character.Id) }
       });
     }

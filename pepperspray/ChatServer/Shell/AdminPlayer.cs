@@ -17,22 +17,24 @@ namespace pepperspray.ChatServer.Shell
   {
     private CharacterService characterService = DI.Get<CharacterService>();
     private LoginService loginService = DI.Get<LoginService>();
+    private ShellDispatcher dispatcher = DI.Get<ShellDispatcher>();
+    private ChatManager manager = DI.Get<ChatManager>();
 
-    internal override bool RequireAdmin()
+    internal override bool HasPermissionToExecute(PlayerHandle sender)
     {
-      return true;
+      return sender.AdminOptions.HasFlag(AdminFlags.PlayerManagement);
     }
 
-    internal override bool WouldDispatch(string tag)
+    internal override bool WouldDispatch(string tag, IEnumerable<string> arguments)
     {
-      return tag.Equals("aplayer");
+      return tag.Equals("/aplayer");
     }
 
-    internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
+    internal override IPromise<Nothing> Dispatch(PlayerHandle sender, CommandDomain domain, string tag, IEnumerable<string> arguments)
     {
       if (arguments.Count() < 1)
       {
-        return dispatcher.InvalidUsage(sender, server);
+        return this.dispatcher.InvalidUsage(sender);
       }
 
       var name = arguments.First().Trim();
@@ -45,7 +47,7 @@ namespace pepperspray.ChatServer.Shell
 
       if (command.Equals("info"))
       {
-        return this.showInfo(dispatcher, sender, server, name);
+        return this.showInfo(sender, name);
       }
       else if (command.Equals("setstatus"))
       {
@@ -55,15 +57,15 @@ namespace pepperspray.ChatServer.Shell
           status = arguments.ElementAt(2).Trim();
         }
 
-        return this.status(dispatcher, sender, server, name, status);
+        return this.status(sender, name, status);
       } 
       else
       {
-        return dispatcher.Error(sender, server, Strings.UNKNOWN_COMMAND, command);
+        return this.dispatcher.Error(sender, Strings.UNKNOWN_COMMAND, command);
       }
     }
 
-    internal IPromise<Nothing> status(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string name, string status)
+    internal IPromise<Nothing> status(PlayerHandle sender, string name, string status)
     {
       Character character;
       try
@@ -72,7 +74,7 @@ namespace pepperspray.ChatServer.Shell
       } 
       catch (CharacterService.NotFoundException)
       {
-        return dispatcher.Error(sender, server, Strings.PLAYER_NOT_FOUND, name);
+        return this.dispatcher.Error(sender, Strings.PLAYER_NOT_FOUND, name);
       }
 
       User user = null;
@@ -81,19 +83,19 @@ namespace pepperspray.ChatServer.Shell
         user = this.loginService.FindUser(character.UserId);
       }
       catch (LoginService.NotFoundException) {
-        return dispatcher.Error(sender, server, Strings.USER_HAS_NOT_BEEN_FOUND_FOR_PLAYER);
+        return this.dispatcher.Error(sender, Strings.USER_HAS_NOT_BEEN_FOUND_FOR_PLAYER);
       }
 
-      if (user != null && user.IsAdmin)
+      if (user != null && user.AdminFlags > 0)
       {
-        return dispatcher.Error(sender, server, Strings.FORBIDDEN);
+        return this.dispatcher.Error(sender, Strings.FORBIDDEN);
       }
 
       this.loginService.UpdateStatus(user, status);
-      return dispatcher.Output(sender, server, Strings.STATUS_FOR_PLAYER_HAS_BEEN_SET, name, status);
+      return this.dispatcher.Output(sender, Strings.STATUS_FOR_PLAYER_HAS_BEEN_SET, name, status);
     }
 
-    internal IPromise<Nothing> showInfo(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string name)
+    internal IPromise<Nothing> showInfo(PlayerHandle sender, string name)
     {
       Character character;
       try
@@ -102,7 +104,7 @@ namespace pepperspray.ChatServer.Shell
       } 
       catch (CharacterService.NotFoundException)
       {
-        return dispatcher.Error(sender, server, Strings.PLAYER_NOT_FOUND, name);
+        return this.dispatcher.Error(sender, Strings.PLAYER_NOT_FOUND, name);
       }
 
       User user = null;
@@ -112,15 +114,15 @@ namespace pepperspray.ChatServer.Shell
       }
       catch (LoginService.NotFoundException) { }
 
-      if (user != null && user.IsAdmin)
+      if (user != null && (user.AdminFlags > 0 && !sender.AdminOptions.HasFlag(AdminFlags.AdminPlayerManagement)))
       {
-        return dispatcher.Error(sender, server, Strings.FORBIDDEN);
+        return this.dispatcher.Error(sender, Strings.FORBIDDEN);
       }
 
       PlayerHandle player = null;
-      lock (server)
+      lock (this.manager)
       {
-        player = server.World.FindPlayer(name);
+        player = this.manager.World.FindPlayer(name);
       }
 
       var messages = new List<string>();
@@ -148,13 +150,13 @@ namespace pepperspray.ChatServer.Shell
           messages.Add(String.Format("Status: {0}", user.Status));
         }
 
-        if (user.IsAdmin)
+        if (user.AdminFlags > 0)
         {
-          messages.Add(String.Format("Is admin", user.Currency));
+          messages.Add(String.Format("Is admin (flags {0})", user.AdminFlags));
         }
       }
 
-      return new CombinedPromise<Nothing>(messages.Select((m) => dispatcher.Output(sender, server, m)));
+      return new CombinedPromise<Nothing>(messages.Select((m) => this.dispatcher.Output(sender, m)));
     }
   }
 }

@@ -16,12 +16,14 @@ namespace pepperspray.RestAPIServer.Controllers
   internal class GiftController
   {
     private GiftsService giftService = DI.Get<GiftsService>();
+    private CharacterService characterService = DI.Get<CharacterService>();
 
     internal GiftController(Server s)
     {
       s.StaticRoutes.Add(HttpMethod.POST, "/getgifts", this.GetGifts);
       s.StaticRoutes.Add(HttpMethod.POST, "/sendgift", this.SendGift);
       s.StaticRoutes.Add(HttpMethod.POST, "/deletegift", this.DeleteGift);
+      s.StaticRoutes.Add(HttpMethod.POST, "/buyslot", this.BuySlot);
     }
 
     internal HttpResponse GetGifts(HttpRequest req)
@@ -98,6 +100,35 @@ namespace pepperspray.RestAPIServer.Controllers
         if (e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException || e is FormatException)
         {
           return req.FailureResponse();
+        }
+        else
+        {
+          throw e;
+        }
+      }
+    }
+
+    internal HttpResponse BuySlot(HttpRequest req)
+    {
+      try
+      {
+        var token = req.GetBearerToken();
+        var fromId = Convert.ToUInt32(req.GetFormParameter("from"));
+        var toId = Convert.ToUInt32(req.GetFormParameter("to"));
+
+        this.giftService.BuySlot(token, fromId, toId);
+        return req.TextResponse("ok");
+      }
+      catch (Exception e)
+      {
+        Request.HandleException(req, e);
+        if (e is CharacterService.NotAuthorizedException || e is CharacterService.NotFoundException || e is FormatException)
+        {
+          return req.FailureResponse();
+        }
+        else if (e is GiftsService.NotEnoughCurrencyException || e is GiftsService.SlotsAmountExceeded)
+        {
+          return req.TextResponse("money");
         }
         else
         {

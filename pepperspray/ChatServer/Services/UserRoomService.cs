@@ -90,7 +90,7 @@ namespace pepperspray.ChatServer.Services
 
     internal bool PlayerCanModerateRoom(PlayerHandle player, UserRoom room)
     {
-      if (room.OwnerId == player.Id || player.AdminOptions.IsEnabled)
+      if (room.OwnerId == player.Id || player.AdminOptions.HasFlag(AdminFlags.RoomManagement))
       {
         return true;
       }
@@ -229,6 +229,7 @@ namespace pepperspray.ChatServer.Services
           {
             Name = permanentRoom.Name,
             Identifier = permanentRoom.Identifier,
+            Type = "house",
             Access = UserRoom.AccessType.ForAll,
             OwnerName = permanentRoom.Owner,
             OwnerId = ownerCharacter.Id,

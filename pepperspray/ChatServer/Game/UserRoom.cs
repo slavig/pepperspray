@@ -17,6 +17,7 @@ namespace pepperspray.ChatServer.Game
 
     internal string Name;
     internal string Identifier;
+    internal string Type;
     internal Lobby Lobby;
     internal AccessType Access;
     internal string RadioURL;

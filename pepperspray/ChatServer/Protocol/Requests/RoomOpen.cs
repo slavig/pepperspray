@@ -15,8 +15,9 @@ namespace pepperspray.ChatServer.Protocol.Requests
 {
   internal class RoomOpen: ARequest
   {
-    private string lobbyIdentifier;
+    private string identifier;
     private string name;
+    private string type;
     private UserRoom.AccessType accessType;
 
     private UserRoomService userRoomService = DI.Get<UserRoomService>();
@@ -58,11 +59,18 @@ namespace pepperspray.ChatServer.Protocol.Requests
           return null;
       }
 
+      var roomType = arguments[1].ToString().Trim();
+      if (!Lobby.IsIdentifierFromDefaultPool(roomType) && !roomType.Equals("house"))
+      {
+        return null;
+      }
+
       return new RoomOpen
       {
-        lobbyIdentifier = lobbyIdentifier,
+        identifier = lobbyIdentifier,
         name = name,
         accessType = accessType,
+        type = roomType,
       };
     }
 
@@ -73,7 +81,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
         return false;
       }
 
-      if (!this.lobbyIdentifier.StartsWith(sender.Name))
+      if (!this.identifier.StartsWith(sender.Name))
       {
         return false;
       }
@@ -85,11 +93,12 @@ namespace pepperspray.ChatServer.Protocol.Requests
     {
       var room = new UserRoom
       {
-        Identifier = this.lobbyIdentifier,
+        Identifier = this.identifier,
         OwnerId = sender.Id,
         OwnerName = sender.Name,
         Name = this.userRoomService.CleanupName(this.name),
-        Access = this.accessType
+        Type = this.type,
+        Access = this.accessType,
       };
 
       return this.userRoomService.OpenRoom(room);

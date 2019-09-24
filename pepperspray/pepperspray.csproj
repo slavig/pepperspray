@@ -190,7 +190,9 @@
     <Compile Include="ChatServer\Shell\AdminMoney.cs" />
     <Compile Include="ChatServer\Shell\AdminPlayer.cs" />
     <Compile Include="ChatServer\Shell\AdminRoom.cs" />
+    <Compile Include="ChatServer\Shell\Dice.cs" />
     <Compile Include="ChatServer\Shell\Expel.cs" />
+    <Compile Include="ChatServer\Shell\Me.cs" />
     <Compile Include="ChatServer\Shell\Money.cs" />
     <Compile Include="ChatServer\Shell\MyOnline.cs" />
     <Compile Include="ChatServer\Shell\Pay.cs" />
@@ -229,7 +231,7 @@
     <Compile Include="ChatServer\Shell\AdminBroadcast.cs" />
     <Compile Include="ChatServer\Shell\AdminPlayers.cs" />
     <Compile Include="ChatServer\Shell\Help.cs" />
-    <Compile Include="ChatServer\Shell\AdminPrivateMessage.cs" />
+    <Compile Include="ChatServer\Shell\PrivateMessage.cs" />
     <Compile Include="ChatServer\Shell\Players.cs" />
     <Compile Include="ChatServer\Shell\ShellDispatcher.cs" />
     <Compile Include="ChatServer\Shell\AdminKick.cs" />

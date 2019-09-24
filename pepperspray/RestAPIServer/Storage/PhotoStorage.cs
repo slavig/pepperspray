@@ -90,63 +90,33 @@ namespace pepperspray.RestAPIServer.Storage
     {
       int sourceWidth = imgPhoto.Width;
       int sourceHeight = imgPhoto.Height;
+      int destWidth = 0;
+      int destHeight = 0;
 
-      if (sourceWidth <= newWidth)
+      // Calculate new dimentions
+
+      if (sourceWidth <= newWidth && sourceHeight <= newHeight) // Keep the source dimentions if they does not exceed the requested ones
       {
-        newWidth = sourceWidth;
+            destHeight = sourceHeight;
+            destWidth = sourceWidth;
+      }
+      else if (sourceWidth < sourceHeight) // Vertical image case
+      {
+            destHeight = newHeight;
+            destWidth = (int)((float)sourceWidth / (float)sourceHeight * (float)destHeight);
+      }
+      else // Horizontal or square image case
+      {
+           destWidth = newWidth;
+           destHeight = (int)((float)sourceHeight / (float)sourceWidth * (float)destWidth);
       }
 
-      if (sourceHeight <= newHeight)
-      {
-        newHeight = sourceHeight;
-      }
-
-      //Consider vertical pics
-      if (sourceWidth < sourceHeight)
-      {
-        int buff = newWidth;
-
-        newWidth = newHeight;
-        newHeight = buff;
-      }
-
-      int sourceX = 0, sourceY = 0, destX = 0, destY = 0;
-      float nPercent = 0, nPercentW = 0, nPercentH = 0;
-
-      nPercentW = ((float)newWidth / (float)sourceWidth);
-      nPercentH = ((float)newHeight / (float)sourceHeight);
-      if (nPercentH < nPercentW)
-      {
-        nPercent = nPercentH;
-        destX = System.Convert.ToInt16((newWidth -
-                  (sourceWidth * nPercent)) / 2);
-      }
-      else
-      {
-        nPercent = nPercentW;
-        destY = System.Convert.ToInt16((newHeight -
-                  (sourceHeight * nPercent)) / 2);
-      }
-
-      int destWidth = (int)(sourceWidth * nPercent);
-      int destHeight = (int)(sourceHeight * nPercent);
-
-      Bitmap bmPhoto = new Bitmap(newWidth, newHeight,
-                    PixelFormat.Format24bppRgb);
-
-      bmPhoto.SetResolution(imgPhoto.HorizontalResolution,
-                   imgPhoto.VerticalResolution);
-
+      Bitmap bmPhoto = new Bitmap(destWidth, destHeight, PixelFormat.Format24bppRgb);
+      bmPhoto.SetResolution(imgPhoto.HorizontalResolution, imgPhoto.VerticalResolution);
       Graphics grPhoto = Graphics.FromImage(bmPhoto);
-      grPhoto.Clear(Color.Black);
-      grPhoto.InterpolationMode =
-          System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-
-      grPhoto.DrawImage(imgPhoto,
-          new Rectangle(destX, destY, destWidth, destHeight),
-          new Rectangle(sourceX, sourceY, sourceWidth, sourceHeight),
-          GraphicsUnit.Pixel);
-
+      grPhoto.Clear(Color.White);
+      grPhoto.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+      grPhoto.DrawImage(imgPhoto, -1, -1, destWidth + 1, destHeight + 1);
       grPhoto.Dispose();
       imgPhoto.Dispose();
       return bmPhoto;

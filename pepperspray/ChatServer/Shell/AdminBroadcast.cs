@@ -17,34 +17,36 @@ namespace pepperspray.ChatServer.Shell
   internal class AdminBroadcast: AShellCommand
   {
     private LoginServerListener loginServer = DI.Get<LoginServerListener>();
+    private ShellDispatcher dispatcher = DI.Get<ShellDispatcher>();
+    private ChatManager manager = DI.Get<ChatManager>();
 
-    internal override bool RequireAdmin()
+    internal override bool HasPermissionToExecute(PlayerHandle sender)
     {
-      return true;
+      return sender.AdminOptions.HasFlag(AdminFlags.AdminBroadcast);
     }
 
-    internal override bool WouldDispatch(string tag)
+    internal override bool WouldDispatch(string tag, IEnumerable<string> arguments)
     {
-      return tag.Equals("abroadcast") || tag.Equals("aalert");
+      return tag.Equals("/abroadcast") || tag.Equals("/aalert");
     }
 
-    internal override IPromise<Nothing> Dispatch(ShellDispatcher dispatcher, PlayerHandle sender, ChatManager server, string tag, IEnumerable<string> arguments)
+    internal override IPromise<Nothing> Dispatch(PlayerHandle sender, CommandDomain domain, string tag, IEnumerable<string> arguments)
     {
-      if (arguments.Count() == 0 || tag.Equals("aalert") && arguments.Count() < 2)
+      if (arguments.Count() == 0 || tag.Equals("/aalert") && arguments.Count() < 2)
       {
-        return dispatcher.InvalidUsage(sender, server);
+        return this.dispatcher.InvalidUsage(sender);
       }
 
       string message = "";
       PlayerHandle[] players = null;
-      lock(server)
+      lock(this.manager)
       {
-        if (tag.Equals("aalert"))
+        if (tag.Equals("/aalert"))
         {
-          var player = server.World.FindPlayer(arguments.First());
+          var player = this.manager.World.FindPlayer(arguments.First());
           if (player == null)
           {
-            return dispatcher.Error(sender, server, Strings.PLAYER_NOT_FOUND, arguments.First());
+            return this.dispatcher.Error(sender, Strings.PLAYER_NOT_FOUND, arguments.First());
           }
 
           players = new PlayerHandle[] { player };
@@ -52,7 +54,7 @@ namespace pepperspray.ChatServer.Shell
         }
         else
         {
-          players = server.World.Players.ToArray();
+          players = this.manager.World.Players.ToArray();
           message = String.Join(" ", arguments);
         }
       }
