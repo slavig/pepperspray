@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 
 using Serilog;
 using pepperspray.ChatServer.Game;
+using pepperspray.ChatServer.Services.Events;
 using pepperspray.LoginServer;
 using pepperspray.Resources;
 
 namespace pepperspray.SharedServices
 {
-  internal class GiftsService: IDIService
+  internal class GiftsService: IDIService, PlayerLoggedOffEvent.IListener
   {
     internal class NotFoundException : Exception { }
     internal class NotEnoughCurrencyException : Exception { }
@@ -70,9 +71,9 @@ namespace pepperspray.SharedServices
       return result;
     }
 
-    internal void SendGift(string token, uint senderId, uint recepientId, string giftIdentifier, string message)
+    internal void SendGift(string token, uint senderId, uint recipientId, string giftIdentifier, string message)
     {
-      Log.Debug("Client {token} of {sender} sending gift to {recepient}: {gift_idetnfier} {message}", token, senderId, recepientId, giftIdentifier, message);
+      Log.Debug("Client {token} of {sender} sending gift to {recipient}: {gift_idetnfier} {message}", token, senderId, recipientId, giftIdentifier, message);
 
       try
       {
@@ -94,7 +95,7 @@ namespace pepperspray.SharedServices
         var gift = new Gift
         {
           SenderId = senderId,
-          RecepientId = recepientId,
+          RecepientId = recipientId,
           Identifier = giftIdentifier,
           Message = message,
           Date = DateTime.Now
@@ -104,12 +105,12 @@ namespace pepperspray.SharedServices
 
         try
         {
-          this.loginServer.Emit(recepientId, "gift", new Dictionary<string, string>
+          this.loginServer.Emit(recipientId, "gift", new Dictionary<string, string>
           {
-            { "for", recepientId.ToString() },
+            { "for", recipientId.ToString() },
           });
         } catch (LoginServerListener.NotFoundException) {
-          Log.Debug("GiftsService failed to send gift notification to {recepient} - login server connection not found", recepientId);
+          Log.Debug("GiftsService failed to send gift notification to {recipient} - login server connection not found", recipientId);
         }
       }
       catch (Database.NotFoundException)
@@ -150,9 +151,9 @@ namespace pepperspray.SharedServices
       try
       {
         var senderCharacter = this.characterService.FindAndAuthorize(token, fromId);
-        var recepientCharacter = this.characterService.Find(toId);
+        var recipientCharacter = this.characterService.Find(toId);
 
-        if (recepientCharacter.NumberOfSlots + 1 > this.config.PlayerMaxPhotoSlots)
+        if (recipientCharacter.NumberOfSlots + 1 > this.config.PlayerMaxPhotoSlots)
         {
           try
           {
@@ -166,7 +167,7 @@ namespace pepperspray.SharedServices
         }
 
         var senderUser = this.db.Read((c) => c.UserFind(senderCharacter.UserId));
-        var price = this.nextSlotPrice(recepientCharacter.NumberOfSlots);
+        var price = this.nextSlotPrice(recipientCharacter.NumberOfSlots);
         if (senderUser.Currency < price)
         {
           try
@@ -182,11 +183,11 @@ namespace pepperspray.SharedServices
         else
         {
           senderUser.Currency -= price;
-          recepientCharacter.NumberOfSlots += 1;
+          recipientCharacter.NumberOfSlots += 1;
 
           this.db.Write((c) => {
             c.UserUpdate(senderUser);
-            c.CharacterUpdate(recepientCharacter);
+            c.CharacterUpdate(recipientCharacter);
           });
         }
       }
@@ -214,16 +215,16 @@ namespace pepperspray.SharedServices
       this.db.Write((c) => c.UserUpdate(user));
     }
 
-    internal void TransferCurrency(User sender_, User recepient_, uint amount)
+    internal void TransferCurrency(User sender_, User recipient_, uint amount)
     {
-      if (sender_.Id.Equals(recepient_.Id))
+      if (sender_.Id.Equals(recipient_.Id))
       {
         throw new ArgumentException();
       }
 
       User sender = this.db.Read((c) => c.UserFind(sender_.Username));
-      User recepient = this.db.Read((c) => c.UserFind(recepient_.Username));
-      Log.Information("User {sender} transferring currency to {recepient} in amount of {amount}", sender.Username, recepient.Username, amount);
+      User recipient = this.db.Read((c) => c.UserFind(recipient_.Username));
+      Log.Information("User {sender} transferring currency to {recipient} in amount of {amount}", sender.Username, recipient.Username, amount);
 
       if (sender.Currency < amount)
       {
@@ -231,12 +232,12 @@ namespace pepperspray.SharedServices
       }
 
       sender.Currency -= amount;
-      recepient.Currency += amount;
+      recipient.Currency += amount;
 
       this.db.Write((c) =>
       {
         c.UserUpdate(sender);
-        c.UserUpdate(recepient);
+        c.UserUpdate(recipient);
       });
     }
 
@@ -279,16 +280,16 @@ namespace pepperspray.SharedServices
       }
     }
 
-    internal void PlayerLoggedOff(PlayerHandle handle)
+    public void PlayerLoggedOff(PlayerLoggedOffEvent ev)
     {
-      if (this.config.Currency.Enabled && handle.User != null)
+      if (this.config.Currency.Enabled)
       {
         try
         {
-          this.GrantOnlineBonus(handle.User, DateTime.Now - handle.LoggedAt);
+          this.GrantOnlineBonus(ev.Handle.User, DateTime.Now -ev.Handle.LoggedAt);
         } catch (Database.NotFoundException)
         {
-          Log.Warning("Failed to grant bonus - user {username} not found in the db!", handle.User.Username);
+          Log.Warning("Failed to grant bonus - user {username} not found in the db!", ev.Handle.User.Username);
         }
       }
     }

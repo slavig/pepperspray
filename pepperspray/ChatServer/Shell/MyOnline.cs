@@ -28,7 +28,7 @@ namespace pepperspray.ChatServer.Shell
     {
       var hoursOnline = TimeSpan.FromSeconds(sender.User.TotalSecondsOnline).TotalHours;
       var message = String.Format(Strings.YOU_HAVE_BEEN_ONLINE_FOR_HOURS, hoursOnline < 1 ? "< 1" : Convert.ToUInt32(hoursOnline).ToString());
-      return this.dispatcher.Output(sender, message);
+      return this.dispatcher.Output(domain, message);
     }
   }
 }

@@ -73,7 +73,7 @@ Friend add request (to server)
  friend "friend (2)"
 ```
 
-Friend add request (to recepient)
+Friend add request (to recipient)
 ```
 	.: <serv2 friend 
 	friend, AngelGTi, f, 86634

@@ -13,6 +13,7 @@ using pepperspray.Utils;
 using pepperspray.SharedServices;
 using pepperspray.LoginServer;
 using pepperspray.Resources;
+using System.Diagnostics;
 
 namespace pepperspray.ChatServer.Game
 {
@@ -28,6 +29,7 @@ namespace pepperspray.ChatServer.Game
     RoomManagement = 1 << 6,
     DisabledAuthenticator = 1 << 7,
     AdminPlayerManagement = 1 << 8,
+    ChatManagement = 1 << 9,
   }
 
   internal class PlayerHandle: IEquatable<PlayerHandle>
@@ -58,9 +60,10 @@ namespace pepperspray.ChatServer.Game
     internal string Sex;
 
     internal User User;
-    internal AdminOptionsConfiguration AdminOptions = new AdminOptionsConfiguration();
     internal Character Character;
 
+    internal AdminOptionsConfiguration AdminOptions = new AdminOptionsConfiguration();
+    internal SexPermissionMode SexPermissions = SexPermissionMode.Default;
     internal DateTime LoggedAt = DateTime.Now;
 
     internal Group CurrentGroup;

@@ -36,7 +36,7 @@ namespace pepperspray.ChatServer.Shell
     {
       if (arguments.Count() < 1 || (arguments.ElementAt(0) == "priority" && arguments.Count() < 2))
       {
-        return this.dispatcher.InvalidUsage(sender);
+        return this.dispatcher.InvalidUsage(domain);
       }
 
       var command = arguments.ElementAt(0);
@@ -46,11 +46,11 @@ namespace pepperspray.ChatServer.Shell
         var room = this.manager.World.FindUserRoom(id);
         if (room == null)
         {
-          return this.dispatcher.Error(sender, Strings.ROOM_HAS_NOT_BEEN_FOUND, id);
+          return this.dispatcher.Error(domain, Strings.ROOM_HAS_NOT_BEEN_FOUND, id);
         }
 
         room.IsPrioritized = !room.IsPrioritized;
-        return this.dispatcher.Output(sender, room.IsPrioritized ? Strings.ROOM_NOW_PRIORITIZED : Strings.ROOM_NOW_NOT_PRIORITIZED);
+        return this.dispatcher.Output(domain, room.IsPrioritized ? Strings.ROOM_NOW_PRIORITIZED : Strings.ROOM_NOW_NOT_PRIORITIZED);
       }
       else if (command.Equals("close"))
       {
@@ -58,14 +58,14 @@ namespace pepperspray.ChatServer.Shell
         var room = this.manager.World.FindUserRoom(id);
         if (room == null)
         {
-          return this.dispatcher.Error(sender, Strings.ROOM_HAS_NOT_BEEN_FOUND, id);
+          return this.dispatcher.Error(domain, Strings.ROOM_HAS_NOT_BEEN_FOUND, id);
         }
 
-        return this.userRoomService.CloseRoom(room).Then(a => this.dispatcher.Output(sender, Strings.ROOM_CLOSED));
+        return this.userRoomService.CloseRoom(room).Then(a => this.dispatcher.Output(domain, Strings.ROOM_CLOSED));
       }
       else
       {
-        return this.dispatcher.Error(sender, Strings.UNKNOWN_COMMAND, command);
+        return this.dispatcher.Error(domain, Strings.UNKNOWN_COMMAND, command);
       }
     }
   }

@@ -10,18 +10,20 @@ using Newtonsoft.Json;
 using pepperspray.SharedServices;
 using pepperspray.LoginServer;
 using pepperspray.ChatServer.Game;
+using pepperspray.ChatServer.Services.Events;
 using pepperspray.RestAPIServer.Services;
 using pepperspray.Utils;
 
 namespace pepperspray.SharedServices
 {
-  internal class LoginService: IDIService
+  internal class LoginService: IDIService, PlayerLoggedOffEvent.IListener
   {
     internal class InvalidPasswordException : Exception {}
     internal class NotFoundException : Exception {}
     internal class InvalidTokenException : Exception {}
     internal class UnsupportedProtocolVersionException: Exception {}
     internal class EndpointBannedException : Exception {}
+    internal class SignupDisabledByConfig : Exception {}
 
     private Configuration config;
     private Database db;
@@ -142,15 +144,17 @@ namespace pepperspray.SharedServices
 
     internal User SignUp(string endpoint, string username, string passwordHash)
     {
-      lock (this.db)
+      if (!this.config.SignUpEnabled)
       {
-        try
-        {
-          this.db.Read((c) => c.UserFind(username));
-          return null;
-        }
-        catch (Database.NotFoundException) { }
+        throw new SignupDisabledByConfig();
       }
+
+      try
+      {
+        this.db.Read((c) => c.UserFind(username));
+        return null;
+      }
+      catch (Database.NotFoundException) { }
 
       var user = new User
       {
@@ -204,7 +208,7 @@ namespace pepperspray.SharedServices
 
     internal User AuthorizeUser(string token)
     {
-      Log.Debug("Authorizing client by token {token}", token);
+      Log.Verbose("Authorizing client by token {token}", token);
 
       try
       {
@@ -218,7 +222,7 @@ namespace pepperspray.SharedServices
 
     internal Client AuthorizeClient(string token)
     {
-      Log.Debug("Authorizing client on social by token {token}", token);
+      Log.Verbose("Authorizing client on social by token {token}", token);
 
       try
       {
@@ -248,41 +252,35 @@ namespace pepperspray.SharedServices
       this.db.Write(c => c.UserUpdate(user));
     }
 
-    internal void PlayerLoggedOff(PlayerHandle handle)
+    public void PlayerLoggedOff(PlayerLoggedOffEvent ev)
     {
-      if (handle.IsLoggedIn)
-      {
-        var beenOnlineFor = DateTime.Now - handle.LoggedAt;
-        var user = this.FindUser(handle.User.Id);
+      var beenOnlineFor = DateTime.Now - ev.Handle.LoggedAt;
+      var user = this.FindUser(ev.Handle.User.Id);
 
-        user.TotalSecondsOnline += beenOnlineFor.TotalSeconds;
-        this.db.Write(c => c.UserUpdate(user));
-      }
+      user.TotalSecondsOnline += beenOnlineFor.TotalSeconds;
+      this.db.Write(c => c.UserUpdate(user));
     }
 
     internal string GetLoginResponseText(User user)
     {
-      lock (this.db)
+      var builder = new StringBuilder();
+
+      var status = user.Status != null && user.Status != "" ? user.Status : "ok";
+      builder.AppendLine("answer=" + (status));
+      builder.AppendLine("token=" + user.Token);
+
+      int i = 1;
+      foreach (var ch in this.db.Read((c) => c.CharactersFindByUser(user)))
       {
-        var builder = new StringBuilder();
+        builder.AppendLine("id" + i + "=" + ch.Id);
+        builder.AppendLine("name" + i + "=" + ch.Name);
+        builder.AppendLine("sex" + i + "=" + ch.Sex);
+        builder.AppendLine("data" + i + "=" + ch.Appearance);
 
-        var status = user.Status != null && user.Status != "" ? user.Status : "ok";
-        builder.AppendLine("answer=" + (status));
-        builder.AppendLine("token=" + user.Token);
-
-        int i = 1;
-        foreach (var ch in this.db.Read((c) => c.CharactersFindByUser(user)))
-        {
-          builder.AppendLine("id" + i + "=" + ch.Id);
-          builder.AppendLine("name" + i + "=" + ch.Name);
-          builder.AppendLine("sex" + i + "=" + ch.Sex);
-          builder.AppendLine("data" + i + "=" + ch.Appearance);
-
-          i++;
-        }
-
-        return builder.ToString();
+        i++;
       }
+
+      return builder.ToString();
     }
 
     internal string GetLoginFailedResponseText()

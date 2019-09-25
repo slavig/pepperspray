@@ -42,7 +42,7 @@ namespace pepperspray.LoginServer
         {
           return client.EventStream().Map(ev =>
           {
-            Log.Debug("LoginServer client {endpoint} processing command {cmd}", client.Endpoint, JsonConvert.SerializeObject(ev));
+            Log.Debug("LoginServer client {endpoint} processing command {cmd}", client.ConnectionEndpoint, JsonConvert.SerializeObject(ev));
 
             switch (ev.First().ToString())
             {
@@ -53,7 +53,7 @@ namespace pepperspray.LoginServer
                 }
 
                 var addr = ev.ElementAt(1).ToString() + ":0";
-                client.Endpoint = addr.Substring("::ffff:".Length);
+                client.ConnectionEndpoint = addr.Substring("::ffff:".Length);
                 break;
 
               case "retokennect":
@@ -88,7 +88,7 @@ namespace pepperspray.LoginServer
                 {
                   this.loginService.CheckProtocolVersion(protocolVersion);
 
-                  var user = this.loginService.Login(client.Endpoint, username, passwordHash);
+                  var user = this.loginService.Login(client.ConnectionEndpoint, username, passwordHash);
                   lock(this)
                   {
                     this.loggedClients[user.Token] = client;
@@ -107,7 +107,7 @@ namespace pepperspray.LoginServer
                 catch (LoginService.NotFoundException)
                 {
 #if DEBUG
-                    this.loginService.SignUp(client.Endpoint, username, passwordHash);
+                    this.loginService.SignUp(client.ConnectionEndpoint, username, passwordHash);
 #endif
 
                   client.Emit("login response", this.loginService.GetLoginFailedResponseText());
@@ -120,15 +120,21 @@ namespace pepperspray.LoginServer
             }
 
             return Nothing.Resolved();
-          }).Catch(e =>
+          })
+          .Catch(e =>
           {
-            Log.Warning("Caught exception during LoginServer: {exception}, terminating connection of {endpoint}/{token}", e, client.Endpoint, client.Token);
+            Log.Warning("Caught exception during LoginServer: {exception}, terminating connection of {endpoint}/{token}", e, client.ConnectionEndpoint, client.Token);
             if (client.Token != null && this.loggedClients.ContainsKey(client.Token))
             {
               this.loggedClients.Remove(client.Token);
             }
-
-            client.Terminate();
+          })
+          .Then(() =>
+          {
+            if (client.IsConnectionAlive)
+            {
+              client.Terminate();
+            }
           });
         });
 

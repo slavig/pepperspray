@@ -79,6 +79,33 @@ namespace pepperspray.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to muted.
+        /// </summary>
+        internal static string CHAT_MODE_MUTED {
+            get {
+                return ResourceManager.GetString("CHAT_MODE_MUTED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to no restrictions.
+        /// </summary>
+        internal static string CHAT_MODE_NO_RESTRICTIONS {
+            get {
+                return ResourceManager.GetString("CHAT_MODE_NO_RESTRICTIONS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to slowmode ({0} s).
+        /// </summary>
+        internal static string CHAT_MODE_SLOWMODE {
+            get {
+                return ResourceManager.GetString("CHAT_MODE_SLOWMODE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Configuration file reloaded..
         /// </summary>
         internal static string CONFIGURATION_FILE_RELOADED {
@@ -93,6 +120,24 @@ namespace pepperspray.Resources {
         internal static string CURRENCY_IS_NOT_ENABLED {
             get {
                 return ResourceManager.GetString("CURRENCY_IS_NOT_ENABLED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chat mode: {0}..
+        /// </summary>
+        internal static string CURRENT_CHAT_MODE {
+            get {
+                return ResourceManager.GetString("CURRENT_CHAT_MODE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current sex mode: {0} ({1})..
+        /// </summary>
+        internal static string CURRENT_SEX_MODE {
+            get {
+                return ResourceManager.GetString("CURRENT_SEX_MODE", resourceCulture);
             }
         }
         
@@ -164,6 +209,15 @@ namespace pepperspray.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Player {0} gave {1} coins to {2}..
+        /// </summary>
+        internal static string GAVE_COINS_TO {
+            get {
+                return ResourceManager.GetString("GAVE_COINS_TO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Internal server error..
         /// </summary>
         internal static string INTERNAL_SERVER_ERROR {
@@ -214,6 +268,24 @@ namespace pepperspray.Resources {
         internal static string LOGIN_TOKEN_INVALID {
             get {
                 return ResourceManager.GetString("LOGIN_TOKEN_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Prompt maximum line count ({0}) exceeded..
+        /// </summary>
+        internal static string MAXIMUM_LINE_COUNT_EXCEEDED {
+            get {
+                return ResourceManager.GetString("MAXIMUM_LINE_COUNT_EXCEEDED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Prompt maximum line length ({0}) exceeded..
+        /// </summary>
+        internal static string MAXIMUM_LINE_LENGTH_EXCEEDED {
+            get {
+                return ResourceManager.GetString("MAXIMUM_LINE_LENGTH_EXCEEDED", resourceCulture);
             }
         }
         
@@ -335,7 +407,7 @@ namespace pepperspray.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Player {0} send you {1} coins, you now have {2}..
+        ///   Looks up a localized string similar to Player {0} sent you {1} coins{2}, you now have {3}..
         /// </summary>
         internal static string PLAYER_SENT_YOU_COINS {
             get {
@@ -398,6 +470,15 @@ namespace pepperspray.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Room prompt has been set..
+        /// </summary>
+        internal static string ROOM_PROMPT_HAS_BEEN_SET {
+            get {
+                return ResourceManager.GetString("ROOM_PROMPT_HAS_BEEN_SET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sorry, sex is forbidden in this room..
         /// </summary>
         internal static string SEX_IS_FORBIDDEN_IN_ROOM {
@@ -425,18 +506,54 @@ namespace pepperspray.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to need agreement for everything.
+        /// </summary>
+        internal static string SEX_MODE_DESCRIPTION_DEFAULT {
+            get {
+                return ResourceManager.GetString("SEX_MODE_DESCRIPTION_DEFAULT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to deny partner requests.
+        /// </summary>
+        internal static string SEX_MODE_DESCRIPTION_DENY {
+            get {
+                return ResourceManager.GetString("SEX_MODE_DESCRIPTION_DENY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to need agreement for partner requests, don&apos;t need agreement to start sex.
+        /// </summary>
+        internal static string SEX_MODE_DESCRIPTION_POSEAGREE {
+            get {
+                return ResourceManager.GetString("SEX_MODE_DESCRIPTION_POSEAGREE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Following commands are available:
         ////players - show how many players are at standard locations.
         ////money - get amount of coints you have right now.
         ////myonline - display for how much you have been online (across all characters).
         ////pm PLAYER - open private message window with PLAYER.
         ////dice NUMBER - roll the dice. Number will be omitted, defaulting to 6.
-        ////pay PLAYER AMOUNT - transfer currency to other player.
-        ////expel PLAYER MINUTES - expel player from your location for MINUTES. Duration can be skipped so the p [rest of string was truncated]&quot;;.
+        ////pay PLAYER AMOUNT - transfer currency to other player. You can omit PLAYER if you send the command to him directly. 
+        ////give - the same as /pay, but sends a m [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SHELL_HELP_TEXT {
             get {
                 return ResourceManager.GetString("SHELL_HELP_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sorry, chat has been muted by the owner..
+        /// </summary>
+        internal static string SORRY_CHAT_IS_MUTED {
+            get {
+                return ResourceManager.GetString("SORRY_CHAT_IS_MUTED", resourceCulture);
             }
         }
         
@@ -464,6 +581,15 @@ namespace pepperspray.Resources {
         internal static string TIMED_OUT {
             get {
                 return ResourceManager.GetString("TIMED_OUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Too fast, chat is in slowmode ({0} s)..
+        /// </summary>
+        internal static string TOO_FAST_CHAT_IS_IN_SLOWMODE {
+            get {
+                return ResourceManager.GetString("TOO_FAST_CHAT_IS_IN_SLOWMODE", resourceCulture);
             }
         }
         
@@ -581,6 +707,15 @@ namespace pepperspray.Resources {
         internal static string YOU_SHOULD_BE_IN_THE_ROOM_TO_MODERATE_IT {
             get {
                 return ResourceManager.GetString("YOU_SHOULD_BE_IN_THE_ROOM_TO_MODERATE_IT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your mode has been changed..
+        /// </summary>
+        internal static string YOUR_MODE_HAS_BEEN_CHANGED {
+            get {
+                return ResourceManager.GetString("YOUR_MODE_HAS_BEEN_CHANGED", resourceCulture);
             }
         }
     }

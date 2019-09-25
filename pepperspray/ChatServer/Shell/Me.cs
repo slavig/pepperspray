@@ -11,6 +11,7 @@ using Serilog;
 using RSG;
 using pepperspray.CIO;
 using pepperspray.ChatServer.Game;
+using pepperspray.ChatServer.Services;
 using pepperspray.ChatServer.Protocol;
 using pepperspray.Utils;
 using pepperspray.SharedServices;
@@ -22,15 +23,23 @@ namespace pepperspray.ChatServer.Shell
   internal class Me: AShellCommand
   {
     private ChatManager manager = DI.Get<ChatManager>();
+    private LobbyService lobbyService = DI.Get<LobbyService>();
 
     internal override bool WouldDispatch(string tag, IEnumerable<string> arguments)
     {
-      return tag.Equals("/me") || arguments.Aggregate(false, (result, element) => result || element.Contains("/me"));
+      return tag.Equals("\\я")
+        || tag.Equals("/me")
+        || arguments.Aggregate(false, (result, element) => result || (element.Contains("/me") || element.Contains("\\я")));
     }
 
     internal override IPromise<Nothing> Dispatch(PlayerHandle sender, CommandDomain domain, string tag, IEnumerable<string> arguments)
     {
-      if (domain.IsWorld && !this.manager.CheckWorldMessagePermission(sender))
+      if (domain.IsWorld && (!this.manager.CheckWorldMessagePermission(sender) || !this.lobbyService.CheckSlowmodeTimerInWorld(sender)))
+      {
+        return Nothing.Resolved();
+      }
+
+      if (domain.IsLocal && sender.CurrentLobby != null && !this.lobbyService.CheckSlowmodeTimer(sender.CurrentLobby, sender))
       {
         return Nothing.Resolved();
       }
@@ -38,20 +47,22 @@ namespace pepperspray.ChatServer.Shell
       var contents = tag + " " + String.Join(" ", arguments);
       var messageToSend = "";
 
-      var components = contents.Split(new char[] { '/', ';' });
+      var components = contents.Split(new char[] { '\\', '/', ';' }).Select(s => s.Trim()).Where(s => s.Any());
+      var selfSufficient = contents.StartsWith("/me") && components.Count() == 1;
+
       foreach (var substring in components)
       {
-        var trimmedSubstring = substring.Trim();
-        if (trimmedSubstring.Any())
+        if (substring.StartsWith("me"))
         {
-          if (trimmedSubstring.StartsWith("me"))
-          {
-            messageToSend += trimmedSubstring.Substring(2);
-          }
-          else
-          {
-            messageToSend += String.Format(" \"{0}\"", trimmedSubstring);
-          }
+          messageToSend += substring.Substring(2);
+        }
+        else if (substring.StartsWith("я"))
+        {
+          messageToSend += substring.Substring(1);
+        }
+        else
+        {
+          messageToSend += String.Format(" \"{0}\"", substring);
         }
       }
 
@@ -59,16 +70,16 @@ namespace pepperspray.ChatServer.Shell
 
       var text = String.Format("{0}/me {1}", domain.Identifier, messageToSend);
 
-      var commands = domain.Recepients.Select(r => r.Stream.Write(Responses.Message(sender, text))).ToList();
-      if (components.Where(c => c.Trim().Any()).Count() > 1)
+      var commands = domain.Recipients.Select(r => r.Stream.Write(Responses.Message(sender, text))).ToList();
+      if (!selfSufficient)
       {
         if (domain.IsPrivate)
         {
-          if (domain.Recepients.Count() > 0)
+          if (domain.Recipients.Count() > 0)
           {
-            var recepient = domain.Recepients.First();
+            var recipient = domain.Recipients.First();
             var selfText = String.Format("{0}/me {1} {2} {3}", domain.Identifier, this.manager.Monogram, sender.Name, messageToSend);
-            commands.Add(sender.Stream.Write(Responses.Message(recepient, selfText)));
+            commands.Add(sender.Stream.Write(Responses.Message(recipient, selfText)));
           }
         }
         else

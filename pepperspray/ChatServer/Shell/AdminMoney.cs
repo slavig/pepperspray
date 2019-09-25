@@ -50,17 +50,17 @@ namespace pepperspray.ChatServer.Shell
           {
             if (sender.CurrentLobby == null)
             {
-              return this.dispatcher.Error(sender, Strings.YOU_ARE_NOT_IN_LOBBY);
+              return this.dispatcher.Error(domain, Strings.YOU_ARE_NOT_IN_LOBBY);
             }
 
             players = sender.CurrentLobby.Players.ToArray();
           }
           else
           {
-            var player = this.manager.World.FindPlayer(arguments.First().Trim());
+            var player = CommandUtils.GetPlayer(playerName, domain, this.manager);
             if (player == null)
             {
-              return this.dispatcher.Error(sender, Strings.PLAYER_NOT_FOUND, arguments.First());
+              return this.dispatcher.Error(domain, Strings.PLAYER_NOT_FOUND, playerName);
             }
 
             players = new PlayerHandle[] { player };
@@ -69,7 +69,7 @@ namespace pepperspray.ChatServer.Shell
 
         if (this.config.Currency.Enabled == false)
         {
-          return this.dispatcher.Error(sender, Strings.CURRENCY_IS_NOT_ENABLED);
+          return this.dispatcher.Error(domain, Strings.CURRENCY_IS_NOT_ENABLED);
         }
 
         foreach (var player in players)
@@ -86,13 +86,13 @@ namespace pepperspray.ChatServer.Shell
 
         var message = String.Format(Strings.YOU_HAVE_BEEN_GIFTED_COINS_FROM_ADMIN, amount);
         return new CombinedPromise<Nothing>(players.Select(p => p.Stream.Write(Responses.ServerDirectMessage(this.manager, message))))
-          .Then(a => this.dispatcher.Output(sender, Strings.DONE));
+          .Then(a => this.dispatcher.Output(domain, Strings.DONE));
       }
       catch (Exception e)
       {
         if (e is FormatException || e is ArgumentOutOfRangeException)
         {
-          return this.dispatcher.InvalidUsage(sender);
+          return this.dispatcher.InvalidUsage(domain);
         }
         else
         {

@@ -42,7 +42,7 @@ namespace pepperspray.ChatServer.Shell
       }
 
       var response = builder.ToString();
-      return this.dispatcher.Output(sender, response.Substring(0, response.Length - 1));
+      return this.dispatcher.Output(domain, response.Substring(0, response.Length - 1));
     }
   }
 }

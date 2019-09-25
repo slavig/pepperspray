@@ -8,13 +8,15 @@ using System.Threading.Tasks;
 using Serilog;
 using Newtonsoft.Json;
 using pepperspray.LoginServer;
+using pepperspray.ChatServer.Services.Events;
 using pepperspray.Utils;
 using System.Text.RegularExpressions;
 using pepperspray.Resources;
+using System.Collections.Concurrent;
 
 namespace pepperspray.SharedServices
 {
-  internal class CharacterService: IDIService
+  internal class CharacterService: IDIService, PlayerLoggedInEvent.IListener, PlayerLoggedOffEvent.IListener
   {
     internal class NameTakenException: Exception { }
     internal class InvalidNameException: Exception { }
@@ -25,7 +27,7 @@ namespace pepperspray.SharedServices
 
     internal static string characterPresetsDirectoryPath = Path.Combine("peppersprayData", "presets");
     internal static uint WeddingPrice = 4000;
-    private Dictionary<uint, Character> loggedCharacters = new Dictionary<uint, Character>();
+    private ConcurrentDictionary<uint, Character> loggedCharacters = new ConcurrentDictionary<uint, Character>();
 
     private Configuration config;
     private NameValidator nameValidator;
@@ -54,22 +56,22 @@ namespace pepperspray.SharedServices
         throw new InvalidNameException();
       }
 
-      character.LastLogin = DateTime.Now;
-      this.db.Write((c) => c.CharacterUpdate(character));
-
-      lock (this)
-      {
-        this.loggedCharacters[id] = character;
-      }
-
+      this.loggedCharacters[id] = character;
       return character;
     }
 
-    internal void LogoutCharacter(Character character)
+    public void PlayerLoggedIn(PlayerLoggedInEvent ev)
     {
-      lock(this)
+      ev.Handle.Character.LastLogin = DateTime.Now;
+      this.db.Write((c) => c.CharacterUpdate(ev.Handle.Character));
+    }
+
+    public void PlayerLoggedOff(PlayerLoggedOffEvent ev)
+    {
+      if (ev.Handle.Character != null)
       {
-        this.loggedCharacters.Remove(character.Id);
+        Character ch = null;
+        this.loggedCharacters.TryRemove(ev.Handle.Character.Id, out ch);
       }
     }
 
@@ -261,6 +263,21 @@ namespace pepperspray.SharedServices
     {
       Log.Debug("Client requesting chracter profile of {uid}", id);
 
+      if (id == 0)
+      {
+        return JsonConvert.SerializeObject(new Dictionary<string, object> {
+          { "id", 0 },
+          { "name", "pepperspray Server" },
+          { "sex", "f" },
+          { "profile", "{ \"age\": \"0\", \"interest\": \"?\", \"location\": \"github.com/peppersprayEzekiel\", \"about\": \"Сервер-тян.\n\nДискорд сервера (новости про обновления и статус сервера):\nhttps://discord.gg/Acf2QKS\n\nИсходный код сервера (можете поучаствовать в разработке):\nhttps://github.com/peppersprayEzekiel\" }" },
+          { "gifts",  this.getGiftCount(0) },
+          { "married", new Dictionary<string, object> { { "id", 1 }, { "name", "Ezekiel_2517" }, {"sex", "m" } } },
+          { "ava", "0" },
+          { "photos", "0" },
+          { "photoSlots", new Dictionary<string, string> { } },
+        });
+      }
+
       Character character = this.Find(id);
       Character spouse = null;
 
@@ -335,18 +352,15 @@ namespace pepperspray.SharedServices
     internal Character Find(uint id)
     {
       Character character;
-      lock (this)
+      if (!this.loggedCharacters.TryGetValue(id, out character))
       {
-        if (!this.loggedCharacters.TryGetValue(id, out character))
+        try
         {
-          try
-          {
-            character = this.db.Read((c) => c.CharacterFindById(id));
-          }
-          catch (Database.NotFoundException)
-          {
-            throw new NotFoundException();
-          }
+          character = this.db.Read((c) => c.CharacterFindById(id));
+        }
+        catch (Database.NotFoundException)
+        {
+          throw new NotFoundException();
         }
       }
 
@@ -355,25 +369,22 @@ namespace pepperspray.SharedServices
 
     internal Character Find(string name)
     {
-      lock(this)
-      {
-        var matching = this.loggedCharacters.Where(c => c.Value.Name.Equals(name));
+      var matching = this.loggedCharacters.Where(c => c.Value.Name.Equals(name));
 
-        if (matching.Count() == 0)
+      if (matching.Count() == 0)
+      {
+        try
         {
-          try
-          {
-            return this.db.Read((c) => c.CharacterFindByName(name));
-          }
-          catch (Database.NotFoundException)
-          {
-            throw new NotFoundException();
-          }
+          return this.db.Read((c) => c.CharacterFindByName(name));
         }
-        else
+        catch (Database.NotFoundException)
         {
-          return matching.First().Value;
+          throw new NotFoundException();
         }
+      }
+      else
+      {
+        return matching.First().Value;
       }
     }
 

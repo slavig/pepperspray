@@ -29,7 +29,7 @@ namespace pepperspray.ChatServer.Shell
       var promises = new List<IPromise<Nothing>>();
       foreach (var line in Strings.SHELL_HELP_TEXT.Split('\n'))
       {
-        promises.Add(this.dispatcher.Output(sender, line));
+        promises.Add(this.dispatcher.Output(domain, line));
       }
 
       return new CombinedPromise<Nothing>(promises);

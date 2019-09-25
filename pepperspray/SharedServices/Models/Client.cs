@@ -13,7 +13,8 @@ namespace pepperspray.SharedServices
 {
   internal class Client
   {
-    internal string Endpoint;
+    internal string ConnectionEndpoint;
+    internal bool IsConnectionAlive => this.connection.IsAlive;
     internal string Token;
     internal Character LoggedCharacter;
 
@@ -30,7 +31,7 @@ namespace pepperspray.SharedServices
       this.connection.InputStream().SingleThen(bytes =>
       {
         var jsonString = Encoding.UTF8.GetString(bytes);
-        var jsonObject = JsonConvert.DeserializeObject(jsonString);
+        var jsonObject = JsonConvert.DeserializeObject(jsonString + "");
         if (jsonObject is IEnumerable<object> == false)
         {
           throw new Exception("invalid request");
@@ -44,6 +45,7 @@ namespace pepperspray.SharedServices
 
         promise.SingleResolve(ev);
       })
+      .Then(_ => promise.Resolve(null))
       .Catch(exception =>
       {
         promise.Reject(exception);
@@ -56,7 +58,7 @@ namespace pepperspray.SharedServices
     {
       var str = JsonConvert.SerializeObject(arguments);
 #if DEBUG
-      Log.Verbose("Emitting to {endpoint} of {characterName}: json {json}", this.Endpoint, this.LoggedCharacter != null ? this.LoggedCharacter.Name : null, str);
+      Log.Verbose("Emitting to {endpoint} of {characterName}: json {json}", this.ConnectionEndpoint, this.LoggedCharacter != null ? this.LoggedCharacter.Name : null, str);
 #endif
       var bytes = Encoding.UTF8.GetBytes(str);
       return this.connection.Write(bytes);

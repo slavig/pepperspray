@@ -182,10 +182,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChatServer\ChatServerListener.cs" />
+    <Compile Include="ChatServer\Game\SexPermissionMode.cs" />
     <Compile Include="ChatServer\Protocol\Requests\GetOnline.cs" />
     <Compile Include="ChatServer\Protocol\Requests\Order.cs" />
     <Compile Include="ChatServer\Services\AppearanceRequestService.cs" />
+    <Compile Include="ChatServer\Services\Events\Events.cs" />
     <Compile Include="ChatServer\Services\RoomRadioService.cs" />
+    <Compile Include="ChatServer\Services\ServerPromptService.cs" />
     <Compile Include="ChatServer\Shell\AdminConfigReload.cs" />
     <Compile Include="ChatServer\Shell\AdminMoney.cs" />
     <Compile Include="ChatServer\Shell\AdminPlayer.cs" />
@@ -197,6 +200,7 @@
     <Compile Include="ChatServer\Shell\MyOnline.cs" />
     <Compile Include="ChatServer\Shell\Pay.cs" />
     <Compile Include="ChatServer\Shell\Room.cs" />
+    <Compile Include="ChatServer\Shell\Sex.cs" />
     <Compile Include="CIO\CIO.cs" />
     <Compile Include="CIO\CIOSocket.cs" />
     <Compile Include="CIO\CombinedPromise.cs" />
@@ -216,6 +220,11 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\Strings.ru1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Strings.ru.resx</DependentUpon>
     </Compile>
     <Compile Include="RestAPIServer\Controllers\BlacklistController.cs" />
     <Compile Include="RestAPIServer\Services\BlacklistService.cs" />
@@ -317,7 +326,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\Strings.ru.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Strings.ru.Designer.cs</LastGenOutput>
+      <LastGenOutput>Strings.ru1.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>

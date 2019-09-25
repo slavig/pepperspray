@@ -55,11 +55,11 @@ namespace pepperspray.ChatServer.Shell
       {
         if (domain.IsPrivate)
         {
-          if (domain.Recepients.Count() > 0)
+          if (domain.Recipients.Count() > 0)
           {
-            var recepient = domain.Recepients.First();
-            promises.Add(sender.Stream.Write(Responses.PrivateChatMessage(recepient, String.Format(Strings.PLAYER_ROLLED_OUT_OF, sender.Name, value, cap))));
-            promises.Add(recepient.Stream.Write(Responses.PrivateChatMessage(sender, String.Format(Strings.PLAYER_ROLLED_OUT_OF_VERIFY, sender.Name, value, cap))));
+            var recipient = domain.Recipients.First();
+            promises.Add(sender.Stream.Write(Responses.PrivateChatMessage(recipient, String.Format(Strings.PLAYER_ROLLED_OUT_OF, sender.Name, value, cap))));
+            promises.Add(recipient.Stream.Write(Responses.PrivateChatMessage(sender, String.Format(Strings.PLAYER_ROLLED_OUT_OF_VERIFY, sender.Name, value, cap))));
           }
         }
         else
@@ -67,7 +67,7 @@ namespace pepperspray.ChatServer.Shell
           promises.Add(sender.Stream.Write(msg));
         }
 
-        promises.AddRange(domain.Recepients.Select(r => r.Stream.Write(msg)));
+        promises.AddRange(domain.Recipients.Select(r => r.Stream.Write(msg)));
       }
 
       return new CombinedPromise<Nothing>(promises);

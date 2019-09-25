@@ -25,7 +25,7 @@ namespace pepperspray.ChatServer.Services
       return text.StartsWith("~action2/getRadioID|") || text.StartsWith("~action2/runRadio|");
     }
 
-    internal IPromise<Nothing> Dispatch(PlayerHandle sender, ChatManager manager, IEnumerable<PlayerHandle> recepients, string text)
+    internal IPromise<Nothing> Dispatch(PlayerHandle sender, ChatManager manager, IEnumerable<PlayerHandle> recipients, string text)
     {
       var prefix = "~action2/";
       var query = text.Substring(prefix.Length).Split('|');
@@ -57,9 +57,9 @@ namespace pepperspray.ChatServer.Services
             lobby.UserRoom.RadioURL = url;
           }
 
-          if (recepients.Count() > 0)
+          if (recipients.Count() > 0)
           {
-            return new CombinedPromise<Nothing>(recepients.Select(p => p.Stream.Write(Responses.RunRadio(manager, lobbyOwnerName, url))));
+            return new CombinedPromise<Nothing>(recipients.Select(p => p.Stream.Write(Responses.RunRadio(manager, lobbyOwnerName, url))));
           } else
           {
             return Nothing.Resolved();

@@ -40,13 +40,13 @@ namespace pepperspray.ChatServer.Shell
         this.config.LoadConfiguration();
         this.userRoomService.LoadPermanentRooms();
 
-        return this.dispatcher.Output(sender, Strings.CONFIGURATION_FILE_RELOADED);
+        return this.dispatcher.Output(domain, Strings.CONFIGURATION_FILE_RELOADED);
 #if !DEBUG
       }
       catch (Configuration.LoadException e)
       {
         Log.Warning("Failed to reload config (stage {stage}): {exception}", e.Stage, e.UnderlyingException);
-        return this.dispatcher.Error(sender, Strings.FAILED_TO_RELOAD_CONFIGURATION + e);
+        return this.dispatcher.Error(domain, Strings.FAILED_TO_RELOAD_CONFIGURATION + e);
       }
 #endif
     }

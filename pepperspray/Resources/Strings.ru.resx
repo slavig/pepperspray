@@ -123,11 +123,26 @@
   <data name="CHARACTER_NOT_FOUND" xml:space="preserve">
     <value>Персонаж не найдет.</value>
   </data>
+  <data name="CHAT_MODE_MUTED" xml:space="preserve">
+    <value>мьют</value>
+  </data>
+  <data name="CHAT_MODE_NO_RESTRICTIONS" xml:space="preserve">
+    <value>без ограничений</value>
+  </data>
+  <data name="CHAT_MODE_SLOWMODE" xml:space="preserve">
+    <value>медленный ({0} с)</value>
+  </data>
   <data name="CONFIGURATION_FILE_RELOADED" xml:space="preserve">
     <value>Конфигурационный файл перезагружен.</value>
   </data>
   <data name="CURRENCY_IS_NOT_ENABLED" xml:space="preserve">
     <value>Валюта не включена на этом сервере.</value>
+  </data>
+  <data name="CURRENT_CHAT_MODE" xml:space="preserve">
+    <value>Режим чата: {0}.</value>
+  </data>
+  <data name="CURRENT_SEX_MODE" xml:space="preserve">
+    <value>Ваш текущий режим: {0} ({1}).</value>
   </data>
   <data name="DISCONNECTING_ON_TIMEOUT_LONG" xml:space="preserve">
     <value>Вы будете отключены от сервера через 10 секунд.
@@ -154,6 +169,9 @@
   <data name="FORBIDDEN" xml:space="preserve">
     <value>Запрещено.</value>
   </data>
+  <data name="GAVE_COINS_TO" xml:space="preserve">
+    <value>Игрок {0} передал {1} монет игроку {2}.</value>
+  </data>
   <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
     <value>Внутренная ошибка сервера.</value>
   </data>
@@ -171,6 +189,12 @@
   </data>
   <data name="LOGIN_TOKEN_INVALID" xml:space="preserve">
     <value>Неверный токен входа.</value>
+  </data>
+  <data name="MAXIMUM_LINE_COUNT_EXCEEDED" xml:space="preserve">
+    <value>Превышено максимальное количество строк ({0}).</value>
+  </data>
+  <data name="MAXIMUM_LINE_LENGTH_EXCEEDED" xml:space="preserve">
+    <value>Превышена максимальная длина строки ({0}).</value>
   </data>
   <data name="MESSAGE_TO_WORLD_HAS_BEEN_SENT" xml:space="preserve">
     <value>Ваше сообщение было отправлено в World (стоимость - {0} монет). У вас осталось {1} монет.</value>
@@ -212,7 +236,7 @@
     <value>Игроку {0} выпало {1} из {2}; проверьте через сообщение сервера.</value>
   </data>
   <data name="PLAYER_SENT_YOU_COINS" xml:space="preserve">
-    <value>Игрок {0} отправил вам {1} монет, у вас теперь в сумме {2} монет.</value>
+    <value>Игрок {0} отправил вам {1} монет{2}, у вас теперь в сумме {3} монет.</value>
   </data>
   <data name="REASON_NONE" xml:space="preserve">
     <value>Нету.</value>
@@ -232,6 +256,9 @@
   <data name="ROOM_NOW_PRIORITIZED" xml:space="preserve">
     <value>Комната теперь приоритезирована.</value>
   </data>
+  <data name="ROOM_PROMPT_HAS_BEEN_SET" xml:space="preserve">
+    <value>Приветствие комнаты было установлено.</value>
+  </data>
   <data name="SEX_IS_FORBIDDEN_IN_ROOM" xml:space="preserve">
     <value>Извините, секс запрещен в этой комнате.</value>
   </data>
@@ -241,6 +268,15 @@
   <data name="SEX_IS_NOW_FORBIDDEN_IN_ROOM" xml:space="preserve">
     <value>Секс теперь запрещен в этой комнате.</value>
   </data>
+  <data name="SEX_MODE_DESCRIPTION_DEFAULT" xml:space="preserve">
+    <value>на все нужно соглашение</value>
+  </data>
+  <data name="SEX_MODE_DESCRIPTION_DENY" xml:space="preserve">
+    <value>отклонять все запросы</value>
+  </data>
+  <data name="SEX_MODE_DESCRIPTION_POSEAGREE" xml:space="preserve">
+    <value>нужно подтверждение для добавления партнера, позы - без подтверждения</value>
+  </data>
   <data name="SHELL_HELP_TEXT" xml:space="preserve">
     <value>Следующие команды доступны:
 /players - показать сколько игроков в стандартных локациях.
@@ -248,11 +284,18 @@
 /myonline - показать суммарное время онлайна (на всех персонажах).
 /pm ИГРОК - открыть окно личных сообщений с ИГРОК.
 /dice ЧИСЛО - кинуть кубик.ЧИСЛО можно не указывать, мо умолчанию будет 6.
-/pay ИГРОК КОЛИЧЕСТВО- передать монеты другому игроку.
-/expel ИГРОК ДЛИТЕЛЬНОСТЬ- исключить игрока с комнаты на указанное количество минут. Длительность может быть исключена что бы просто кикнуть его.
+/pay ИГРОК КОЛИЧЕСТВО - передать монеты другому игроку. Имя можно не указывать, если вы пишете эту команду в ПМ игроку, которому хотите отправить деньги.
+/give - то же самое, что и /pay, только пишет сообщение о сделке в Local.
+/expel ИГРОК ДЛИТЕЛЬНОСТЬ - исключить игрока с комнаты на указанное количество минут. Длительность может быть исключена что бы просто кикнуть его. Имя можно не указывать, если вы пишете эту команду в ПМ игроку, которого хотите кикнуть.
 /room persist - сделать комнату постоянной,что бы она оставалась открытой на некоторое время после вашего выхода из игры.
 /room close - закроет вашу текущую комнату.
-/room sex ЗНАЧЕНИЕ- "allow" что бы разрешить секс в комнате, "forbid" что бы запретить его.</value>
+/room sex ЗНАЧЕНИЕ - "allow" что бы разрешить секс в комнате, "forbid" что бы запретить его.
+/room prompt ТЕКСТ - установить приветствие для команды. Для переноса строки используйте "\".
+/room slowmode ЗНАЧЕНИЕ - установить настройки чата для комнаты. ЗНАЧЕНИЕ это либо количество секунд, которое будет интервалом слоу-мода, либо "reset" (вернет стандартные настройки) либо "mute" (замьютит всех).
+/sex ЗНАЧЕНИЕ - установить настройки секса. ЗНАЧЕНИЕ - "sub" что бы разрешить включение поз без подтверждения, "deny" что бы запретить кидать запрос на добавление в партнеры и "reset" что бы вернуться к стандартному поведению.</value>
+  </data>
+  <data name="SORRY_CHAT_IS_MUTED" xml:space="preserve">
+    <value>Извините, чат замьючен владельцем комнаты.</value>
   </data>
   <data name="STATUS_FOR_PLAYER_HAS_BEEN_SET" xml:space="preserve">
     <value>Статус аккаунта {0} был установлен в "{1}".</value>
@@ -262,6 +305,9 @@
   </data>
   <data name="TIMED_OUT" xml:space="preserve">
     <value>Подключение превысило время ожидания.</value>
+  </data>
+  <data name="TOO_FAST_CHAT_IS_IN_SLOWMODE" xml:space="preserve">
+    <value>Слишком быстро, чат в медленном режиме ({0} с).</value>
   </data>
   <data name="TRANSFERRED_COINS_TO" xml:space="preserve">
     <value>Передано {0} монет игроку {1}, у вас осталось {2}.</value>
@@ -274,6 +320,9 @@
   </data>
   <data name="USER_HAS_NOT_BEEN_FOUND_FOR_PLAYER" xml:space="preserve">
     <value>Аккаунт пользователя не был найден для этого игрока!</value>
+  </data>
+  <data name="YOUR_MODE_HAS_BEEN_CHANGED" xml:space="preserve">
+    <value>Режим был изменен.</value>
   </data>
   <data name="YOU_ARE_NOT_IN_LOBBY" xml:space="preserve">
     <value>Вы сейчас не находитесь в лобби.</value>

@@ -28,8 +28,18 @@ namespace pepperspray.RestAPIServer.Controllers
     {
       try
       {
-        var ignoredCharacters = this.blacklistService.GetIgnoredCharacters(req.GetBearerToken());
+        var id = Convert.ToUInt32(req.GetFormParameter("uid"));
+
+        var ignoredCharacters = this.blacklistService.GetCharactersIgnoredByUser(req.GetBearerToken());
         var blacklist = ignoredCharacters.Select((ch) => new Dictionary<string, object>
+        {
+          { "id", ch.Id },
+          { "n", ch.Name },
+          { "s", ch.Sex },
+        });
+
+        var ignoredByCharacters = this.blacklistService.GetCharactersWhichIgnoreCharacter(req.GetBearerToken(), id);
+        var reverseBlacklist = ignoredByCharacters.Select((ch) => new Dictionary<string, object>
         {
           { "id", ch.Id },
           { "n", ch.Name },
@@ -38,7 +48,7 @@ namespace pepperspray.RestAPIServer.Controllers
 
         return req.JsonResponse(new Dictionary<string, object>
         {
-          { "ignoredBy", new List<object>{ } },
+          { "ignoredBy", reverseBlacklist },
           { "blacklist", blacklist },
         });
       }

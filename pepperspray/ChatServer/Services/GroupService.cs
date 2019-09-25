@@ -11,10 +11,11 @@ using pepperspray.ChatServer.Game;
 using pepperspray.ChatServer.Protocol;
 using pepperspray.Utils;
 using pepperspray.SharedServices;
+using pepperspray.ChatServer.Services.Events;
 
 namespace pepperspray.ChatServer.Services
 {
-  internal class GroupService: IDIService
+  internal class GroupService: IDIService, PlayerLoggedInEvent.IListener, PlayerLoggedOffEvent.IListener
   {
     private ChatManager server;
     private Random random;
@@ -25,17 +26,17 @@ namespace pepperspray.ChatServer.Services
       this.random = new Random();
     }
 
-    internal void PlayerLoggedIn(PlayerHandle sender)
+    public void PlayerLoggedIn(PlayerLoggedInEvent ev)
     {
-      this.ResetGroup(sender);
-      this.JoinGroup(sender, sender.CurrentGroup, true);
+      this.ResetGroup(ev.Handle);
+      this.JoinGroup(ev.Handle, ev.Handle.CurrentGroup, true);
     }
 
-    internal void PlayerLoggedOff(PlayerHandle sender)
+    public void PlayerLoggedOff(PlayerLoggedOffEvent ev)
     {
-      if (sender.CurrentGroup != null)
+      if (ev.Handle.CurrentGroup != null)
       {
-        this.LeaveGroup(sender);
+        this.LeaveGroup(ev.Handle);
       }
     }
 

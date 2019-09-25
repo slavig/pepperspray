@@ -20,22 +20,9 @@ namespace pepperspray.ChatServer
 {
   internal class EventStream
   {
-    internal int ConnectionHash { get { return this.socket.ConnectionHash; } }
-    internal string ConnectionEndpoint
-    {
-      get
-      {
-        var endpoint = this.socket.Endpoint;
-        if (endpoint != null)
-        {
-          return String.Format("{0}:{1}", endpoint.Address, endpoint.Port);
-        }
-        else
-        {
-          return "null";
-        }
-      }
-    }
+    internal bool IsConnectionAlive => this.socket.IsAlive;
+    internal int ConnectionHash => this.socket.ConnectionHash;
+    internal string ConnectionEndpoint => String.Format("{0}:{1}", this.socket.Endpoint?.Address, this.socket.Endpoint?.Port);
     internal DateTime LastCommunicationDate;
 
     private CIOSocket socket;
@@ -123,8 +110,20 @@ namespace pepperspray.ChatServer
           }
         }
       })
-      .SingleCatch(exception => promise.Reject(exception))
-      .Catch(exception => promise.Reject(exception));
+      .Then(_ =>
+      {
+        promise.Resolve(null);
+      })
+      .Catch(exception => {
+        if (exception is CIOSocket.EmptyPacketException)
+        {
+          promise.Resolve(null);
+        } 
+        else
+        {
+          promise.Reject(exception);
+        }
+      });
 
       return promise;
     }

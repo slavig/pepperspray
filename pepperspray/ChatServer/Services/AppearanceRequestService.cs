@@ -25,15 +25,15 @@ namespace pepperspray.ChatServer.Services
       return text.StartsWith("~action2/givemeCharData|");
     }
 
-    internal IPromise<Nothing> Dispatch(PlayerHandle sender, IEnumerable<PlayerHandle> recepients, ChatManager manager, string text)
+    internal IPromise<Nothing> Dispatch(PlayerHandle sender, IEnumerable<PlayerHandle> recipients, ChatManager manager, string text)
     {
-      if (recepients.Count() < 1)
+      if (recipients.Count() < 1)
       {
-        Log.Debug("Failed to dispatch message from {sender} - no recepients", sender.Digest);
+        Log.Debug("Failed to dispatch message from {sender} - no recipients", sender.Digest);
         return Nothing.Resolved();
       }
 
-      return sender.Stream.Write(Responses.CharacterAppearance(recepients.First()));
+      return sender.Stream.Write(Responses.CharacterAppearance(recipients.First()));
     }
   }
 }

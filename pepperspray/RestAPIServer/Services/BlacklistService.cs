@@ -26,10 +26,18 @@ namespace pepperspray.RestAPIServer.Services
       this.characterService = DI.Get<CharacterService>();
     }
 
-    internal IEnumerable<Character> GetIgnoredCharacters(string token)
+    internal IEnumerable<Character> GetCharactersIgnoredByUser(string token)
     {
       var user = this.loginService.AuthorizeUser(token);
       return this.db.Read((c) => c.BlacklistFindById(user.Id));
+    }
+
+    internal IEnumerable<Character> GetCharactersWhichIgnoreCharacter(string token, uint id)
+    {
+      var user = this.loginService.AuthorizeUser(token);
+      var character = this.characterService.FindAndAuthorize(token, id);
+
+      return this.db.Read((c) => c.BlacklistFindByViolator(character));
     }
 
     internal void IgnoreCharacter(string token, uint id)

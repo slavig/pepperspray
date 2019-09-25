@@ -29,36 +29,39 @@ namespace pepperspray.SharedServices
       this.loginService = DI.Get<LoginService>();
     }
 
-    internal IPromise<Nothing> QueueMessage(PlayerHandle sender, string recepientName, string messageText)
+    internal IPromise<Nothing> QueueMessage(PlayerHandle sender, string recipientName, string messageText)
     {
       try
       {
-        Log.Debug("Offline message queue: from {sender} to {recepientName}", sender.Digest, recepientName);
-        var recepient = this.characterService.Find(recepientName);
+        Log.Debug("Offline message queue: from {sender} to {recipientName}", sender.Digest, recipientName);
+        var recipient = this.characterService.Find(recipientName);
+        var dateString = DateTime.Now.ToShortDateString();
+        var timeString = DateTime.Now.ToShortTimeString();
+
         var message = new OfflineMessage
         {
           SenderId = sender.Id,
-          RecepientId = recepient.Id,
-          Message = messageText
+          RecepientId = recipient.Id,
+          Message = String.Format("{0} {1}: {2}", dateString, timeString, messageText),
         };
 
         this.db.Write((c) => c.OfflineMessageInsert(message));
         return sender.Stream.Write(Responses.ServerPrivateChatMessage(
-          recepient.Name, 
-          recepient.Id, 
+          recipient.Name, 
+          recipient.Id, 
           Strings.PLAYER_IS_OFFLINE_MESSAGES_WILL_BE_DELIVERED
           ));
       }
       catch (Database.NotFoundException) 
       {
-        Log.Warning("Failed to queue offline message from {sender} - {recepientName} not found!", sender.Digest, recepientName);
+        Log.Warning("Failed to queue offline message from {sender} - {recipientName} not found!", sender.Digest, recipientName);
         return Nothing.Resolved();
       }
     }
 
-    internal IEnumerable<OfflineMessage> PopMessages(string token, uint recepientId)
+    internal IEnumerable<OfflineMessage> PopMessages(string token, uint recipientId)
     {
-      var character = this.characterService.FindAndAuthorize(token, recepientId);
+      var character = this.characterService.FindAndAuthorize(token, recipientId);
 
       List<OfflineMessage> messages = this.db.Read((c) => c.OfflineMessageFind(character.Id).ToList());
       this.db.Write((c) => c.OfflineMessageDelete(character.Id));

@@ -39,6 +39,7 @@ namespace pepperspray.ChatServer.Shell
         new Players(),
         new Expel(),
         new Dice(),
+        new Sex(),
         new Me(),
         new Room(),
         new Help(),
@@ -47,7 +48,7 @@ namespace pepperspray.ChatServer.Shell
 
     internal bool ShouldDispatch(string message)
     {
-      return message.StartsWith("/") || message.Contains("/me");
+      return message.StartsWith("/") || message.Contains("/me") || message.Contains("\\я");
     }
 
     internal IPromise<Nothing> Dispatch(PlayerHandle sender, CommandDomain domain, string message)
@@ -71,34 +72,47 @@ namespace pepperspray.ChatServer.Shell
               throw e;
 #else
               Log.Error("Exception occured during shell command {cmd} dispath from {player}: {exception}", message, sender.Digest, e);
-              return this.Error(sender, Strings.INTERNAL_SERVER_ERROR);
+              return this.Error(domain, Strings.INTERNAL_SERVER_ERROR);
 #endif
             }
           }
           else
           {
-            return this.Error(sender, Strings.ADMIN_NOT_AUTHENTICATED);
+            return this.Error(domain, Strings.ADMIN_NOT_AUTHENTICATED);
           }
         }
       }
 
       Log.Debug("Unkown shell command from {player} - {command}", sender.Digest, message);
-      return this.Error(sender, Strings.UNKNOWN_COMMAND_SEE_HELP);
+      return this.Error(domain, Strings.UNKNOWN_COMMAND_SEE_HELP);
     }
 
-    internal IPromise<Nothing> Error(PlayerHandle sender, string format, params object[] arguments)
+    internal IPromise<Nothing> Error(CommandDomain domain, string format, params object[] arguments)
     {
-      return this.Output(sender, format, arguments);
+      return this.Output(domain, format, arguments);
     }
 
-    internal IPromise<Nothing> InvalidUsage(PlayerHandle sender)
+    internal IPromise<Nothing> InvalidUsage(CommandDomain domain)
     {
-      return this.Error(sender, Strings.INVALID_USAGE);
+      return this.Error(domain, Strings.INVALID_USAGE);
     }
 
-    internal IPromise<Nothing> Output(PlayerHandle sender, string format, params object[] arguments)
+    internal IPromise<Nothing> Output(CommandDomain domain, string format, params object[] arguments)
     {
-      return sender.Stream.Write(Responses.ServerDirectMessage(this.manager, String.Format(format, arguments)));
+      var text = String.Format(format, arguments);
+      var sender = domain.Sender;
+
+      if (domain.IsPrivate)
+      {
+        if (domain.Recipients.Count() > 0)
+        {
+          var recipient = domain.Recipients.First();
+          text = String.Format("{0}/me {1} {2}", domain.Identifier, this.manager.Monogram, text);
+          return sender.Stream.Write(Responses.Message(recipient, text));
+        }
+      }
+
+      return sender.Stream.Write(Responses.ServerDirectMessage(this.manager, text));
     }
   }
 }

@@ -12,7 +12,6 @@ namespace pepperspray.CIO
   public interface IMultiPromise<A>: IPromise<A>
   {
     IMultiPromise<A> SingleThen(Action<A> func);
-    IMultiPromise<A> SingleCatch(Action<Exception> func);
     IMultiPromise<B> Map<B>(Func<A, B> func);
     IMultiPromise<B> CompactMap<B>(Func<A, B> func);
     IMultiPromise<B> Into<B>(Func<MultiPromise<A>, IMultiPromise<B>> func);
@@ -37,10 +36,7 @@ namespace pepperspray.CIO
           catch (Exception e)
           {
             Log.Debug("MultiPromise {promise} rejected due to unhandled exception: {exception}", this, e);
-            if (this.singleCatchFunc != null)
-            {
-              this.singleCatchFunc(e);
-            }
+            this.Reject(e);
           }
         }
       }
@@ -51,15 +47,6 @@ namespace pepperspray.CIO
       lock (this)
       {
         this.singleThenFunc = func;
-        return this;
-      }
-    }
-
-    public IMultiPromise<T> SingleCatch(Action<Exception> func)
-    {
-      lock (this)
-      {
-        this.singleCatchFunc = func;
         return this;
       }
     }
@@ -92,15 +79,18 @@ namespace pepperspray.CIO
     public MappedPromise(MultiPromise<A> promise, Func<A, B> functor, bool compact = false) 
     {
       this.promise = promise;
-      this.promise.SingleThen(item =>
+      this.promise.SingleThen(value =>
       {
-        var processedItem = functor(item);
+        var processedItem = functor(value);
         if (!compact || processedItem != null)
         {
           this.SingleResolve(processedItem);
         }
       })
-      .SingleCatch(ex => this.Reject(ex))
+      .Then(value =>
+      {
+        this.Resolve(default(B));
+      })
       .Catch(ex => this.Reject(ex));
     }
   }

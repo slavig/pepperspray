@@ -35,15 +35,11 @@ namespace pepperspray.ChatServer.Shell
     {
       if (arguments.Count() < 1)
       {
-        return this.dispatcher.InvalidUsage(sender);
+        return this.dispatcher.InvalidUsage(domain);
       }
 
       var name = arguments.ElementAt(0);
-      var reason = Strings.REASON_NONE;
-      if (arguments.Count() > 1)
-      {
-        reason = String.Join(" ", arguments.Skip(1));
-      }
+      var reason = CommandUtils.GetText(arguments.Skip(1)) ?? Strings.REASON_NONE;
 
       if (name.Equals("\\all"))
       {
@@ -69,19 +65,14 @@ namespace pepperspray.ChatServer.Shell
       }
       else
       {
-        PlayerHandle player;
-        lock (this.manager)
-        {
-          player = this.manager.World.FindPlayer(arguments.ElementAt(0));
-        }
-
+        PlayerHandle player = CommandUtils.GetPlayer(arguments.FirstOrDefault() ?? ".", domain, this.manager);
         if (player == null)
         {
-          return this.dispatcher.Error(sender, Strings.PLAYER_NOT_FOUND, arguments.First());
+          return this.dispatcher.Error(domain, Strings.PLAYER_NOT_FOUND, arguments.First());
         }
 
         return this.manager.KickPlayer(player, reason)
-          .Then(a => this.dispatcher.Output(sender, Strings.PLAYER_HAS_BEEN_KICKED, arguments.First()));
+          .Then(a => this.dispatcher.Output(domain, Strings.PLAYER_HAS_BEEN_KICKED, arguments.First()));
       }
     }
   }

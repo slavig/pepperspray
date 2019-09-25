@@ -28,7 +28,7 @@ namespace pepperspray.ChatServer.Shell
     {
       if (arguments.Count() != 1)
       {
-        return this.dispatcher.InvalidUsage(sender);
+        return this.dispatcher.InvalidUsage(domain);
       }
 
       var name = arguments.First().Trim();
@@ -49,7 +49,7 @@ namespace pepperspray.ChatServer.Shell
           }
           catch (CharacterService.NotFoundException)
           {
-            return this.dispatcher.Error(sender, Strings.PLAYER_NOT_FOUND, name);
+            return this.dispatcher.Error(domain, Strings.PLAYER_NOT_FOUND, name);
           }
         }
       }

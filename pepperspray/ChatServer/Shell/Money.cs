@@ -25,7 +25,7 @@ namespace pepperspray.ChatServer.Shell
 
     internal override IPromise<Nothing> Dispatch(PlayerHandle sender, CommandDomain domain, string tag, IEnumerable<string> arguments)
     {
-      return this.dispatcher.Output(sender, Strings.YOU_CURRENTLY_HAVE_COINTS, this.giftService.GetCurrency(sender.User));
+      return this.dispatcher.Output(domain, Strings.YOU_CURRENTLY_HAVE_COINTS, this.giftService.GetCurrency(sender.User));
     }
   }
 }

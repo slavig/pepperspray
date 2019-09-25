@@ -34,7 +34,7 @@ namespace pepperspray.ChatServer.Shell
     {
       if (arguments.Count() == 0 || tag.Equals("/aalert") && arguments.Count() < 2)
       {
-        return this.dispatcher.InvalidUsage(sender);
+        return this.dispatcher.InvalidUsage(domain);
       }
 
       string message = "";
@@ -43,10 +43,10 @@ namespace pepperspray.ChatServer.Shell
       {
         if (tag.Equals("/aalert"))
         {
-          var player = this.manager.World.FindPlayer(arguments.First());
+          var player = CommandUtils.GetPlayer(arguments.First(), domain, this.manager);
           if (player == null)
           {
-            return this.dispatcher.Error(sender, Strings.PLAYER_NOT_FOUND, arguments.First());
+            return this.dispatcher.Error(domain, Strings.PLAYER_NOT_FOUND, arguments.First());
           }
 
           players = new PlayerHandle[] { player };

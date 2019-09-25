@@ -25,8 +25,9 @@ namespace pepperspray.ChatServer.Protocol.Requests
     protected AppearanceRequestService appearanceRequestService = DI.Get<AppearanceRequestService>();
     protected OfflineMessageService offlineMessageService = DI.Get<OfflineMessageService>();
     protected RoomRadioService roomRadioService = DI.Get<RoomRadioService>();
+    protected LobbyService lobbyService = DI.Get<LobbyService>();
 
-    internal abstract IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, ChatManager server);
+    internal abstract IEnumerable<PlayerHandle> Recipients(PlayerHandle sender, ChatManager server);
 
     internal override string DebugDescription()
     {
@@ -81,9 +82,9 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
     internal override IPromise<Nothing> Process(PlayerHandle sender, ChatManager server)
     {
-      var recepients = this.Recepients(sender, server);
+      var recipients = this.Recipients(sender, server);
       var text = Send.StripCommand(this.contents);
-      var domain = new CommandDomain(Send.TextCommand(this.contents), recepients);
+      var domain = new CommandDomain(Send.TextCommand(this.contents), sender, recipients);
 
       if (this.shellDispatcher.ShouldDispatch(text))
       {
@@ -91,23 +92,25 @@ namespace pepperspray.ChatServer.Protocol.Requests
       }
       else if (this.appearanceRequestService.ShouldDispatch(text))
       {
-        return this.appearanceRequestService.Dispatch(sender, recepients, server, text);
+        return this.appearanceRequestService.Dispatch(sender, recipients, server, text);
       }
       else if (this.roomRadioService.ShouldDispatch(text))
       {
-        return this.roomRadioService.Dispatch(sender, server, recepients, text);
+        return this.roomRadioService.Dispatch(sender, server, recipients, text);
       }
       else
       {
-        var authenticationResult = this.actionsAuthenticator.Authenticate(sender, recepients.Count() == 1 ? recepients.First() : null, this.contents);
+        var authenticationResult = this.actionsAuthenticator.Authenticate(sender, recipients.Count() == 1 ? recipients.First() : null, this.contents);
         switch (authenticationResult)
         {
           case ChatActionsAuthenticator.AuthenticationResult.Ok:
-            return new CombinedPromise<Nothing>(recepients.Select((r) => r.Stream.Write(Responses.Message(sender, this.contents))));
-          case ChatActionsAuthenticator.AuthenticationResult.SexDisabled:
+            return new CombinedPromise<Nothing>(recipients.Select((r) => r.Stream.Write(Responses.Message(sender, this.contents))));
+
+          case ChatActionsAuthenticator.AuthenticationResult.SexDisabledInRoom:
             return sender.Stream.Write(Responses.ServerPrivateChatMessage(server.Monogram, 0, Strings.SEX_IS_FORBIDDEN_IN_ROOM));
+
           case ChatActionsAuthenticator.AuthenticationResult.NotAuthenticated:
-            return Nothing.Resolved();
+          case ChatActionsAuthenticator.AuthenticationResult.Ignored:
           default:
             return Nothing.Resolved();
         }
@@ -143,12 +146,12 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
   internal class SendPM: Send
   {
-    private string recepientName;
-    private PlayerHandle recepient;
+    private string recipientName;
+    private PlayerHandle recipient;
 
     internal override string DebugDescription()
     {
-      return base.DebugDescription() + ", to " + this.recepientName;
+      return base.DebugDescription() + ", to " + this.recipientName;
     }
 
     internal static SendPM Parse(Message ev)
@@ -165,7 +168,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
       return new SendPM
       {
-        recepientName = CharacterService.StripCharacterName(arguments[0].ToString()),
+        recipientName = CharacterService.StripCharacterName(arguments[0].ToString()),
         contents = arguments[1].ToString()
       };
     }
@@ -177,20 +180,20 @@ namespace pepperspray.ChatServer.Protocol.Requests
         return false;
       }
 
-      if (this.recepientName == server.Monogram)
+      if (this.recipientName == server.Monogram)
       {
         return true;
       }
 
-      this.recepient = server.World.FindPlayer(this.recepientName);
+      this.recipient = server.World.FindPlayer(this.recipientName);
       return true;
     }
 
-    internal override IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, ChatManager server)
+    internal override IEnumerable<PlayerHandle> Recipients(PlayerHandle sender, ChatManager server)
     {
-      if (this.recepient != null)
+      if (this.recipient != null)
       {
-        return new PlayerHandle[] { this.recepient };
+        return new PlayerHandle[] { this.recipient };
       }
       else
       {
@@ -200,13 +203,13 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
     internal override IPromise<Nothing> Process(PlayerHandle sender, ChatManager server)
     {
-      if (this.recepient != null || this.recepientName.Equals(server.Monogram) || this.WillServicesDispatch())
+      if (this.recipient != null || this.recipientName.Equals(server.Monogram) || this.WillServicesDispatch())
       {
         return base.Process(sender, server);
       }
       else if (this.contents.StartsWith("~private/"))
       {
-        return this.offlineMessageService.QueueMessage(sender, this.recepientName, Send.StripCommand(this.contents));
+        return this.offlineMessageService.QueueMessage(sender, this.recipientName, Send.StripCommand(this.contents));
       } 
       else
       {
@@ -235,7 +238,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
       return sender.CurrentGroup != null;
     }
 
-    internal override IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, ChatManager server)
+    internal override IEnumerable<PlayerHandle> Recipients(PlayerHandle sender, ChatManager server)
     {
       lock(server)
       {
@@ -261,15 +264,35 @@ namespace pepperspray.ChatServer.Protocol.Requests
         return false;
       }
  
-      return sender.CurrentLobby != null;
+      if (sender.CurrentLobby == null)
+      {
+        return false;
+      }
+
+      return true;
     }
 
-    internal override IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, ChatManager server)
+    internal override IEnumerable<PlayerHandle> Recipients(PlayerHandle sender, ChatManager server)
     {
       lock(server)
       {
         return sender.CurrentLobby.Players.Except(new PlayerHandle[] { sender }).ToList();
       }
+    }
+
+    internal override IPromise<Nothing> Process(PlayerHandle sender, ChatManager server)
+    {
+      if (this.WillServicesDispatch())
+      {
+        return base.Process(sender, server);
+      }
+
+      if (this.contents.StartsWith("~chat") && !this.lobbyService.CheckSlowmodeTimer(sender.CurrentLobby, sender))
+      {
+        return Nothing.Resolved();
+      }
+
+      return base.Process(sender, server);
     }
   }
 
@@ -296,15 +319,15 @@ namespace pepperspray.ChatServer.Protocol.Requests
       return true;
     }
 
-    internal override IEnumerable<PlayerHandle> Recepients(PlayerHandle sender, ChatManager server)
+    internal override IEnumerable<PlayerHandle> Recipients(PlayerHandle sender, ChatManager server)
     {
-      List<PlayerHandle> recepients = null;
+      List<PlayerHandle> recipients = null;
       lock(server)
       {
-        recepients = server.World.Players.Except(new PlayerHandle[] { sender }).ToList();
+        recipients = server.World.Players.Except(new PlayerHandle[] { sender }).ToList();
       }
 
-      return recepients;
+      return recipients;
     }
 
     internal override IPromise<Nothing> Process(PlayerHandle sender, ChatManager server)
@@ -314,14 +337,17 @@ namespace pepperspray.ChatServer.Protocol.Requests
         return base.Process(sender, server);
       }
 
-      if (server.CheckWorldMessagePermission(sender))
-      {
-        return base.Process(sender, server);
-      }
-      else
+      if (!this.lobbyService.CheckSlowmodeTimerInWorld(sender))
       {
         return Nothing.Resolved();
       }
+
+      if (!server.CheckWorldMessagePermission(sender))
+      {
+        return Nothing.Resolved();
+      }
+
+      return base.Process(sender, server);
     }
   }
 }

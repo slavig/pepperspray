@@ -44,8 +44,6 @@ namespace pepperspray.RestAPIServer.Controllers
     {
       try
       {
-        // this.throttleLoginAttempt(req.SourceIp);
-
         var str = Encoding.UTF8.GetString(req.Data);
         var parameters = JsonConvert.DeserializeObject<IDictionary<string, string>>(str);
 
@@ -169,6 +167,10 @@ namespace pepperspray.RestAPIServer.Controllers
       catch (LoginService.EndpointBannedException)
       {
         return req.TextResponse("banned");
+      }
+      catch (LoginService.SignupDisabledByConfig)
+      {
+        return req.TextResponse("signup_disabled");
       }
       catch (Exception e)
       {

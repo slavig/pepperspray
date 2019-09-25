@@ -32,12 +32,7 @@ namespace pepperspray.ChatServer.Shell
 
     internal override IPromise<Nothing> Dispatch(PlayerHandle sender, CommandDomain domain, string tag, IEnumerable<string> arguments)
     {
-      if (arguments.Count() < 1)
-      {
-        return this.dispatcher.InvalidUsage(sender);
-      }
-
-      var name = arguments.First().Trim();
+      var name = arguments.FirstOrDefault() ?? ".";
 
       var command = "info";
       if (arguments.Count() > 1)
@@ -47,7 +42,7 @@ namespace pepperspray.ChatServer.Shell
 
       if (command.Equals("info"))
       {
-        return this.showInfo(sender, name);
+        return this.showInfo(sender, domain, name);
       }
       else if (command.Equals("setstatus"))
       {
@@ -57,16 +52,22 @@ namespace pepperspray.ChatServer.Shell
           status = arguments.ElementAt(2).Trim();
         }
 
-        return this.status(sender, name, status);
+        return this.status(sender, domain, name, status);
       } 
       else
       {
-        return this.dispatcher.Error(sender, Strings.UNKNOWN_COMMAND, command);
+        return this.dispatcher.Error(domain, Strings.UNKNOWN_COMMAND, command);
       }
     }
 
-    internal IPromise<Nothing> status(PlayerHandle sender, string name, string status)
+    internal IPromise<Nothing> status(PlayerHandle sender, CommandDomain domain, string name, string status)
     {
+      PlayerHandle player = CommandUtils.GetPlayer(name, domain, this.manager);
+      if (player != null)
+      {
+        name = player.Name;
+      }
+
       Character character;
       try
       {
@@ -74,7 +75,7 @@ namespace pepperspray.ChatServer.Shell
       } 
       catch (CharacterService.NotFoundException)
       {
-        return this.dispatcher.Error(sender, Strings.PLAYER_NOT_FOUND, name);
+        return this.dispatcher.Error(domain, Strings.PLAYER_NOT_FOUND, name);
       }
 
       User user = null;
@@ -83,20 +84,26 @@ namespace pepperspray.ChatServer.Shell
         user = this.loginService.FindUser(character.UserId);
       }
       catch (LoginService.NotFoundException) {
-        return this.dispatcher.Error(sender, Strings.USER_HAS_NOT_BEEN_FOUND_FOR_PLAYER);
+        return this.dispatcher.Error(domain, Strings.USER_HAS_NOT_BEEN_FOUND_FOR_PLAYER);
       }
 
       if (user != null && user.AdminFlags > 0)
       {
-        return this.dispatcher.Error(sender, Strings.FORBIDDEN);
+        return this.dispatcher.Error(domain, Strings.FORBIDDEN);
       }
 
       this.loginService.UpdateStatus(user, status);
-      return this.dispatcher.Output(sender, Strings.STATUS_FOR_PLAYER_HAS_BEEN_SET, name, status);
+      return this.dispatcher.Output(domain, Strings.STATUS_FOR_PLAYER_HAS_BEEN_SET, name, status);
     }
 
-    internal IPromise<Nothing> showInfo(PlayerHandle sender, string name)
+    internal IPromise<Nothing> showInfo(PlayerHandle sender, CommandDomain domain, string name)
     {
+      PlayerHandle player = CommandUtils.GetPlayer(name, domain, this.manager);
+      if (player != null)
+      {
+        name = player.Name;
+      }
+
       Character character;
       try
       {
@@ -104,7 +111,7 @@ namespace pepperspray.ChatServer.Shell
       } 
       catch (CharacterService.NotFoundException)
       {
-        return this.dispatcher.Error(sender, Strings.PLAYER_NOT_FOUND, name);
+        return this.dispatcher.Error(domain, Strings.PLAYER_NOT_FOUND, name);
       }
 
       User user = null;
@@ -116,13 +123,7 @@ namespace pepperspray.ChatServer.Shell
 
       if (user != null && (user.AdminFlags > 0 && !sender.AdminOptions.HasFlag(AdminFlags.AdminPlayerManagement)))
       {
-        return this.dispatcher.Error(sender, Strings.FORBIDDEN);
-      }
-
-      PlayerHandle player = null;
-      lock (this.manager)
-      {
-        player = this.manager.World.FindPlayer(name);
+        return this.dispatcher.Error(domain, Strings.FORBIDDEN);
       }
 
       var messages = new List<string>();
@@ -156,7 +157,7 @@ namespace pepperspray.ChatServer.Shell
         }
       }
 
-      return new CombinedPromise<Nothing>(messages.Select((m) => this.dispatcher.Output(sender, m)));
+      return new CombinedPromise<Nothing>(messages.Select((m) => this.dispatcher.Output(domain, m)));
     }
   }
 }

@@ -57,7 +57,7 @@ namespace pepperspray.ChatServer.Shell
 
         if (player.CurrentLobbyIdentifier != lastLobbyIdentifier)
         {
-          output.Add(this.dispatcher.Output(sender, builder.ToString()));
+          output.Add(this.dispatcher.Output(domain, builder.ToString()));
           builder.Clear();
 
           builder.AppendFormat("{0}: ", player.CurrentLobbyIdentifier);
@@ -67,14 +67,14 @@ namespace pepperspray.ChatServer.Shell
         builder.AppendFormat(" {0},", player.Name);
         if (builder.Length > 200)
         {
-          output.Add(this.dispatcher.Output(sender, builder.ToString()));
+          output.Add(this.dispatcher.Output(domain, builder.ToString()));
           builder.Clear();
         }
       }
 
       if (builder.ToString().Trim().Count() > 0)
       {
-        output.Add(this.dispatcher.Output(sender, builder.ToString()));
+        output.Add(this.dispatcher.Output(domain, builder.ToString()));
       }
       return new CombinedPromise<Nothing>(output);
     }

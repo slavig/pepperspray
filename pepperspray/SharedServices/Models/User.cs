@@ -23,5 +23,6 @@ namespace pepperspray.SharedServices
     public DateTime LastSeenAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public double TotalSecondsOnline { get; set; }
+    public string LastEndpoints { get; set; }
   }
 }

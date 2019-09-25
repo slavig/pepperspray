@@ -117,10 +117,10 @@ namespace pepperspray.ChatServer.Protocol
       return new Message("srv", "playerleave=" + player.Name);
     }
 
-    internal static Message Friend(PlayerHandle player, PlayerHandle recepient)
+    internal static Message Friend(PlayerHandle player, PlayerHandle recipient)
     {
       var payload = String.Format("{0},{1}",
-        recepient.Id,
+        recipient.Id,
         player.Id
       );
 
@@ -192,6 +192,17 @@ namespace pepperspray.ChatServer.Protocol
           { "name", server.Monogram },
           { "id", "0" },
           { "data", "~worldchat/" + contents }
+        }
+      );
+    }
+
+    internal static Message ServerLocalMessage(ChatManager server, string contents)
+    {
+      return new Message("msg", new Dictionary<string, object>
+        {
+          { "name", server.Monogram },
+          { "id", "0" },
+          { "data", "~chat/" + contents }
         }
       );
     }

@@ -14,8 +14,8 @@ namespace pepperspray.ChatServer.Protocol.Requests
 {
   internal class FriendRequest: ARequest
   {
-    private uint recepientId;
-    private PlayerHandle recepient;
+    private uint recipientId;
+    private PlayerHandle recipient;
 
     internal static FriendRequest Parse(Message ev)
     {
@@ -36,7 +36,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
       return new FriendRequest
       {
-        recepientId = id
+        recipientId = id
       };
     }
 
@@ -49,10 +49,10 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
       lock(server)
       {
-        this.recepient = server.World.FindPlayerById(this.recepientId);
+        this.recipient = server.World.FindPlayerById(this.recipientId);
       }
 
-      if (this.recepient == null)
+      if (this.recipient == null)
       {
         return false;
       }
@@ -62,7 +62,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
     internal override IPromise<Nothing> Process(PlayerHandle sender, ChatManager server)
     {
-      return this.recepient.Stream.Write(Responses.Friend(sender, this.recepient));
+      return this.recipient.Stream.Write(Responses.Friend(sender, this.recipient));
     }
   }
 }

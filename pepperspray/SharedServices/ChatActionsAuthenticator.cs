@@ -8,12 +8,13 @@ using Serilog;
 using RSG;
 using pepperspray.CIO;
 using pepperspray.ChatServer.Game;
+using pepperspray.ChatServer.Services.Events;
 using pepperspray.ChatServer.Protocol;
 using pepperspray.SharedServices;
 
 namespace pepperspray.SharedServices
 {
-  internal class ChatActionsAuthenticator: IDIService
+  internal class ChatActionsAuthenticator: IDIService, PlayerLoggedOffEvent.IListener
   {
     private class PoseAgreement
     {
@@ -29,16 +30,16 @@ namespace pepperspray.SharedServices
     private class MarryAgreement
     {
       internal string Initiator;
-      internal string Recepient;
+      internal string Recipient;
 
       internal bool IsBetween(string player1, string player2)
       {
-        if (this.Initiator == null || this.Recepient == null)
+        if (this.Initiator == null || this.Recipient == null)
         {
           return false;
         }
 
-        return (this.Initiator.Equals(player1) && this.Recepient.Equals(player2)) || (this.Initiator.Equals(player2) && this.Recepient.Equals(player1));
+        return (this.Initiator.Equals(player1) && this.Recipient.Equals(player2)) || (this.Initiator.Equals(player2) && this.Recipient.Equals(player1));
       }
     }
 
@@ -86,8 +87,9 @@ namespace pepperspray.SharedServices
     internal enum AuthenticationResult
     {
       Ok,
+      Ignored,
       NotAuthenticated,
-      SexDisabled
+      SexDisabledInRoom,
     }
 
     private List<PoseAgreement> activePoseAgreements = new List<PoseAgreement>();
@@ -132,7 +134,7 @@ namespace pepperspray.SharedServices
 
     }
 
-    internal AuthenticationResult Authenticate(PlayerHandle sender, PlayerHandle recepient, string message)
+    internal AuthenticationResult Authenticate(PlayerHandle sender, PlayerHandle recipient, string message)
     {
       var command = this.parseCommand(message);
       if (command.Type == Command.CommandType.none)
@@ -143,30 +145,62 @@ namespace pepperspray.SharedServices
       var authenticationResult = this.authenticateCommand(sender, command);
       if (authenticationResult == AuthenticationResult.Ok)
       {
-        if (command.Name.Equals("acceptPoseAsk"))
+        if (command.Name.EndsWith("party"))
         {
-          if (recepient == null)
+          if (recipient == null)
           {
-            Log.Warning("Failed to authenticate command {command} from {sender} - recepient not set", command.Name, sender.Digest);
+            Log.Warning("Failed to authenticate command {command} from {sender} - recipient not set", command.Name, sender.Digest);
             return AuthenticationResult.NotAuthenticated;
           }
 
-          var agreement = this.findPoseAgreement(recepient.Name);
-          if (agreement != null)
+          if (recipient.SexPermissions == SexPermissionMode.Deny)
           {
-            Log.Debug("Agreement of {initiator} - added {name}", recepient.Digest, sender.Digest);
-            agreement.Participants.Add(sender.Name);
-          }
-          else
-          {
-            return AuthenticationResult.NotAuthenticated;
+            Log.Debug("Party request of {sender} to {recipient} was automatically ignored due to settings (value {value})",
+              sender.Digest,
+              recipient.Digest,
+              recipient.SexPermissions);
+            return AuthenticationResult.Ignored;
           }
         }
         else if (command.Name.Equals("askForPose"))
         {
           Log.Debug("Agreement containing {player} removed, moving to next agreement", sender.Digest);
           this.removePoseAgreement(sender.Name);
-          this.findOrCreatePoseAgreement(sender.Name);
+          var agreement = this.findOrCreatePoseAgreement(sender.Name);
+          if (recipient.SexPermissions == SexPermissionMode.AllowPose)
+          {
+            Log.Debug("Agreement containing {player} and {recipient} was automatically agreed upon due to settings (value {value})",
+              sender.Digest,
+              recipient.Digest,
+              recipient.SexPermissions.Identifier());
+
+            var pose = command.Arguments.ElementAtOrDefault(1);
+            var idx = command.Arguments.ElementAtOrDefault(3);
+            var msg = String.Format("~action/acceptPoseAsk|{0}|{1}|{2}||", recipient.Name, pose, idx);
+
+            agreement.Participants.Add(recipient.Name);
+            sender.Stream.Write(Responses.Message(recipient, msg));
+            return AuthenticationResult.Ignored;
+          }
+        }
+        else if (command.Name.Equals("acceptPoseAsk"))
+        {
+          if (recipient == null)
+          {
+            Log.Warning("Failed to authenticate command {command} from {sender} - recipient not set", command.Name, sender.Digest);
+            return AuthenticationResult.NotAuthenticated;
+          }
+
+          var agreement = this.findPoseAgreement(recipient.Name);
+          if (agreement != null)
+          {
+            Log.Debug("Agreement of {initiator} - added {name}", recipient.Digest, sender.Digest);
+            agreement.Participants.Add(sender.Name);
+          }
+          else
+          {
+            return AuthenticationResult.NotAuthenticated;
+          }
         }
         else if (command.Name.Equals("stopSexPS"))
         {
@@ -180,15 +214,15 @@ namespace pepperspray.SharedServices
         }
         else if (command.Name.Equals("marry_agree"))
         {
-          var agreement = this.findMarryAgreement(recepient.Name);
+          var agreement = this.findMarryAgreement(recipient.Name);
           if (agreement != null)
           {
-            Log.Debug("Marry agreement of {initiator} - agreed upon from {sender}", recepient.Digest, sender.Digest);
-            agreement.Recepient = sender.Name;
+            Log.Debug("Marry agreement of {initiator} - agreed upon from {sender}", recipient.Digest, sender.Digest);
+            agreement.Recipient = sender.Name;
           }
           else
           {
-            Log.Debug("Player {recepient} is unable to agree to marry proposal of {initiator} - couldn't find agreement", sender.Digest, recepient.Digest);
+            Log.Debug("Player {recipient} is unable to agree to marry proposal of {initiator} - couldn't find agreement", sender.Digest, recipient.Digest);
             return AuthenticationResult.NotAuthenticated;
           }
         }
@@ -216,7 +250,7 @@ namespace pepperspray.SharedServices
         case "useSexPose":
           if (this.checkIfPoseIsForbiddenInLobby(sender, command))
           {
-            return AuthenticationResult.SexDisabled;
+            return AuthenticationResult.SexDisabledInRoom;
           }
 
           var agreement = this.findPoseAgreement(sender.Name);
@@ -264,7 +298,7 @@ namespace pepperspray.SharedServices
         case "askForPose":
           if (this.checkIfPoseIsForbiddenInLobby(sender, command))
           {
-            return AuthenticationResult.SexDisabled;
+            return AuthenticationResult.SexDisabledInRoom;
           }
           else
           {
@@ -276,16 +310,11 @@ namespace pepperspray.SharedServices
       }
     }
 
-    internal IPromise<Nothing> PlayerLoggedOff(PlayerHandle player)
+    public void PlayerLoggedOff(PlayerLoggedOffEvent ev)
     {
-      if (player.Name != null)
-      {
-        Log.Debug("Removing agreements containing {player} - logged off", player.Digest);
-        this.removePoseAgreement(player.Name);
-        this.removeMarryAgreement(player.Name);
-      }
-
-      return Nothing.Resolved();
+      Log.Debug("Removing agreements containing {player} - logged off", ev.Handle.Digest);
+      this.removePoseAgreement(ev.Handle.Name);
+      this.removeMarryAgreement(ev.Handle.Name);
     }
 
     internal bool AuthenticateAndFullfillMarryAgreement(string participant1, string participant2)
@@ -316,7 +345,6 @@ namespace pepperspray.SharedServices
       {
         return AuthenticationResult.Ok;
       }
-
     }
 
     private PoseAgreement findOrCreatePoseAgreement(string initiatorName)
@@ -408,7 +436,7 @@ namespace pepperspray.SharedServices
       {
         foreach (var agreement in this.activeMarryAgreements.ToArray())
         {
-          if (agreement.Initiator.Equals(participantName) || (agreement.Recepient != null && agreement.Recepient.Equals(participantName)))
+          if (agreement.Initiator.Equals(participantName) || (agreement.Recipient != null && agreement.Recipient.Equals(participantName)))
           {
             this.activeMarryAgreements.Remove(agreement);
           }

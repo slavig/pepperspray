@@ -16,6 +16,11 @@ namespace pepperspray.CIO
 {
   public class CIOSocket
   {
+    public class EmptyPacketException : Exception { }
+
+    public bool IsAlive => this.socket.Connected;
+    public int ConnectionHash => this.socket.GetHashCode();
+
     public IPEndPoint Endpoint
     {
       get
@@ -23,23 +28,17 @@ namespace pepperspray.CIO
         try
         {
           return this.socket.RemoteEndPoint as IPEndPoint;
-        } catch (ObjectDisposedException)
-        {
-          return null;
         }
-      }
-    }
+        catch (SocketException) { }
+        catch (ObjectDisposedException) { }
 
-    public int ConnectionHash
-    {
-      get
-      {
-        return this.socket.GetHashCode();
+        return null;
       }
     }
 
     private string name;
     private Socket socket;
+
     public CIOSocket(string name, Socket socket)
     {
       this.name = name;
@@ -67,7 +66,7 @@ namespace pepperspray.CIO
             {
               run = false;
               Log.Debug("{server} received empty response from {hash}, terminating.", this.name, this.ConnectionHash);
-              promise.Reject(new Exception("Closed"));
+              promise.Reject(new EmptyPacketException());
             } else { 
               promise.SingleResolve(value);
             }
@@ -138,14 +137,14 @@ namespace pepperspray.CIO
           }
           catch (Exception e)
           {
-            Log.Error("{server} EndReceive failed: {exception}", this.name, e);
+            Log.Debug("{server} EndReceive failed: {exception}", this.name, e);
             promise.Reject(e);
           }
         }), null);
       }
       catch (Exception e)
       {
-        Log.Error("{server} BeginReceive failed: {exception}", this.name, e);
+        Log.Debug("{server} BeginReceive failed: {exception}", this.name, e);
         promise.Reject(e);
       }
 

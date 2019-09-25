@@ -24,13 +24,13 @@ namespace pepperspray.CIO
   {
     public class CIOThread: Promise<Nothing>
     {
-      private Thread t;
+      internal Thread ManagedThread;
       private bool restart;
 
       internal CIOThread(string name, bool restart, Action action)
       {
         this.restart = restart;
-        this.t = new Thread(new ThreadStart(() =>
+        this.ManagedThread = new Thread(new ThreadStart(() =>
         {
           try
           {
@@ -39,37 +39,41 @@ namespace pepperspray.CIO
             this.Resolve(new Nothing());
           }
           catch (Exception e) {
-            Log.Error("Thread {id} crashed with following exception: {ex}", this.t.ManagedThreadId, e);
+            Log.Error("Thread {id} crashed with following exception: {ex}", this.ManagedThread.ManagedThreadId, e);
             this.Reject(e);
           }
         }));
 
-        this.t.Name = name;
+        this.ManagedThread.Name = name;
       }
 
       internal CIOThread Start()
       {
-        Log.Debug("Spawned thread {id}/{name}", this.t.ManagedThreadId, this.t.Name);
+        Log.Debug("Spawned thread {id}/{name}", this.ManagedThread.ManagedThreadId, this.ManagedThread.Name);
 
-        this.t.Start();
+        this.ManagedThread.Start();
         return this;
       }
 
       public void Join()
       {
-        Log.Debug("Joining thread {name}", this.t.Name);
-        this.t.Join();
+        Log.Debug("Joining thread {name}", this.ManagedThread.Name);
+        this.ManagedThread.Join();
       }
     }
 
     public static CIOThread Spawn(string name, bool restart, Action action)
     {
-      return new CIOThread(name, restart, action).Start();
+      var thread = new CIOThread(name, restart, action);
+      thread.Start();
+      return thread;
     }
 
     public static CIOThread Spawn(string name, Action action)
     {
-      return new CIOThread(name, false, action).Start();
+      var thread = new CIOThread(name, false, action);
+      thread.Start();
+      return thread;
     }
   }
 }

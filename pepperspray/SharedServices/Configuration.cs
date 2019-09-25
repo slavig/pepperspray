@@ -76,6 +76,7 @@ namespace pepperspray.SharedServices
       public string Identifier;
       public string Owner;
       public string RadioURL;
+      public string Prompt;
       public string[] Moderators;
     }
 
@@ -117,10 +118,20 @@ namespace pepperspray.SharedServices
 
     internal string OverrideLocale;
     internal string TokenSalt;
+
     internal int PlayerInactivityTimeout;
     internal uint PlayerDefaultPhotoSlots;
     internal uint PlayerMaxPhotoSlots;
+
     internal uint PhotoSizeLimit;
+
+    internal uint ServerPromptPeriod;
+    internal string ServerPromptText;
+
+    internal TimeSpan WorldChatIntermessageInterval;
+    internal TimeSpan LocalChatIntermessageInterval;
+
+    internal bool SignUpEnabled = true;
 
     internal string WebfrontProtocolVersion = "web";
     internal uint MinimumProtocolVersion = 5;
@@ -173,6 +184,7 @@ namespace pepperspray.SharedServices
               var node = nodeElement as XmlNode;
               var modAttribute = node.Attributes["mods"];
               var radioAttribute = node.Attributes["radio-url"];
+              var promptAttribute = node.Attributes["prompt"];
 
               string radioUrl = null;
               if (radioAttribute != null)
@@ -186,12 +198,19 @@ namespace pepperspray.SharedServices
                 modNames = modAttribute.InnerText.Split(',').Select((a) => a.Trim()).ToArray();
               }
 
+              string prompt = null;
+              if (promptAttribute != null)
+              {
+                prompt = String.Join("\n", promptAttribute.InnerText.Split('\\'));
+              }
+
               this.PermanentRooms.Add(new PermanentRoom
               {
                 Identifier = node.Attributes["identifier"].InnerText,
                 Name = node.Attributes["name"].InnerText,
                 Owner = node.Attributes["owner"].InnerText,
                 RadioURL = radioUrl,
+                Prompt = prompt,
                 Moderators = modNames,
               });
             }
@@ -218,6 +237,24 @@ namespace pepperspray.SharedServices
             Enabled = danglingLocationNode.Attributes["enabled"].InnerText.Equals("true"),
             Timeout = TimeSpan.FromMinutes(timeoutMinutes),
           };
+        }
+
+        {
+          section = "chat-server/prompt";
+          var node = doc.SelectSingleNode("configuration/chat-server/prompt");
+          if (node != null)
+          {
+            this.ServerPromptPeriod = Convert.ToUInt32(node.Attributes["show-each"].InnerText);
+            this.ServerPromptText = node.InnerText;
+          }
+        }
+
+        {
+          section = "chat-server/chat-intermessage-intervals";
+          var node = doc.SelectSingleNode("configuration/chat-server/chat-intermessage-intervals");
+
+          this.WorldChatIntermessageInterval = TimeSpan.FromSeconds(Convert.ToDouble(node.Attributes["world"].InnerText));
+          this.LocalChatIntermessageInterval = TimeSpan.FromSeconds(Convert.ToDouble(node.Attributes["local"].InnerText));
         }
 
         {
@@ -321,6 +358,12 @@ namespace pepperspray.SharedServices
                 });
               }
             }
+          }
+
+          {
+            section = "rest-api-server/sign-up";
+            var node = doc.SelectSingleNode("configuration/rest-api-server/sign-up");
+            this.SignUpEnabled = node.Attributes["enabled"].InnerText.Equals("true");
           }
 
           {

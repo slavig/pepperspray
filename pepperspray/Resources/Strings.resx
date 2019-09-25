@@ -123,11 +123,26 @@
   <data name="CHARACTER_NOT_FOUND" xml:space="preserve">
     <value>Character not found.</value>
   </data>
+  <data name="CHAT_MODE_MUTED" xml:space="preserve">
+    <value>muted</value>
+  </data>
+  <data name="CHAT_MODE_NO_RESTRICTIONS" xml:space="preserve">
+    <value>no restrictions</value>
+  </data>
+  <data name="CHAT_MODE_SLOWMODE" xml:space="preserve">
+    <value>slowmode ({0} s)</value>
+  </data>
   <data name="CONFIGURATION_FILE_RELOADED" xml:space="preserve">
     <value>Configuration file reloaded.</value>
   </data>
   <data name="CURRENCY_IS_NOT_ENABLED" xml:space="preserve">
     <value>Currency is not enabled on this server.</value>
+  </data>
+  <data name="CURRENT_CHAT_MODE" xml:space="preserve">
+    <value>Chat mode: {0}.</value>
+  </data>
+  <data name="CURRENT_SEX_MODE" xml:space="preserve">
+    <value>Current sex mode: {0} ({1}).</value>
   </data>
   <data name="DISCONNECTING_ON_TIMEOUT_LONG" xml:space="preserve">
     <value>Connection will be terminated in 10 seconds.
@@ -154,6 +169,9 @@ Internal code: {1}.</value>
   <data name="FORBIDDEN" xml:space="preserve">
     <value>Forbidden.</value>
   </data>
+  <data name="GAVE_COINS_TO" xml:space="preserve">
+    <value>Player {0} gave {1} coins to {2}.</value>
+  </data>
   <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
     <value>Internal server error.</value>
   </data>
@@ -171,6 +189,12 @@ Internal code: {1}.</value>
   </data>
   <data name="LOGIN_TOKEN_INVALID" xml:space="preserve">
     <value>Login token invalid.</value>
+  </data>
+  <data name="MAXIMUM_LINE_COUNT_EXCEEDED" xml:space="preserve">
+    <value>Prompt maximum line count ({0}) exceeded.</value>
+  </data>
+  <data name="MAXIMUM_LINE_LENGTH_EXCEEDED" xml:space="preserve">
+    <value>Prompt maximum line length ({0}) exceeded.</value>
   </data>
   <data name="MESSAGE_TO_WORLD_HAS_BEEN_SENT" xml:space="preserve">
     <value>Your message to World has been sent ({0} coins), you now have {1} coins.</value>
@@ -212,7 +236,7 @@ Internal code: {1}.</value>
     <value>Player {0} rolled {1} out of {2}; verify by server message.</value>
   </data>
   <data name="PLAYER_SENT_YOU_COINS" xml:space="preserve">
-    <value>Player {0} send you {1} coins, you now have {2}.</value>
+    <value>Player {0} sent you {1} coins{2}, you now have {3}.</value>
   </data>
   <data name="REASON_NONE" xml:space="preserve">
     <value>None given.</value>
@@ -232,6 +256,9 @@ Internal code: {1}.</value>
   <data name="ROOM_NOW_PRIORITIZED" xml:space="preserve">
     <value>Room now prioritized.</value>
   </data>
+  <data name="ROOM_PROMPT_HAS_BEEN_SET" xml:space="preserve">
+    <value>Room prompt has been set.</value>
+  </data>
   <data name="SEX_IS_FORBIDDEN_IN_ROOM" xml:space="preserve">
     <value>Sorry, sex is forbidden in this room.</value>
   </data>
@@ -241,6 +268,15 @@ Internal code: {1}.</value>
   <data name="SEX_IS_NOW_FORBIDDEN_IN_ROOM" xml:space="preserve">
     <value>Sex is now forbidden in this room.</value>
   </data>
+  <data name="SEX_MODE_DESCRIPTION_DEFAULT" xml:space="preserve">
+    <value>need agreement for everything</value>
+  </data>
+  <data name="SEX_MODE_DESCRIPTION_DENY" xml:space="preserve">
+    <value>deny partner requests</value>
+  </data>
+  <data name="SEX_MODE_DESCRIPTION_POSEAGREE" xml:space="preserve">
+    <value>need agreement for partner requests, don't need agreement to start sex</value>
+  </data>
   <data name="SHELL_HELP_TEXT" xml:space="preserve">
     <value>Following commands are available:
 /players - show how many players are at standard locations.
@@ -248,11 +284,18 @@ Internal code: {1}.</value>
 /myonline - display for how much you have been online (across all characters).
 /pm PLAYER - open private message window with PLAYER.
 /dice NUMBER - roll the dice. Number will be omitted, defaulting to 6.
-/pay PLAYER AMOUNT - transfer currency to other player.
-/expel PLAYER MINUTES - expel player from your location for MINUTES. Duration can be skipped so the player will only be kicked.
+/pay PLAYER AMOUNT - transfer currency to other player. You can omit PLAYER if you send the command to him directly. 
+/give - the same as /pay, but sends a message into Local chat about the deal.
+/expel PLAYER MINUTES - expel player from your location for MINUTES. Duration can be skipped so the player will only be kicked. You can omit the name if you send this command to him directly.
 /room persist - will turn your room into semi-persistent one, meaning that it will be available for some time after you disconnect.
 /room close - will close your currently shared room.
-/room sex VALUE - "allow" to allow sex in your room, "forbid" to forbid it.</value>
+/room sex VALUE - "allow" to allow sex in your room, "forbid" to forbid it.
+/room prompt VALUE - set prompt (welcome message) for room. Character "\" user for newline.
+/room slowmode MODE - set room slowmode settings ("reset" to reset, "mute" to mute everyone else or amount of seconds to enable slowmode on provided interval).
+/sex VALUE - set extended sex permissions. VALUE is - "sub" to allow poses without confirmation, "deny" to deny incoming partner requests and "reset" to reset to default.</value>
+  </data>
+  <data name="SORRY_CHAT_IS_MUTED" xml:space="preserve">
+    <value>Sorry, chat has been muted by the owner.</value>
   </data>
   <data name="STATUS_FOR_PLAYER_HAS_BEEN_SET" xml:space="preserve">
     <value>Status for player {0} has been set to "{1}".</value>
@@ -262,6 +305,9 @@ Internal code: {1}.</value>
   </data>
   <data name="TIMED_OUT" xml:space="preserve">
     <value>Connection timed out.</value>
+  </data>
+  <data name="TOO_FAST_CHAT_IS_IN_SLOWMODE" xml:space="preserve">
+    <value>Too fast, chat is in slowmode ({0} s).</value>
   </data>
   <data name="TRANSFERRED_COINS_TO" xml:space="preserve">
     <value>Transferred {0} coins to {1}, you now have {2}.</value>
@@ -274,6 +320,9 @@ Internal code: {1}.</value>
   </data>
   <data name="USER_HAS_NOT_BEEN_FOUND_FOR_PLAYER" xml:space="preserve">
     <value>User account has not been found for this player.</value>
+  </data>
+  <data name="YOUR_MODE_HAS_BEEN_CHANGED" xml:space="preserve">
+    <value>Your mode has been changed.</value>
   </data>
   <data name="YOU_ARE_NOT_IN_LOBBY" xml:space="preserve">
     <value>You are not in lobby.</value>

@@ -56,11 +56,11 @@ namespace pepperspray.RestAPIServer.Controllers
       {
         var token = req.GetBearerToken();
         var senderId = Convert.ToUInt32(req.GetFormParameter("from"));
-        var recepientId = Convert.ToUInt32(req.GetFormParameter("to"));
+        var recipientId = Convert.ToUInt32(req.GetFormParameter("to"));
         var giftIdentifier = req.GetFormParameter("gift");
         var message = req.GetFormParameter("msg");
 
-        this.giftService.SendGift(token, senderId, recepientId, giftIdentifier, message);
+        this.giftService.SendGift(token, senderId, recipientId, giftIdentifier, message);
         return req.TextResponse("ok");
       } 
       catch (GiftsService.NotEnoughCurrencyException)

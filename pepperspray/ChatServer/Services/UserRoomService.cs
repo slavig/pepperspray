@@ -8,13 +8,14 @@ using RSG;
 using Serilog;
 using pepperspray.CIO;
 using pepperspray.ChatServer.Game;
+using pepperspray.ChatServer.Services.Events;
+using pepperspray.SharedServices;
 using pepperspray.ChatServer.Protocol;
 using pepperspray.Utils;
-using pepperspray.SharedServices;
 
 namespace pepperspray.ChatServer.Services
 {
-  internal class UserRoomService: IDIService
+  internal class UserRoomService: IDIService, PlayerLoggedInEvent.IListener, PlayerLoggedOffEvent.IListener
   {
     private class ExpelRecord
     {
@@ -69,6 +70,7 @@ namespace pepperspray.ChatServer.Services
           try
           {
             var character = this.characterService.Find(room.OwnerId);
+
             return player.Id == room.OwnerId || this.friendsService.GetFriendIDs(character).Contains(player.Character.Id);
           }
           catch (CharacterService.NotFoundException)
@@ -200,6 +202,7 @@ namespace pepperspray.ChatServer.Services
           existingRoom.OwnerName = permanentRoom.Owner;
           existingRoom.OwnerId = ownerCharacter.Id;
           existingRoom.RadioURL = permanentRoom.RadioURL;
+          existingRoom.Prompt = permanentRoom.Prompt;
           existingRoom.IsPermanent = true;
 
           if (existingRoom.Lobby != null)
@@ -235,6 +238,8 @@ namespace pepperspray.ChatServer.Services
             OwnerId = ownerCharacter.Id,
             ModeratorNames = permanentRoom.Moderators,
             RadioURL = permanentRoom.RadioURL,
+            Prompt = permanentRoom.Prompt,
+            SlowmodeInterval = this.config.LocalChatIntermessageInterval,
             IsPermanent = true,
             IsPrioritized = true
           };
@@ -301,47 +306,38 @@ namespace pepperspray.ChatServer.Services
       return Nothing.Resolved();
     }
 
-    internal IPromise<Nothing> PlayerLoggedIn(PlayerHandle handle)
+    public void PlayerLoggedIn(PlayerLoggedInEvent ev)
     {
       lock(this.server)
       {
-        var room = this.server.World.FindUserRoom(handle);
+        var room = this.server.World.FindUserRoom(ev.Handle);
         if (room != null && room.IsDangling)
         {
-          Log.Information("Player {player} logged back, room {identifier} is no longer dangling", handle.Digest, room.Identifier);
+          Log.Information("Player {player} logged back, room {identifier} is no longer dangling", ev.Handle.Digest, room.Identifier);
           room.IsDangling = false;
         }
       }
-
-      return Nothing.Resolved();
     }
 
-    internal IPromise<Nothing> PlayerLoggedOff(PlayerHandle sender)
+    public void PlayerLoggedOff(PlayerLoggedOffEvent ev)
     {
-      if (!sender.IsLoggedIn)
-      {
-        return Nothing.Resolved();
-      }
-
       lock(this.server)
       {
-        var room = this.server.World.FindUserRoom(sender);
+        var room = this.server.World.FindUserRoom(ev.Handle);
 
         if (room != null && !room.IsSemiPersistent && !room.IsPermanent)
         {
-          return this.CloseRoom(room);
+          this.server.Sink(this.CloseRoom(room));
         }
         else if (room != null)
         {
           room.OwnerLastSeen = DateTime.Now;
           if (room.IsSemiPersistent)
           {
-            Log.Information("Player {player} logged off and left his room {identifier} dangling", sender.Digest, room.Identifier);
+            Log.Information("Player {player} logged off and left his room {identifier} dangling", ev.Handle.Digest, room.Identifier);
             room.IsDangling = true;
           }
         }
-
-        return Nothing.Resolved();
       }
     }
 

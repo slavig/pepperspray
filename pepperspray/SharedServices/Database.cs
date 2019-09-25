@@ -15,13 +15,23 @@ namespace pepperspray.SharedServices
   internal class Database: IDIService
   {
     internal class NotFoundException : Exception { }
+    private class OperationInfo
+    {
+      internal bool RunAsMutating = false;
+      internal Thread Thread;
+      internal string StackTrace;
+    }
 
     private Configuration config;
 
     private ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
-    private ConcurrentQueue<DatabaseConnection> pool = new ConcurrentQueue<DatabaseConnection>();
+    private ConcurrentQueue<DatabaseConnection> immutableConnectionPool = new ConcurrentQueue<DatabaseConnection>();
     private DatabaseConnection mutatingConnection;
     private bool enableMultithreading;
+
+#if DEBUG
+    private List<OperationInfo> operationInfos = new List<OperationInfo>();
+#endif
 
     public void Inject()
     {
@@ -57,12 +67,22 @@ namespace pepperspray.SharedServices
     internal T Read<T>(Func<DatabaseConnection, T> action)
     {
       DatabaseConnection connection;
-      if (!this.pool.TryDequeue(out connection))
+      if (!this.immutableConnectionPool.TryDequeue(out connection))
       { 
         connection = this.makeNewConnection();
       }
 
       T result;
+      OperationInfo info = null;
+#if DEBUG
+      info = new OperationInfo
+      {
+        Thread = Thread.CurrentThread,
+        StackTrace = Environment.StackTrace,
+        RunAsMutating = false,
+      };
+      this.addOngoingOperationInfo(info);
+#endif
 
       try
       {
@@ -76,6 +96,18 @@ namespace pepperspray.SharedServices
 
         result = action(connection);
       }
+#if DEBUG
+      catch (SQLite.SQLiteException e)
+      {
+        if (e.Result == SQLite3.Result.Busy)
+        {
+          Log.Error("SQLITE read encountered \"Busy\" during read operation, exception ({exception})", e);
+          this.dumpOngoingOperations();
+        }
+
+        throw e;
+      }
+#endif
       finally
       {
         if (this.enableMultithreading)
@@ -86,18 +118,57 @@ namespace pepperspray.SharedServices
         {
           this.rwLock.ExitWriteLock();
         }
+
+        this.removeOngoingOperationInfo(info);
       }
 
-      this.pool.Enqueue(connection);
+      this.immutableConnectionPool.Enqueue(connection);
       return result;
     }
 
     internal void Write(Action<DatabaseConnection> action)
     {
+      OperationInfo info = null;
+#if DEBUG
+      info = new OperationInfo
+      {
+        Thread = Thread.CurrentThread,
+        StackTrace = Environment.StackTrace,
+        RunAsMutating = true,
+      };
+      this.addOngoingOperationInfo(info);
+#endif
+
       try
       {
         this.rwLock.EnterWriteLock();
         action(this.mutatingConnection);
+      }
+#if DEBUG
+      catch (SQLite.SQLiteException e)
+      {
+        if (e.Result == SQLite3.Result.Busy)
+        {
+          Log.Error("SQLITE read encountered \"Busy\" during write operation, exception ({exception}), dumping env:", e);
+          this.dumpOngoingOperations();
+        }
+
+        throw e;
+      }
+#endif
+      finally
+      {
+        this.rwLock.ExitWriteLock();
+        this.removeOngoingOperationInfo(info);
+      }
+    }
+
+    private DatabaseConnection makeNewConnection()
+    {
+      try
+      {
+        this.rwLock.EnterWriteLock();
+        return new DatabaseConnection(this.makeSqliteConnection());
       }
       finally
       {
@@ -105,15 +176,47 @@ namespace pepperspray.SharedServices
       }
     }
 
-    private DatabaseConnection makeNewConnection()
-    {
-      return new DatabaseConnection(this.makeSqliteConnection());
-    }
-
     private SQLiteConnection makeSqliteConnection()
     {
       return new SQLiteConnection(Path.Combine("peppersprayData", "database", "database.sqlite"));
     }
+
+    private void addOngoingOperationInfo(OperationInfo info)
+    {
+#if DEBUG
+      lock(this)
+      {
+        this.operationInfos.Add(info);
+      }
+#endif
+    }
+
+    private void removeOngoingOperationInfo(OperationInfo info)
+    {
+#if DEBUG
+      lock(this)
+      {
+        this.operationInfos.Remove(info);
+      }
+#endif
+    }
+
+#if DEBUG
+    private void dumpOngoingOperations()
+    {
+      OperationInfo[] infos = this.operationInfos.ToArray();
+
+      Log.Debug("Database: total {number} concurrent operations:", infos.Count());
+      foreach (var info in infos)
+      {
+        Log.Verbose("==== alleged {type} operation from {threadId}/{threadName}, stack: {stack}",
+          info.RunAsMutating ? "Mutating" : "Immutable",
+          info.Thread.ManagedThreadId,
+          info.Thread.Name,
+          info.StackTrace);
+      }
+    }
+#endif
   }
 
   internal class DatabaseConnection
@@ -304,19 +407,24 @@ namespace pepperspray.SharedServices
       this.connection.Insert(msg);
     }
 
-    internal IEnumerable<OfflineMessage> OfflineMessageFind(uint recepientId)
+    internal IEnumerable<OfflineMessage> OfflineMessageFind(uint recipientId)
     {
-      return this.connection.Table<OfflineMessage>().Where(m => m.RecepientId == recepientId);
+      return this.connection.Table<OfflineMessage>().Where(m => m.RecepientId == recipientId);
     }
 
-    internal void OfflineMessageDelete(uint recepientId)
+    internal void OfflineMessageDelete(uint recipientId)
     {
-      this.connection.Table<OfflineMessage>().Where(m => m.RecepientId == recepientId).Delete();
+      this.connection.Table<OfflineMessage>().Where(m => m.RecepientId == recipientId).Delete();
     }
 
     internal IEnumerable<Character> BlacklistFindById(uint userId)
     {
       return this.connection.Query<Character>("SELECT * FROM BlacklistRecord JOIN Character ON BlacklistRecord.ViolatorId = Character.Id WHERE BlacklistRecord.UserId = ?", userId);
+    }
+
+    internal IEnumerable<Character> BlacklistFindByViolator(Character voilator)
+    {
+      return this.connection.Query<Character>("SELECT * FROM BlacklistRecord JOIN Character ON BlacklistRecord.UserId = Character.UserId WHERE BlacklistRecord.ViolatorId = ?", voilator.Id);
     }
 
     internal BlacklistRecord BlacklistFind(uint userId, uint characterId)

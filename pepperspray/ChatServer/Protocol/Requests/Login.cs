@@ -116,7 +116,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
 
       if (exception != null)
       {
-        Log.Information("Terminating connection of {name}/{id} from {hash}/{address} - {message}",
+        Log.Information("Kicking connection of {name}/{id} from {hash}/{address} - {message}, terminating shortly after",
           this.name,
           this.id,
           sender.Stream.ConnectionHash,

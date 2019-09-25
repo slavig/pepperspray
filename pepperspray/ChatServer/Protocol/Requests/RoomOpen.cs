@@ -21,6 +21,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
     private UserRoom.AccessType accessType;
 
     private UserRoomService userRoomService = DI.Get<UserRoomService>();
+    private Configuration config = DI.Get<Configuration>();
 
     internal static RoomOpen Parse(Message ev)
     {
@@ -99,6 +100,7 @@ namespace pepperspray.ChatServer.Protocol.Requests
         Name = this.userRoomService.CleanupName(this.name),
         Type = this.type,
         Access = this.accessType,
+        SlowmodeInterval = this.config.LocalChatIntermessageInterval,
       };
 
       return this.userRoomService.OpenRoom(room);
